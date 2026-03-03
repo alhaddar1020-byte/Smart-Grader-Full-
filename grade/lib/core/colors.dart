@@ -20,7 +20,7 @@ class AppColors {
   static const Color scaffoldBg = Color(0xFFF3F4F6);
 
   // لون النصوص الداكنة ( للرمادي)
-  static const Color textseccondary = Color(0xFF62748E);
+  static const Color textseccondary = Color(0xFF6A7282);
 
   // لون الأبيض الناصع (للنصوص داخل العناصر الملونة و للبطاقات)
   static const Color textWhite = Colors.white;

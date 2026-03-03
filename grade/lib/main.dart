@@ -15,7 +15,7 @@ class GradeAI extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       // هنا حددنا "الخط" و "الصفحة الأولى" بس
       theme: ThemeData(fontFamily: 'Arimo'),
-      home: const start(),
+      home: const StudentDashboardScreen(),
     );
   }
 }
