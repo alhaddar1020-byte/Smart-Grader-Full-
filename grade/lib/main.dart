@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/start.dart'; // ينادي ملف صديقتك
-import 'screens/student_dashboard.dart'; // ينادي ملف صديقتك
+import 'screens/student_dashboard.dart'; // تأكد أن المسار واسم الملف صحيحان
+import 'widgets/slider.dart';
 
 void main() {
   runApp(const GradeAI());
@@ -13,8 +13,13 @@ class GradeAI extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      // هنا حددنا "الخط" و "الصفحة الأولى" بس
-      theme: ThemeData(fontFamily: 'Arimo'),
+      title: 'Grade AI',
+      // إعداد الثيم العام
+      theme: ThemeData(
+        fontFamily: 'Arimo', // تأكد من إضافة الخط في ملف pubspec.yaml
+        useMaterial3: true,
+      ),
+      // تشغيل واجهة لوحة تحكم الطالب كشاشة رئيسية
       home: const StudentDashboardScreen(),
     );
   }

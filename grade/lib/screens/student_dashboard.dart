@@ -1,19 +1,28 @@
 import 'package:flutter/material.dart';
 import '../core/colors.dart';
+import '../widgets/slider.dart'; // تأكدي أن هذا هو مسار ملف القائمة الجديد
 
-class StudentDashboardScreen extends StatelessWidget {
+class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
+
+  @override
+  State<StudentDashboardScreen> createState() => _StudentDashboardScreenState();
+}
+
+class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
+  // المتغير الوحيد للتحكم في القائمة المختار حالياً
+  int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg, // اللون الرمادي الفاتح من ملفك
+      backgroundColor: AppColors.scaffoldBg,
       body: Center(
         child: Container(
           constraints: const BoxConstraints(maxWidth: 1440),
           child: Row(
             children: [
-              // المحتوى الرئيسي
+              // 1. المحتوى الرئيسي (Expanded يأخذ المساحة المتبقية)
               Expanded(
                 flex: 5,
                 child: SingleChildScrollView(
@@ -37,14 +46,24 @@ class StudentDashboardScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              // القائمة الجانبية
-              _buildSidebar(),
+
+              // 2. استدعاء القائمة الجانبية من الملف الخارجي
+              CustomSidebar(
+                selectedIndex: selectedIndex,
+                onItemSelected: (index) {
+                  setState(() {
+                    selectedIndex = index;
+                  });
+                },
+              ),
             ],
           ),
         ),
       ),
     );
   }
+
+  // --- دوال المحتوى الرئيسي ---
 
   Widget _buildHeader() {
     return Container(
@@ -73,13 +92,13 @@ class StudentDashboardScreen extends StatelessWidget {
               const SizedBox(width: 15),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
+                children: [
+                  const Text(
                     "أحمد محمد السعيد",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
-                      color: AppColors.textprimary, // اللون الأسود من ملفك
+                      color: AppColors.textprimary,
                     ),
                   ),
                   Text(
@@ -93,15 +112,15 @@ class StudentDashboardScreen extends StatelessWidget {
               ),
             ],
           ),
-          Column(
+          const Column(
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: const [
+            children: [
               Text(
                 "مرحباً أحمد!",
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E2939), // رقم مباشرة كما طلبتِ (غير متكرر)
+                  color: Color(0xFF1E2939),
                 ),
               ),
               Text(
@@ -121,7 +140,7 @@ class StudentDashboardScreen extends StatelessWidget {
         _statCard(
           "أعلى درجة",
           "95%",
-          Icons.emoji_events,
+          Icons.military_tech,
           AppColors.primaryTeal,
         ),
         const SizedBox(width: 20),
@@ -144,110 +163,59 @@ class StudentDashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _statCard(String title, String value, IconData icon, Color color) {
+  Widget _statCard(String title, String value, IconData icon, Color cardColor) {
+    Color iconColor = (cardColor == AppColors.accentYellow)
+        ? AppColors.accentYellow
+        : AppColors.primaryTeal;
     return Expanded(
       child: Container(
         height: 140,
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: color,
+          color: cardColor,
           borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, color: AppColors.textWhite.withOpacity(0.9), size: 32),
-            const Spacer(),
-            Text(
-              title,
-              style: const TextStyle(color: AppColors.textWhite, fontSize: 14),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Flexible(
+                  child: Text(
+                    title,
+                    textAlign: TextAlign.right,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(icon, color: iconColor, size: 25),
+                ),
+              ],
             ),
+            const SizedBox(height: 8),
             Text(
               value,
+              textAlign: TextAlign.right,
               style: const TextStyle(
-                color: AppColors.textWhite,
-                fontSize: 30,
+                color: Colors.white,
+                fontSize: 26,
                 fontWeight: FontWeight.bold,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildSidebar() {
-    return Container(
-      width: 280,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryTeal,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(40),
-          bottomLeft: Radius.circular(40),
-        ),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 60),
-          const Icon(Icons.auto_stories, size: 70, color: AppColors.textWhite),
-          const SizedBox(height: 15),
-          const Text(
-            "Intelligent\nGrading System",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textWhite,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 80),
-          _menuItem("لوحة التحكم", Icons.home_rounded, true),
-          _menuItem("المواد", Icons.grid_view_rounded, false),
-          _menuItem("إعدادات", Icons.settings_rounded, false),
-        ],
-      ),
-    );
-  }
-
-  Widget _menuItem(String title, IconData icon, bool isActive) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
-      padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-      decoration: BoxDecoration(
-        color: isActive
-            ? AppColors.textWhite.withOpacity(0.15)
-            : Colors.transparent,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: isActive
-                  ? AppColors.textWhite
-                  : AppColors.textWhite.withOpacity(0.7),
-              fontSize: 18,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-          const SizedBox(width: 15),
-          Icon(
-            icon,
-            color: isActive
-                ? AppColors.textWhite
-                : AppColors.textWhite.withOpacity(0.7),
-          ),
-        ],
       ),
     );
   }
@@ -311,7 +279,7 @@ class StudentDashboardScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB), // رقم مباشرة (خلفية كرت النتيجة)
+        color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: Colors.grey.shade100),
       ),
@@ -322,13 +290,12 @@ class StudentDashboardScreen extends StatelessWidget {
             children: [
               Text(
                 score,
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.primaryTeal,
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
                 ),
               ),
-              const SizedBox(height: 5),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -336,7 +303,7 @@ class StudentDashboardScreen extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   label,
@@ -386,8 +353,8 @@ class StudentDashboardScreen extends StatelessWidget {
               color: AppColors.textWhite,
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Column(
-              children: const [
+            child: const Column(
+              children: [
                 CircleAvatar(
                   backgroundColor: AppColors.accentYellow,
                   radius: 35,
@@ -430,9 +397,7 @@ class StudentDashboardScreen extends StatelessWidget {
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Color(0xFF4DB8AC), Color(0xFF3DA89C)], // أرقام مباشرة للتدرج
+          colors: [Color(0xFF4DB8AC), Color(0xFF3DA89C)],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -450,14 +415,10 @@ class StudentDashboardScreen extends StatelessWidget {
           const SizedBox(height: 20),
           _rowInfo("12/15", "المواد المصححة"),
           const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: const LinearProgressIndicator(
-              value: 0.8,
-              minHeight: 8,
-              backgroundColor: Colors.white24,
-              color: AppColors.textWhite,
-            ),
+          const LinearProgressIndicator(
+            value: 0.8,
+            backgroundColor: Colors.white24,
+            color: AppColors.textWhite,
           ),
           const SizedBox(height: 20),
           _rowInfo("100%", "معدل النجاح"),
@@ -471,7 +432,6 @@ class StudentDashboardScreen extends StatelessWidget {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
-              elevation: 0,
             ),
             child: const Text(
               "عرض التقرير الكامل",
