@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 import '../core/colors.dart'; // تأكدي من مسار ملف الألوان لديك
 
+//  // 2. استدعاء القائمة الجانبية من الملف الخارجي
+//               CustomSidebar(
+//                 selectedIndex: selectedIndex,
+//                 onItemSelected: (index) {
+//                   setState(() {
+//                     selectedIndex = index;
+//                   });
+//                 },
+//               ),
+
 class CustomSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
