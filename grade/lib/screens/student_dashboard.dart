@@ -16,7 +16,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   final Map<String, dynamic> studentData = {
     "name": "أحمد محمد السعيد",
     "level": "الصف الثاني الثانوي - علمي",
-    "badge": "aaaaaaaaaaaaaaa", // النص المطلوب
+    "badge": "85%", // النص المطلوب
     "stats": {
       "highest_score": "95%",
       "gpa": "87.5%",
@@ -419,7 +419,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  "   bbbbbb  $badge%   ",
+                  "   حافظت على معدل أعلى من $badge% في جميع المواد     ",
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: AppColors.textseccondary,
