@@ -557,8 +557,8 @@ class TopStatsGrid extends StatelessWidget {
       children: [
         _statCard("الطلاب", "340", AppColors.accentYellow, Icons.people),
         _statCard("الأوراق المصححة", "780", AppColors.primaryTeal, Icons.description),
-        _statCard("الاختبارات المنشئة", "13", AppColors.primaryTeal.withOpacity(0.7), Icons.quiz),
-        _statCard("المسودات", "5", AppColors.primaryTeal.withOpacity(0.5), Icons.edit_note),
+        _statCard("الاختبارات المنشئة", "13", AppColors.primaryTeal, Icons.quiz),
+        _statCard("المسودات", "5", AppColors.primaryTeal, Icons.edit_note),
       ],
     );
   }

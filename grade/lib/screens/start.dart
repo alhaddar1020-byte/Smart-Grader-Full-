@@ -3,7 +3,6 @@ import '../core/colors.dart';
 
 class start extends StatelessWidget {
   const start({super.key});
-
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
