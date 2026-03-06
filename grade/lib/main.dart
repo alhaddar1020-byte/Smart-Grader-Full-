@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'screens/student_dashboard.dart'; // تأكد أن المسار واسم الملف صحيحان
+import 'screens/start.dart'; // ينادي ملف صديقتك
+import 'screens/student_dashboard.dart'; // ينادي ملف صديقتك
+import 'screens/teacher_dashboard.dart';
+import 'screens/teacher_matearial.dart';
+import 'screens/student_matearial.dart';
 import 'widgets/slider.dart';
 
 void main() {
@@ -13,14 +17,9 @@ class GradeAI extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(fontFamily: 'Arimo'),
+      home: const IntelligentGradingApp(), // تأكدي من إضافة const إذا لزم الأمر
       title: 'Grade AI',
-      // إعداد الثيم العام
-      theme: ThemeData(
-        fontFamily: 'Arimo', // تأكد من إضافة الخط في ملف pubspec.yaml
-        useMaterial3: true,
-      ),
-      // تشغيل واجهة لوحة تحكم الطالب كشاشة رئيسية
-      //home: const StudentDashboardScreen(),
     );
   }
 }
