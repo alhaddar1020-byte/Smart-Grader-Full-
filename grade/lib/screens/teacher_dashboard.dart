@@ -416,6 +416,45 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int selectedIndex = 0; // المتغير المسؤول عن تحديد الخيار المختار
+  final Map<String, dynamic> studentData = {
+    "name": "أحمد محمد السعيد",
+    "level": "الصف الثاني الثانوي - علمي",
+    "badge": "85",
+    "stats": {
+      "highest_score": "95%",
+      "gpa": "87.5%",
+      "exams_count": "12",
+      "subjects_count": "6",
+    },
+    "recent_results": [
+      {
+        "score": "98%",
+        "label": "ممتاز",
+        "title": "اختبار منتصف الفصل",
+        "subject": "الرياضيات",
+        "date": "2024-03-01",
+      },
+      {
+        "score": "85%",
+        "label": "جيد جداً",
+        "title": "اختبار الوحدة الثانية",
+        "subject": "الفيزياء",
+        "date": "2024-02-25",
+      },
+      {
+        "score": "85%",
+        "label": "جيد جداً",
+        "title": "اختبار الوحدة الثانية",
+        "subject": "الفيزياء",
+        "date": "2024-02-25",
+      },
+    ],
+    "performance": {
+      "graded_count": "10/12",
+      "progress_value": 0.8,
+      "success_rate": "92%",
+    },
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -440,7 +479,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const HeaderWidget(),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
+                    child: _buildHeader(
+                      studentData["name"],
+                      studentData["level"],
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   const TopStatsGrid(),
                   const SizedBox(height: 24),
@@ -465,48 +510,109 @@ class _DashboardScreenState extends State<DashboardScreen> {
 }
 
 // --- الهيدر (الترحيب) ---
-class HeaderWidget extends StatelessWidget {
-  const HeaderWidget({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "مرحباً م.خديجة!",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              "تحقق من إحصائياتك",
-              style: TextStyle(color: AppColors.textseccondary),
-            ),
-          ],
+// --- Widgets الهيدر والإحصائيات (نفس كودك السابق دون تغيير) ---
+Widget _buildHeader(String name, String level) {
+  return Container(
+    height: 101,
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 2,
+          offset: const Offset(0, 1),
+          spreadRadius: -1,
         ),
-        Row(
-          children: [
-            _iconButton(Icons.notifications_none),
-            const SizedBox(width: 10),
-            _iconButton(Icons.person_outline),
-          ],
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 3,
+          offset: const Offset(0, 1),
         ),
       ],
-    );
-  }
+    ),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              "مرحباً ${name.split(' ')[0]}!",
+              style: const TextStyle(
+                fontFamily: "Arimo",
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E2939),
+              ),
+            ),
+            const Text(
+              "نتمنى لك يوماً دراسياً موفقاً",
+              style: TextStyle(
+                fontFamily: "Arimo",
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
 
-  Widget _iconButton(IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-      child: Icon(icon, color: AppColors.primaryTeal),
-    );
-  }
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFFE0F2F1),
+            borderRadius: BorderRadius.circular(40),
+          ),
+          child: Row(
+            children: [
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      fontFamily: "Arimo",
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1E2939),
+                    ),
+                  ),
+                  Text(
+                    level,
+                    style: TextStyle(
+                      fontFamily: "Arimo",
+                      color: Colors.grey.shade600,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              const CircleAvatar(
+                radius: 20,
+                backgroundColor: Color(0xFF4DB8AC),
+                child: Icon(Icons.person, color: Colors.white, size: 24),
+              ),
+            ],
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _iconButton(IconData icon) {
+  return Container(
+    padding: const EdgeInsets.all(8),
+    decoration: const BoxDecoration(
+      color: Colors.white,
+      shape: BoxShape.circle,
+    ),
+    child: Icon(icon, color: AppColors.primaryTeal),
+  );
 }
 
 // --- البطاقات العلوية ---
