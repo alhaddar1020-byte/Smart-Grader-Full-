@@ -33,6 +33,7 @@ class SubjectDetailsScreen extends StatelessWidget {
         "answers": "8/10",
         "rating": "جيد جداً",
         "total": "15",
+        "totalgrade": "100",
       },
       {
         "title": "امتحان التكامل والتفاضل",
@@ -41,6 +42,7 @@ class SubjectDetailsScreen extends StatelessWidget {
         "answers": "9/10",
         "rating": "امتياز",
         "total": "20",
+        "totalgrade": "100",
       },
       {
         "title": "امتحان الجبر الخطي",
@@ -49,11 +51,19 @@ class SubjectDetailsScreen extends StatelessWidget {
         "answers": "7/10",
         "rating": "جيد",
         "total": "12",
+        "totalgrade": "60",
       },
     ];
 
     // 3. نقاط القوة والتحسين
-    final List<String> strengths = ["أداء ممتاز", "سرعة البديهة"];
+    final List<String> strengths = [
+      "أداء ممتاز",
+      "سرااااااااااااااااااااااااااااااااااااااااااااااااااااااااااعة البديهة",
+      "أداء ممتاز",
+      "أداء ممتاز",
+      "أداء ممتاز",
+      "أداء ممتاز",
+    ];
     final List<String> improvements = ["إدارة الوقت", "التركيز"];
 
     return Scaffold(
@@ -96,6 +106,7 @@ class SubjectDetailsScreen extends StatelessWidget {
                                   exam["answers"]!,
                                   exam["rating"]!,
                                   exam["total"]!,
+                                  exam["totalgrade"]!,
                                 );
                               }).toList(),
                             ),
@@ -134,8 +145,8 @@ class SubjectDetailsScreen extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 4),
+            blurRadius: 7,
+            offset: const Offset(0, 7),
           ),
         ],
       ),
@@ -218,19 +229,11 @@ class SubjectDetailsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              Flexible(
-                child: Text(
-                  label,
-                  style: const TextStyle(
-                    color: Color(0xFF4A5565),
-                    fontSize: 12,
-                  ),
-                ),
-              ),
               Container(
                 padding: const EdgeInsets.all(6),
+                margin: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: iconBg,
                   borderRadius: BorderRadius.circular(8),
@@ -238,7 +241,19 @@ class SubjectDetailsScreen extends StatelessWidget {
                 child: const Icon(
                   Icons.bar_chart,
                   color: Colors.white,
-                  size: 16,
+                  size: 20,
+                ),
+              ),
+              Flexible(
+                child: Text(
+                  label,
+
+                  style: const TextStyle(
+                    color: Color(0xFF4A5565),
+                    fontSize: 15,
+                    fontFamily: "Arimo",
+                    fontWeight: FontWeight.w200,
+                  ),
                 ),
               ),
             ],
@@ -246,9 +261,9 @@ class SubjectDetailsScreen extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 30,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF1E2939),
+              color: Color.fromARGB(255, 0, 0, 0),
             ),
           ),
         ],
@@ -263,6 +278,7 @@ class SubjectDetailsScreen extends StatelessWidget {
     String answers,
     String rating,
     String totalQuestions,
+    String totalgrade,
   ) {
     return Container(
       margin: const EdgeInsets.only(
@@ -286,13 +302,144 @@ class SubjectDetailsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
+          const SizedBox(width: 20),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E2939),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 119,
+
+                      child: _badgeInfo("التاريخ", date),
+                      padding: EdgeInsets.only(left: 30, right: 3),
+
+                      decoration: BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      width: 119,
+
+                      child: _badgeInfo("الأسئلة", totalQuestions),
+                      padding: EdgeInsets.only(left: 30, right: 3),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      width: 119,
+
+                      child: _badgeInfo("الإجابات", answers),
+
+                      padding: EdgeInsets.only(left: 30, right: 3),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    Container(
+                      width: 119,
+                      child: _badgeInfo("التقدير", rating, isBlue: true),
+
+                      padding: EdgeInsets.only(left: 30, right: 3),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFF3F4F6),
+
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.center,
+                  child: // استبدل الـ Align والـ Container الداخلي بهذا الكود
+                  InkWell(
+                    onTap: () {
+                      // هنا نضع كود الانتقال للصفحة الأخرى
+                      // مثال:
+                      // Navigator.push(context, MaterialPageRoute(builder: (context) => ExamDetailsScreen()));
+                      print("الانتقال لصفحة تفاصيل الاختبار");
+                    },
+                    borderRadius: BorderRadius.circular(
+                      10,
+                    ), // لضمان أن تأثير الضغط لا يخرج عن حدود الزر
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4DB8AC),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Text(
+                        "عرض التفاصيل",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 20),
+
           Container(
             width: 110,
             height: 140,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF4DB8AC), Color(0xFF3DA89C)],
-              ),
+              color: Color(0xFF4FB7B5),
+
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -311,55 +458,15 @@ class SubjectDetailsScreen extends StatelessWidget {
                   ),
                 ),
                 const Text(
-                  "من 100",
+                  "من ",
                   style: TextStyle(color: Colors.white70, fontSize: 10),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 20),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
                 Text(
-                  title,
+                  totalgrade,
                   style: const TextStyle(
-                    fontSize: 18,
+                    color: Colors.white,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E2939),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _badgeInfo("التاريخ", date),
-                    _badgeInfo("الأسئلة", totalQuestions),
-                    _badgeInfo("الإجابات", answers),
-                    _badgeInfo("التقدير", rating, isBlue: true),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.center,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4DB8AC),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Text(
-                      "عرض التفاصيل",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
-                      ),
-                    ),
                   ),
                 ),
               ],

@@ -20,7 +20,7 @@ class GradeAI extends StatelessWidget {
         useMaterial3: true,
       ),
       // تشغيل واجهة لوحة تحكم الطالب كشاشة رئيسية
-      home: const StudentDashboardScreen(),
+      //home: const StudentDashboardScreen(),
     );
   }
 }
