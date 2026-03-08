@@ -5,6 +5,7 @@ import 'screens/teacher_dashboard.dart';
 import 'screens/teacher_matearial.dart';
 import 'screens/student_matearial.dart';
 import 'widgets/slider.dart';
+import 'screens/student_exim.dart';
 
 void main() {
   runApp(const GradeAI());
@@ -18,7 +19,8 @@ class GradeAI extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Arimo'),
-      home: const IntelligentGradingApp(), // تأكدي من إضافة const إذا لزم الأمر
+      home:
+          const StudentDashboardScreen(), // تأكدي من إضافة const إذا لزم الأمر
       title: 'Grade AI',
     );
   }

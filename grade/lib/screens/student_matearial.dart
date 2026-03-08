@@ -2,7 +2,16 @@ import 'package:flutter/material.dart';
 import 'student_detiles.dart'; // تأكد أن هذا الملف يحتوي على كلاس SubjectDetailsScreen
 
 class SubjectsScreen extends StatefulWidget {
-  const SubjectsScreen({super.key});
+  final String subjectName;
+  final VoidCallback onBack;
+  final Function(String) onSubjectTap;
+
+  const SubjectsScreen({
+    super.key,
+    required this.subjectName,
+    required this.onBack,
+    required this.onSubjectTap,
+  });
 
   @override
   State<SubjectsScreen> createState() => _SubjectsScreenState();
@@ -10,7 +19,7 @@ class SubjectsScreen extends StatefulWidget {
 
 class _SubjectsScreenState extends State<SubjectsScreen> {
   int selectedTerm = 1;
-  String? selectedSubjectName; // تغيير الاسم ليكون أوضح
+  String? selectedSubjectName;
 
   // --- 📊 متغيرات الإحصائيات ---
   String topGrade = "92.0%";
@@ -28,11 +37,18 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   final Color greyText = const Color(0xFF4A5565);
   final Color orangeIcon = const Color(0xFFF6AD55);
 
-  // ✅ إضافة الدالة التي كانت مفقودة وتسبب الخطأ
+  // ✅ تعديل الدالة لتعمل كجسر انتقال للداشبورد
   void onSubjectTap(String name) {
-    setState(() {
-      selectedSubjectName = name;
-    });
+    if (selectedSubjectName == name) {
+      // إذا كانت المادة مفتوحة بالفعل وضغطنا "عرض التفاصيل"
+      // نقوم باستدعاء الدالة القادمة من الداشبورد (SelectedIndex = 4)
+      widget.onSubjectTap(name);
+    } else {
+      // إذا كانت أول مرة نضغط، نفتح صفحة التفاصيل فقط داخل المواد
+      setState(() {
+        selectedSubjectName = name;
+      });
+    }
   }
 
   @override
@@ -47,9 +63,9 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
         backgroundColor: const Color(0xFFDEF6F5),
         body: selectedSubjectName != null
             ? SubjectDetailsScreen(
-                // عرض صفحة التفاصيل عند اختيار مادة
                 subjectName: selectedSubjectName!,
                 onBack: () => setState(() => selectedSubjectName = null),
+                // ✅ نمرر الدالة المعدلة لصفحة التفاصيل
                 onSubjectTap: onSubjectTap,
               )
             : SingleChildScrollView(
@@ -101,6 +117,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
+  // --- 🛠️ بناء واجهات المكونات ---
+
   Widget _buildResponsiveRow({
     required List<Widget> children,
     double spacing = 24,
@@ -140,7 +158,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        // ✅ تحديث withOpacity إلى withValues
         border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       child: Column(
@@ -162,11 +179,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: greyText,
-                    fontSize: 14,
-                    fontFamily: 'Arimo-Regular',
-                  ),
+                  style: TextStyle(color: greyText, fontSize: 14),
                 ),
               ),
             ],
@@ -174,12 +187,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              fontFamily: 'Arimo-Bold',
-            ),
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
           ),
         ],
       ),
@@ -206,7 +214,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    // ✅ تحديث withOpacity إلى withValues
                     color: primaryTeal.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
@@ -241,7 +248,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: darkBlue,
-                          fontFamily: 'Arimo-Bold',
                         ),
                       ),
                       Text(
@@ -322,7 +328,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        // ✅ تحديث withOpacity إلى withValues
         color: Colors.grey.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
       ),
@@ -348,22 +353,12 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    // ✅ تحديث withOpacity إلى withValues
-                    color: Colors.black.withValues(alpha: 0.05),
-                    blurRadius: 5,
-                  ),
-                ]
-              : [],
         ),
         child: Text(
           title,
           style: TextStyle(
             color: isSelected ? primaryTeal : Colors.grey,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            fontSize: 15,
           ),
         ),
       ),

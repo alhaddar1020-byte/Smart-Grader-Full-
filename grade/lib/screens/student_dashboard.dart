@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../core/colors.dart';
-import 'student_matearial.dart'; // تأكد من صحة مسار الملف
+import 'student_matearial.dart';
 import 'student_setting.dart';
+import 'student_exim.dart';
+import 'student_detiles.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -11,8 +13,9 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
-  // 0: لوحة التحكم، 1: المواد، 2: الإعدادات
+  // 0: لوحة التحكم، 1: المواد، 2: الإعدادات، 4: الاختبارات
   int selectedIndex = 0;
+  String? selectedSubjectName; // ✅ أضف هذا السطر هنا
 
   final Map<String, dynamic> studentData = {
     "name": "أحمد محمد السعيد",
@@ -60,7 +63,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       backgroundColor: const Color.fromARGB(255, 251, 252, 252),
       body: Center(
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 1440),
           decoration: const BoxDecoration(color: Color(0xFFDEF6F5)),
           child: Row(
             children: [
@@ -69,7 +71,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 flex: 5,
                 child: Column(
                   children: [
-                    // الهيدر ثابت في كل الصفحات
                     Padding(
                       padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
                       child: _buildHeader(
@@ -77,14 +78,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         studentData["level"],
                       ),
                     ),
-
-                    // تبديل المحتوى بناءً على الزر المختار
-                    Expanded(child: _buildBodyContent()),
+                    Expanded(child: _buildBody()),
                   ],
                 ),
               ),
 
-              // القائمة الجانبية ثابتة
+              // القائمة الجانبية الموحدة
               CustSidebar(
                 selectedIndex: selectedIndex,
                 onItemSelected: (index) {
@@ -100,23 +99,47 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  // دالة اختيار الصفحة التي ستظهر في الـ Body
-  Widget _buildBodyContent() {
+  // داخل دالة الـ build الخاصة بالداشبورد (مكان الـ switch)
+  Widget _buildBody() {
     switch (selectedIndex) {
       case 0:
         return _buildDashboardHome();
+
       case 1:
-        return const SubjectsScreen();
-      case 2:
-        return SettingsScreen(); // الصفحة الجديدة للإعدادات
+        return SubjectsScreen(
+          subjectName: "", // أو أي قيمة افتراضية
+          onBack: () => setState(() => selectedIndex = 0),
+          // ✅ عند الضغط على مادة، نخزن اسمها وننتقل لصفحة الاختبارات (index 4)
+          onSubjectTap: (name) {
+            setState(() {
+              selectedSubjectName = name;
+              selectedIndex = 4;
+            });
+          },
+        );
+
+      case 4:
+        return StudentExamScreen(
+          subjectName: selectedSubjectName ?? "المادة", // لن يظهر خطأ الآن
+          onBack: () {
+            // ✅ عند الضغط على اسم المادة في الـ breadcrumb يرجعه للمواد
+            // ولا نصفر الاسم لكي تفتح صفحة المواد على "التفاصيل"
+            setState(() => selectedIndex = 1);
+          },
+          onItemSelected: (index) {
+            setState(() {
+              if (index == 1)
+                selectedSubjectName = null; // إذا ضغط "المواد" نصفر الاسم
+              selectedIndex = index;
+            });
+          },
+        );
+
       default:
-        return _buildDashboardHome();
+        return const Center(child: Text("صفحة أخرى"));
     }
   }
 
-  // --- صفحة الإعدادات (يمكنك لاحقاً وضعها في ملف منفصل) ---
-
-  // --- دالة محتوى لوحة التحكم الأصلية ---
   Widget _buildDashboardHome() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(32),
@@ -141,7 +164,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  // --- Widgets الهيدر والإحصائيات (نفس كودك السابق دون تغيير) ---
+  // --- دوال بناء الواجهة (نفس كودك السابق للأداء والإحصائيات) ---
   Widget _buildHeader(String name, String level) {
     return Container(
       height: 101,
@@ -151,15 +174,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-            spreadRadius: -1,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -181,16 +198,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     Text(
                       name,
                       style: const TextStyle(
-                        fontFamily: "Arimo",
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
-                        color: Color(0xFF1E2939),
                       ),
                     ),
                     Text(
                       level,
                       style: TextStyle(
-                        fontFamily: "Arimo",
                         color: Colors.grey.shade600,
                         fontSize: 12,
                       ),
@@ -213,19 +227,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               Text(
                 "مرحباً ${name.split(' ')[0]}!",
                 style: const TextStyle(
-                  fontFamily: "Arimo",
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E2939),
                 ),
               ),
               const Text(
                 "نتمنى لك يوماً دراسياً موفقاً",
-                style: TextStyle(
-                  fontFamily: "Arimo",
-                  color: Colors.grey,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey, fontSize: 14),
               ),
             ],
           ),
@@ -252,14 +260,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         ),
         const SizedBox(width: 20),
         _statCard(
-          "الامتحانات المنشورة",
+          "الامتحانات",
           stats["exams_count"]!,
           Icons.assignment,
           AppColors.primaryTeal,
         ),
         const SizedBox(width: 20),
         _statCard(
-          "المواد الدراسية",
+          "المواد",
           stats["subjects_count"]!,
           Icons.book,
           AppColors.accentYellow,
@@ -269,9 +277,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _statCard(String title, String value, IconData icon, Color cardColor) {
-    Color iconColor = (cardColor == AppColors.accentYellow)
-        ? AppColors.accentYellow
-        : AppColors.primaryTeal;
     return Expanded(
       child: Container(
         height: 140,
@@ -287,32 +292,30 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Flexible(
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.white, fontSize: 14),
                 ),
                 const SizedBox(width: 10),
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: iconColor, size: 25),
+                  child: Icon(
+                    icon,
+                    color: cardColor == AppColors.accentYellow
+                        ? AppColors.accentYellow
+                        : AppColors.primaryTeal,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               value,
-              textAlign: TextAlign.right,
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 26,
@@ -339,11 +342,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           children: [
             const Text(
               "النتائج الأخيرة",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textprimary,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 25),
             ...results
@@ -362,7 +361,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -377,19 +375,9 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   fontSize: 22,
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  data["label"]!,
-                  style: const TextStyle(color: Colors.blue, fontSize: 12),
-                ),
+              Text(
+                data["label"]!,
+                style: const TextStyle(color: Colors.blue, fontSize: 12),
               ),
             ],
           ),
@@ -401,19 +389,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: AppColors.textprimary,
                 ),
               ),
               Text(
                 data["subject"]!,
-                style: const TextStyle(color: AppColors.textseccondary),
-              ),
-              Text(
-                data["date"]!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textseccondary,
-                ),
+                style: const TextStyle(color: Colors.grey),
               ),
             ],
           ),
@@ -448,20 +428,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 const SizedBox(height: 15),
                 const Text(
                   "طالب متميز",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppColors.textprimary,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
-                const SizedBox(height: 10),
                 Text(
-                  "حافظت على معدل أعلى من $badge% في جميع المواد",
+                  "حافظت على معدل $badge%",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textseccondary,
-                    fontSize: 13,
-                  ),
+                  style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
               ],
             ),
@@ -501,18 +473,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             backgroundColor: Colors.white24,
             color: Colors.white,
           ),
-          const SizedBox(height: 20),
-          _rowInfo(perf["success_rate"], "معدل النجاح"),
           const SizedBox(height: 25),
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
               foregroundColor: AppColors.primaryTeal,
-              minimumSize: const Size(double.infinity, 55),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
+              minimumSize: const Size(double.infinity, 50),
             ),
             child: const Text(
               "عرض التقرير الكامل",
@@ -533,19 +500,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 16,
           ),
         ),
-        Text(
-          title,
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
-        ),
+        Text(title, style: const TextStyle(color: Colors.white70)),
       ],
     );
   }
 }
 
-// --- CustSidebar و SidebarCurvePainter كما هي في كودك ---
+// --- القائمة الجانبية (المصلحة بالكامل) ---
 class CustSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
@@ -562,7 +525,7 @@ class CustSidebar extends StatelessWidget {
       width: 280,
       height: double.infinity,
       decoration: const BoxDecoration(
-        color: AppColors.primaryTeal,
+        color: Color(0xFF4FB7B5),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(55),
           bottomLeft: Radius.circular(55),
@@ -574,6 +537,7 @@ class CustSidebar extends StatelessWidget {
             icon: Icons.check_circle_outline,
             title: "Intelligent\nGrading System",
           ),
+          const SizedBox(height: 20),
           _menuItem("لوحة التحكم", Icons.home_rounded, 0),
           _menuItem("المواد", Icons.library_books, 1),
           _menuItem("إعدادات", Icons.settings_rounded, 2),
@@ -583,29 +547,11 @@ class CustSidebar extends StatelessWidget {
     );
   }
 
-  Widget _buildLogoSection({required IconData icon, required String title}) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 50),
-      child: Column(
-        children: [
-          Icon(icon, size: 70, color: AppColors.textWhite),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textWhite,
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _menuItem(String title, IconData icon, int index) {
-    bool isActive = selectedIndex == index;
+    // شرط الإضاءة: يعمل إذا كان الاندكس مطابقاً أو إذا كنا في صفحة الاختبار (4) وزر المواد (1) هو المعروض
+    bool isActive =
+        (selectedIndex == index) || (index == 1 && selectedIndex == 4);
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: InkWell(
@@ -618,8 +564,8 @@ class CustSidebar extends StatelessWidget {
             if (isActive)
               Positioned(
                 left: 0,
-                top: -40,
-                bottom: -40,
+                top: -38,
+                bottom: -38,
                 width: 50,
                 child: CustomPaint(
                   painter: SidebarCurvePainter(const Color(0xFFDEF6F5)),
@@ -644,8 +590,7 @@ class CustSidebar extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontFamily: "Arimo",
-                      color: isActive ? AppColors.primaryTeal : Colors.white,
+                      color: isActive ? const Color(0xFF4FB7B5) : Colors.white,
                       fontSize: 23,
                       fontWeight: FontWeight.w900,
                     ),
@@ -660,6 +605,27 @@ class CustSidebar extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildLogoSection({required IconData icon, required String title}) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 40, bottom: 30),
+      child: Column(
+        children: [
+          Icon(icon, size: 60, color: Colors.white),
+          const SizedBox(height: 10),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class SidebarCurvePainter extends CustomPainter {
@@ -671,15 +637,18 @@ class SidebarCurvePainter extends CustomPainter {
     Paint paint = Paint()
       ..color = bgColor
       ..style = PaintingStyle.fill;
+
     double radius = 35;
-    double topY = 40;
+    double topY = 38;
     double bottomY = topY + 60;
+
     Path pathTop = Path();
     pathTop.moveTo(0, topY - radius);
     pathTop.quadraticBezierTo(0, topY, radius, topY);
     pathTop.lineTo(0, topY);
     pathTop.close();
     canvas.drawPath(pathTop, paint);
+
     Path pathBottom = Path();
     pathBottom.moveTo(0, bottomY + radius);
     pathBottom.quadraticBezierTo(0, bottomY, radius, bottomY);

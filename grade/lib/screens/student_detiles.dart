@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'student_exim.dart';
 
 class SubjectDetailsScreen extends StatelessWidget {
   final String subjectName;
@@ -400,15 +401,11 @@ class SubjectDetailsScreen extends StatelessWidget {
                   child: // استبدل الـ Align والـ Container الداخلي بهذا الكود
                   InkWell(
                     onTap: () {
-                      // هنا نضع كود الانتقال للصفحة الأخرى
-                      // مثال:
-                      // Navigator.push(context, MaterialPageRoute(builder: (context) => ExamDetailsScreen()));
-                      print("الانتقال لصفحة تفاصيل الاختبار");
+                      // نرسل اسم المادة أو معرف الاختبار للأب (الداش بورد)
+                      onSubjectTap(subjectName);
                     },
-                    borderRadius: BorderRadius.circular(
-                      10,
-                    ), // لضمان أن تأثير الضغط لا يخرج عن حدود الزر
-                    child: Container(
+                    child: // لا تنسى إضافة الودجت التي سيتم الضغط عليها هنا
+                    Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 8,
