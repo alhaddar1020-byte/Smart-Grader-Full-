@@ -21,6 +21,26 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   int selectedTerm = 1;
   String? selectedSubjectName;
 
+  @override
+  void initState() {
+    super.initState();
+    // ✅ أول ما تفتح الصفحة، تأخذ الاسم القادم من الداشبورد
+    if (widget.subjectName.isNotEmpty) {
+      selectedSubjectName = widget.subjectName;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant SubjectsScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // إذا تغيرت البيانات القادمة من الداشبورد وكان الاسم فارغاً
+    if (widget.subjectName.isEmpty && selectedSubjectName != null) {
+      setState(() {
+        selectedSubjectName = null; // يصفر الاختيار المحلي ليعود لعرض الكاردات
+      });
+    }
+  }
+
   // --- 📊 متغيرات الإحصائيات ---
   String topGrade = "92.0%";
   String averageGrade = "86.0%";

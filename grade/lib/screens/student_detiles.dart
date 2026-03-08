@@ -138,7 +138,6 @@ class SubjectDetailsScreen extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: 60,
-      // زيادة المارجن الأفقي (من 16 إلى 40 مثلاً) تجعل الشريط يبدو أقصر
       margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -155,19 +154,37 @@ class SubjectDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           children: [
-            IconButton(
-              onPressed: onBack,
-              icon: const Icon(
-                Icons.arrow_back_ios,
-                size: 16,
-                color: Color(0xFF009689),
+            // أيقونة البيت أو الرجوع (أصبحت للعرض فقط هنا)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Icon(
+                Icons.chevron_left,
+                color: Color(0xFFCBD5E1),
+                size: 18,
               ),
             ),
-            const Text(
-              "المواد",
-              style: TextStyle(color: Color(0xFF6A7282), fontSize: 14),
+            // جعل كلمة "المواد" قابلة للضغط
+            InkWell(
+              onTap: onBack, // تنفيذ وظيفة الرجوع عند الضغط على النص
+              borderRadius: BorderRadius.circular(4), // تأثير الضغط
+              child: const Padding(
+                padding: EdgeInsets.symmetric(),
+                child: Text(
+                  "المواد",
+                  style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                ),
+              ),
             ),
-            const Icon(Icons.chevron_left, color: Colors.grey),
+
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Icon(
+                Icons.chevron_left,
+                color: Color(0xFFCBD5E1),
+                size: 18,
+              ),
+            ),
+
             Text(
               subjectName,
               style: const TextStyle(
@@ -181,6 +198,11 @@ class SubjectDetailsScreen extends StatelessWidget {
       ),
     );
   }
+
+  Widget _dividerIcon() => const Padding(
+    padding: EdgeInsets.symmetric(horizontal: 5),
+    child: Icon(Icons.chevron_left, color: Color(0xFFCBD5E1), size: 18),
+  );
 
   Widget _buildFullWidthStatsRow(Map<String, String> stats) {
     return Row(

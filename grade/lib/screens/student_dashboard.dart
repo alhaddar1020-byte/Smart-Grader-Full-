@@ -107,13 +107,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
       case 1:
         return SubjectsScreen(
-          subjectName: "", // أو أي قيمة افتراضية
+          // ✅ تأكدي أنكِ تمررين المتغير هنا وليس نصاً فارغاً ""
+          subjectName: selectedSubjectName ?? "",
           onBack: () => setState(() => selectedIndex = 0),
-          // ✅ عند الضغط على مادة، نخزن اسمها وننتقل لصفحة الاختبارات (index 4)
           onSubjectTap: (name) {
             setState(() {
               selectedSubjectName = name;
-              selectedIndex = 4;
+              selectedIndex = 4; // ينتقل للاختبار
             });
           },
         );
