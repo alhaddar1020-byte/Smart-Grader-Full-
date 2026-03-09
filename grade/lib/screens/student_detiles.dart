@@ -137,7 +137,7 @@ class SubjectDetailsScreen extends StatelessWidget {
   Widget _buildFixedHeader() {
     return Container(
       width: double.infinity,
-      height: 60,
+      height: 43,
       margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
       decoration: BoxDecoration(
         color: Colors.white,

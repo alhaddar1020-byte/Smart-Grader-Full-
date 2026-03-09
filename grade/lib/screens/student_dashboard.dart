@@ -89,6 +89,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 onItemSelected: (index) {
                   setState(() {
                     selectedIndex = index;
+
+                    if (index != 4) {
+                      selectedSubjectName = null;
+                    }
                   });
                 },
               ),
@@ -136,7 +140,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         );
 
       default:
-        return const Center(child: Text("صفحة أخرى"));
+        return const SettingsScreen();
     }
   }
 
@@ -557,6 +561,7 @@ class CustSidebar extends StatelessWidget {
       child: InkWell(
         onTap: () => onItemSelected(index),
         hoverColor: Colors.transparent,
+
         child: Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.centerLeft,
