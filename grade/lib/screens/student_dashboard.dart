@@ -170,6 +170,23 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
   // --- دوال بناء الواجهة (نفس كودك السابق للأداء والإحصائيات) ---
   Widget _buildHeader(String name, String level) {
+    String subTitle;
+    switch (selectedIndex) {
+      case 0:
+        subTitle = "نتمنى لك يوماً دراسياً موفقاً";
+        break;
+      case 1:
+        subTitle = "استكشف موادك الدراسية وتابع تقدمك";
+        break;
+      case 2:
+        subTitle = "تخصيص إعدادات الحساب والتطبيقات";
+        break;
+      case 4:
+        subTitle = "تفاصيل الاختبار والمراجعة النهائية";
+        break;
+      default:
+        subTitle = "مرحباً بك في نظام التصحيح الذكي";
+    }
     return Container(
       height: 101,
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -235,9 +252,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Text(
-                "نتمنى لك يوماً دراسياً موفقاً",
-                style: TextStyle(color: Colors.grey, fontSize: 14),
+              AnimatedSwitcher(
+                // أضفت لك تأثير انتقال ناعم عند تغير النص
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  subTitle,
+                  key: ValueKey<String>(
+                    subTitle,
+                  ), // مهم لعمل الـ AnimatedSwitcher
+                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                ),
               ),
             ],
           ),

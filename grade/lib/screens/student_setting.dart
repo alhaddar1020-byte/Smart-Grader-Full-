@@ -40,9 +40,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         flex: 2,
                         child: Column(
                           children: [
-                            Expanded(child: _buildProfileCard()),
+                            Expanded(flex: 4, child: _buildProfileCard()),
                             const SizedBox(height: 20),
-                            Expanded(child: _buildSecurityCard()),
+                            Expanded(flex: 2, child: _buildSecurityCard()),
                           ],
                         ),
                       ),
@@ -81,10 +81,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: Color(0xFF0A0A0A),
           ),
         ),
-        Text(
-          "إدارة حسابك وتفضيلات النظام",
-          style: TextStyle(fontSize: 16, color: Color(0xFF6A7282)),
-        ),
       ],
     );
   }
@@ -94,6 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildDynamicField(String label, String value, IconData? icon) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min, // يخلي الكولوم يأخذ مساحة محتواه فقط
       children: [
         Text(
           label,
@@ -101,22 +98,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 6),
         Container(
-          height: 40,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          // أزلنا الارتفاع الثابت أو جعلناه كحد أدنى
+          constraints: const BoxConstraints(minHeight: 40),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
             color: const Color(0xFFF9FAFB),
             borderRadius: BorderRadius.circular(10),
             border: Border.all(color: const Color(0xFFE5E7EB)),
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.max,
             children: [
-              if (icon != null) Icon(icon, size: 16, color: Colors.grey),
-              if (icon != null) const SizedBox(width: 8),
+              if (icon != null) ...[
+                Icon(icon, size: 18, color: Colors.grey[600]),
+                const SizedBox(width: 8),
+              ],
               Expanded(
+                // هذا البطل يمنع الـ Overflow
                 child: Text(
                   value,
-                  style: const TextStyle(fontSize: 12),
+                  style: const TextStyle(fontSize: 12, color: Colors.black87),
                   overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
               ),
             ],
@@ -165,21 +168,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             "الأمان والمصادقة",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          const Spacer(),
+          SizedBox(height: 10),
           _buildActionRow(
             "إدارة كلمة المرور",
             "آخر تغيير منذ 3 أشهر",
             Icons.lock_outline,
             actionLabel: "تغيير كلمة المرور",
           ),
-          const SizedBox(height: 12),
-          _buildActionRow(
-            "المصادقة الثنائية (2FA)",
-            "طبقة إضافية من الأمان لحسابك",
-            Icons.verified_user_outlined,
-            isSwitch: true,
-          ),
-          const Spacer(),
+          // const SizedBox(height: 12),
+          // _buildActionRow(
+          //   "المصادقة الثنائية (2FA)",
+          //   "طبقة إضافية من الأمان لحسابك",
+          //   Icons.verified_user_outlined,
+          //   isSwitch: true,
+          // ),
         ],
       ),
     );
@@ -369,121 +371,74 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildProfileCard() {
     return Container(
-      padding: const EdgeInsets.only(left: 20, top: 20, right: 35, bottom: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
+      padding: const EdgeInsets.all(25), // توحيد البادينق
+      decoration: _cardDecoration().copyWith(
         borderRadius: BorderRadius.circular(25),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
-          ),
-        ],
       ),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1. العناوين (الهيدر)
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: const [
-                  Text(
-                    "بيانات الملف الشخصي",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF0A0A0A),
-                    ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "بيانات الملف الشخصي",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0A0A0A),
+            ),
+          ),
+          const SizedBox(height: 25),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // العمود الأيمن: يحتوي على الاسم والبريد الإلكتروني
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDynamicField(
+                        "الاسم",
+                        userName,
+                        Icons.person_outline,
+                      ),
+                      const SizedBox(height: 25), // مسافة متناسقة
+                      _buildDynamicField(
+                        "البريد الالكتروني",
+                        userEmail,
+                        Icons.email_outlined,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
 
-              const Spacer(), // يوزع المساحة ديناميكياً
-              // 2. الصف الرئيسي الذي يحتوي على (البيانات يميناً والصورة/الاسم يساراً)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-
-                          children: [
-                            Container(
-                              width: 55,
-                              height: 55,
-                              decoration: const BoxDecoration(
-                                color: Color(0xFFF3F4F6),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.person_outline,
-                                size: 30,
-                                color: Color(0xFF6A7282),
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userName,
-                                  style: const TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  userEmail,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFF6A7282),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 15),
-                        _buildEditButton(),
-                      ],
-                    ),
+                const SizedBox(width: 30), // مسافة فاصلة بين العمودين
+                // العمود الأيسر: يحتوي على رقم الهاتف والمستوى
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildDynamicField(
+                        "رقم الهاتف",
+                        phoneNumber,
+                        Icons.phone_outlined,
+                      ),
+                      const SizedBox(height: 25),
+                      _buildDynamicField(
+                        "المستوى",
+                        educationLevel,
+                        Icons.school_outlined,
+                      ),
+                    ],
                   ),
-                  // جهة اليمين (رقم الهاتف والمستوى) - Expanded عشان ياخذ المساحة المتاحة
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildDynamicField(
-                          "رقم الهاتف",
-                          phoneNumber,
-                          Icons.phone_outlined,
-                        ),
-                        const SizedBox(height: 12),
-                        _buildDynamicField("المستوى", educationLevel, null),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(width: 20),
-
-                  // جهة اليسار (الأفاتار، الاسم، وزر التعديل)
-                ],
-              ),
-            ],
-          );
-        },
+                ),
+              ],
+            ),
+          ),
+          // زر التعديل في الأسفل بشكل مستقل لضمان عدم تداخله
+          Align(alignment: Alignment.centerRight, child: _buildEditButton()),
+        ],
       ),
     );
   }
