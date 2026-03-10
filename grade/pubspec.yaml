@@ -32,6 +32,7 @@ dependencies:
     sdk: flutter
   http: ^1.2.0  # أضف هذا السطر هنا
   provider: ^6.1.1
+  shared_preferences: ^2.2.2  # تأكدي أن هذا السطر بهذا الشكل بالضبط
     
 
   # The following adds the Cupertino Icons font to your application.

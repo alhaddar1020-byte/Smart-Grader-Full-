@@ -55,4 +55,8 @@ class AppColors {
         ? const Color.fromARGB(255, 0, 0, 0)
         : const Color(0xFFE8F4F2);
   }
+
+  static Color ForthTeal(BuildContext context) {
+    return _isDark(context) ? const Color(0xFF6A7282) : const Color(0xFFE8F4F2);
+  }
 }

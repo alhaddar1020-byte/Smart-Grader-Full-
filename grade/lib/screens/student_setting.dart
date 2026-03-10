@@ -439,7 +439,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           label,
           style: TextStyle(
             fontSize: 14,
-            color: AppColors.textSecondary(context),
+            color: AppColors.textPrimary(context),
           ), // تعديل اللون
         ),
         const SizedBox(height: 8),
@@ -460,10 +460,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onChanged: onChanged,
             keyboardType: keyboardType,
 
-            style: TextStyle(color: AppColors.TherdTeal(context)),
+            style: TextStyle(color: AppColors.textPrimary(context)),
             decoration: InputDecoration(
               filled: true,
-              fillColor: AppColors.secondaryTeal(context),
               border: InputBorder.none,
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -634,11 +633,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: isDarkMode
-                ? const Color(0xFF2D3748)
-                : const Color(0xFFF9FAFB),
+            color: AppColors.scaffoldBg(context),
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            border: Border.all(color: AppColors.scaffoldBg(context)),
           ),
           child: Row(
             children: [
@@ -649,7 +646,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value,
                   style: TextStyle(
                     fontSize: 12,
-                    color: AppColors.TherdTeal(context),
+                    color: AppColors.textPrimary(context),
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -782,7 +779,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF2D3748) : Colors.grey[100],
+        color: AppColors.scaffoldBg(context),
         borderRadius: BorderRadius.circular(8),
       ),
       child: DropdownButton<String>(
@@ -798,7 +795,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   e,
                   style: TextStyle(
                     fontSize: 13,
-                    color: AppColors.TherdTeal(context),
+                    color: AppColors.textSecondary(context),
                   ),
                 ),
               ),
@@ -818,12 +815,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "منطقة الخطر",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w900,
-              color: Colors.red,
+              color: AppColors.textSecondary(context),
             ),
           ),
           const Spacer(),
@@ -838,7 +835,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFB2C36),
+              backgroundColor: AppColors.textSecondary(context),
+
               minimumSize: const Size(double.infinity, 42),
             ),
             child: const Text(
@@ -863,7 +861,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isDarkMode ? const Color(0xFF2D3748) : const Color(0xFFF9FAFB),
+          color: AppColors.scaffoldBg(context),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Row(
@@ -878,7 +876,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     title,
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.TherdTeal(context),
+                      color: AppColors.textPrimary(context),
                     ),
                   ),
                   Text(
@@ -895,7 +893,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Text(
                 actionLabel,
                 style: TextStyle(
-                  color: AppColors.primaryTeal(context),
+                  color: AppColors.textSecondary(context),
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                 ),
