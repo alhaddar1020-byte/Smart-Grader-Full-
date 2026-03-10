@@ -13,9 +13,8 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
-  // 0: لوحة التحكم، 1: المواد، 2: الإعدادات، 4: الاختبارات
   int selectedIndex = 0;
-  String? selectedSubjectName; // ✅ أضف هذا السطر هنا
+  String? selectedSubjectName;
 
   final Map<String, dynamic> studentData = {
     "name": "أحمد محمد السعيد",
@@ -60,13 +59,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 251, 252, 252),
+      // استخدام لون خلفية التطبيق من AppColors
+      backgroundColor: AppColors.secondaryTeal(context),
       body: Center(
         child: Container(
-          decoration: const BoxDecoration(color: Color(0xFFDEF6F5)),
+          // استخدام لون الخلفية المساعد (secondary) بدلاً من الكود الثابت
+          decoration: BoxDecoration(color: AppColors.secondaryTeal(context)),
           child: Row(
             children: [
-              // المنطقة المتغيرة (المحتوى الهيدر + الصفحة الحالية)
               Expanded(
                 flex: 5,
                 child: Column(
@@ -74,6 +74,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
                       child: _buildHeader(
+                        context, // تمرير الكونتكس للألوان
                         studentData["name"],
                         studentData["level"],
                       ),
@@ -82,14 +83,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   ],
                 ),
               ),
-
-              // القائمة الجانبية الموحدة
               CustSidebar(
                 selectedIndex: selectedIndex,
                 onItemSelected: (index) {
                   setState(() {
                     selectedIndex = index;
-
                     if (index != 4) {
                       selectedSubjectName = null;
                     }
@@ -103,42 +101,32 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  // داخل دالة الـ build الخاصة بالداشبورد (مكان الـ switch)
   Widget _buildBody() {
     switch (selectedIndex) {
       case 0:
         return _buildDashboardHome();
-
       case 1:
         return SubjectsScreen(
-          // ✅ تأكدي أنكِ تمررين المتغير هنا وليس نصاً فارغاً ""
           subjectName: selectedSubjectName ?? "",
           onBack: () => setState(() => selectedIndex = 0),
           onSubjectTap: (name) {
             setState(() {
               selectedSubjectName = name;
-              selectedIndex = 4; // ينتقل للاختبار
+              selectedIndex = 4;
             });
           },
         );
-
       case 4:
         return StudentExamScreen(
-          subjectName: selectedSubjectName ?? "المادة", // لن يظهر خطأ الآن
-          onBack: () {
-            // ✅ عند الضغط على اسم المادة في الـ breadcrumb يرجعه للمواد
-            // ولا نصفر الاسم لكي تفتح صفحة المواد على "التفاصيل"
-            setState(() => selectedIndex = 1);
-          },
+          subjectName: selectedSubjectName ?? "المادة",
+          onBack: () => setState(() => selectedIndex = 1),
           onItemSelected: (index) {
             setState(() {
-              if (index == 1)
-                selectedSubjectName = null; // إذا ضغط "المواد" نصفر الاسم
+              if (index == 1) selectedSubjectName = null;
               selectedIndex = index;
             });
           },
         );
-
       default:
         return const SettingsScreen();
     }
@@ -150,17 +138,18 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTopStatsGrid(studentData["stats"]),
+          _buildTopStatsGrid(context, studentData["stats"]),
           const SizedBox(height: 32),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildLeftSummaryColumn(
+                context,
                 studentData["performance"],
                 studentData["badge"],
               ),
               const SizedBox(width: 32),
-              _buildMainResultsList(studentData["recent_results"]),
+              _buildMainResultsList(context, studentData["recent_results"]),
             ],
           ),
         ],
@@ -168,8 +157,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  // --- دوال بناء الواجهة (نفس كودك السابق للأداء والإحصائيات) ---
-  Widget _buildHeader(String name, String level) {
+  Widget _buildHeader(BuildContext context, String name, String level) {
     String subTitle;
     switch (selectedIndex) {
       case 0:
@@ -191,7 +179,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       height: 101,
       padding: const EdgeInsets.symmetric(horizontal: 24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context), // لون الكارد متفاعل مع الدارك مود
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -207,7 +195,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFFE0F2F1),
+              color: AppColors.secondaryTeal(context).withOpacity(0.5),
               borderRadius: BorderRadius.circular(40),
             ),
             child: Row(
@@ -218,25 +206,30 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   children: [
                     Text(
                       name,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: AppColors.textPrimary(context),
                       ),
                     ),
                     Text(
                       level,
                       style: TextStyle(
-                        color: Colors.grey.shade600,
+                        color: AppColors.textSecondary(context),
                         fontSize: 12,
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(width: 12),
-                const CircleAvatar(
+                CircleAvatar(
                   radius: 20,
-                  backgroundColor: Color(0xFF4DB8AC),
-                  child: Icon(Icons.person, color: Colors.white, size: 24),
+                  backgroundColor: AppColors.primaryTeal(context),
+                  child: const Icon(
+                    Icons.person,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
               ],
             ),
@@ -247,20 +240,21 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             children: [
               Text(
                 "مرحباً ${name.split(' ')[0]}!",
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
               AnimatedSwitcher(
-                // أضفت لك تأثير انتقال ناعم عند تغير النص
                 duration: const Duration(milliseconds: 300),
                 child: Text(
                   subTitle,
-                  key: ValueKey<String>(
-                    subTitle,
-                  ), // مهم لعمل الـ AnimatedSwitcher
-                  style: const TextStyle(color: Colors.grey, fontSize: 14),
+                  key: ValueKey<String>(subTitle),
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -270,41 +264,51 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildTopStatsGrid(Map<String, String> stats) {
+  Widget _buildTopStatsGrid(BuildContext context, Map<String, String> stats) {
     return Row(
       children: [
         _statCard(
+          context,
           "أعلى درجة",
           stats["highest_score"]!,
           Icons.military_tech,
-          AppColors.primaryTeal,
+          AppColors.primaryTeal(context),
         ),
         const SizedBox(width: 20),
         _statCard(
+          context,
           "المعدل العام",
           stats["gpa"]!,
           Icons.trending_up,
-          AppColors.primaryTeal,
+          AppColors.primaryTeal(context),
         ),
         const SizedBox(width: 20),
         _statCard(
+          context,
           "الامتحانات",
           stats["exams_count"]!,
           Icons.assignment,
-          AppColors.primaryTeal,
+          AppColors.primaryTeal(context),
         ),
         const SizedBox(width: 20),
         _statCard(
+          context,
           "المواد",
           stats["subjects_count"]!,
           Icons.book,
-          AppColors.accentYellow,
+          AppColors.accentYellow(context),
         ),
       ],
     );
   }
 
-  Widget _statCard(String title, String value, IconData icon, Color cardColor) {
+  Widget _statCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color cardColor,
+  ) {
     return Expanded(
       child: Container(
         height: 140,
@@ -331,13 +335,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    icon,
-                    color: cardColor == AppColors.accentYellow
-                        ? AppColors.accentYellow
-                        : AppColors.primaryTeal,
-                    size: 20,
-                  ),
+                  child: Icon(icon, color: cardColor, size: 20),
                 ),
               ],
             ),
@@ -356,25 +354,29 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildMainResultsList(List<dynamic> results) {
+  Widget _buildMainResultsList(BuildContext context, List<dynamic> results) {
     return Expanded(
       flex: 3,
       child: Container(
         padding: const EdgeInsets.all(30),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBg(context),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Text(
+            Text(
               "النتائج الأخيرة",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary(context),
+              ),
             ),
             const SizedBox(height: 25),
             ...results
-                .map((res) => _resultItem(res as Map<String, String>))
+                .map((res) => _resultItem(context, res as Map<String, String>))
                 .toList(),
           ],
         ),
@@ -382,12 +384,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _resultItem(Map<String, String> data) {
+  Widget _resultItem(BuildContext context, Map<String, String> data) {
     return Container(
       margin: const EdgeInsets.only(bottom: 18),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppColors.scaffoldBg(context).withOpacity(0.5),
         borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
@@ -397,8 +399,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             children: [
               Text(
                 data["score"]!,
-                style: const TextStyle(
-                  color: AppColors.primaryTeal,
+                style: TextStyle(
+                  color: AppColors.primaryTeal(context),
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
                 ),
@@ -414,14 +416,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             children: [
               Text(
                 data["title"]!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
               Text(
                 data["subject"]!,
-                style: const TextStyle(color: Colors.grey),
+                style: TextStyle(color: AppColors.textSecondary(context)),
               ),
             ],
           ),
@@ -430,7 +433,11 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildLeftSummaryColumn(Map<String, dynamic> perf, String badge) {
+  Widget _buildLeftSummaryColumn(
+    BuildContext context,
+    Map<String, dynamic> perf,
+    String badge,
+  ) {
     return Expanded(
       flex: 1,
       child: Column(
@@ -439,46 +446,59 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(25),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.cardBg(context),
               borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               children: [
-                const CircleAvatar(
-                  backgroundColor: AppColors.accentYellow,
+                CircleAvatar(
+                  backgroundColor: AppColors.accentYellow(context),
                   radius: 35,
-                  child: Icon(
+                  child: const Icon(
                     Icons.star_rounded,
                     color: Colors.white,
                     size: 40,
                   ),
                 ),
                 const SizedBox(height: 15),
-                const Text(
+                Text(
                   "طالب متميز",
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppColors.textPrimary(context),
+                  ),
                 ),
                 Text(
                   "حافظت على معدل $badge%",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.grey, fontSize: 13),
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 25),
-          _buildPerformanceCard(perf),
+          _buildPerformanceCard(context, perf),
         ],
       ),
     );
   }
 
-  Widget _buildPerformanceCard(Map<String, dynamic> perf) {
+  Widget _buildPerformanceCard(
+    BuildContext context,
+    Map<String, dynamic> perf,
+  ) {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4DB8AC), Color(0xFF3DA89C)],
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryTeal(context),
+            AppColors.primaryTeal(context).withOpacity(0.8),
+          ],
         ),
         borderRadius: BorderRadius.circular(24),
       ),
@@ -486,7 +506,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           const Text(
-            "ملخص الأداء",
+            "ملخص الأداء الذكي",
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
@@ -506,7 +526,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             onPressed: () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: AppColors.primaryTeal,
+              foregroundColor: AppColors.primaryTeal(context),
               minimumSize: const Size(double.infinity, 50),
             ),
             child: const Text(
@@ -536,7 +556,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 }
 
-// --- القائمة الجانبية (المصلحة بالكامل) ---
+// --- القائمة الجانبية المحدثة بالألوان الديناميكية ---
 class CustSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
@@ -552,9 +572,9 @@ class CustSidebar extends StatelessWidget {
     return Container(
       width: 280,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        color: Color(0xFF4FB7B5),
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.primaryTeal(context), // لون السايدبار الأساسي
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(55),
           bottomLeft: Radius.circular(55),
         ),
@@ -562,30 +582,33 @@ class CustSidebar extends StatelessWidget {
       child: Column(
         children: [
           _buildLogoSection(
-            icon: Icons.check_circle_outline,
+            icon: Icons.auto_awesome,
             title: "Intelligent\nGrading System",
           ),
           const SizedBox(height: 20),
-          _menuItem("لوحة التحكم", Icons.home_rounded, 0),
-          _menuItem("المواد", Icons.library_books, 1),
-          _menuItem("إعدادات", Icons.settings_rounded, 2),
+          _menuItem(context, "لوحة التحكم", Icons.home_rounded, 0),
+          _menuItem(context, "المواد", Icons.library_books, 1),
+          _menuItem(context, "إعدادات", Icons.settings_rounded, 2),
           const Spacer(),
         ],
       ),
     );
   }
 
-  Widget _menuItem(String title, IconData icon, int index) {
-    // شرط الإضاءة: يعمل إذا كان الاندكس مطابقاً أو إذا كنا في صفحة الاختبار (4) وزر المواد (1) هو المعروض
+  Widget _menuItem(
+    BuildContext context,
+    String title,
+    IconData icon,
+    int index,
+  ) {
     bool isActive =
         (selectedIndex == index) || (index == 1 && selectedIndex == 4);
+    Color activeBg = AppColors.secondaryTeal(context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: InkWell(
         onTap: () => onItemSelected(index),
-        hoverColor: Colors.transparent,
-
         child: Stack(
           clipBehavior: Clip.none,
           alignment: Alignment.centerLeft,
@@ -596,16 +619,14 @@ class CustSidebar extends StatelessWidget {
                 top: -38,
                 bottom: -38,
                 width: 50,
-                child: CustomPaint(
-                  painter: SidebarCurvePainter(const Color(0xFFDEF6F5)),
-                ),
+                child: CustomPaint(painter: SidebarCurvePainter(activeBg)),
               ),
             Container(
               height: 60,
               margin: EdgeInsets.only(left: isActive ? 0 : 25, right: 20),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFFDEF6F5) : Colors.transparent,
+                color: isActive ? activeBg : Colors.transparent,
                 borderRadius: BorderRadius.only(
                   topRight: const Radius.circular(30),
                   bottomRight: const Radius.circular(30),
@@ -619,13 +640,15 @@ class CustSidebar extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      color: isActive ? const Color(0xFF4FB7B5) : Colors.white,
+                      color: isActive
+                          ? AppColors.primaryTeal(context)
+                          : Colors.white,
                       fontSize: 23,
                       fontWeight: FontWeight.w900,
                     ),
                   ),
                   const SizedBox(width: 15),
-                  Icon(icon, color: AppColors.accentYellow, size: 26),
+                  Icon(icon, color: AppColors.accentYellow(context), size: 26),
                 ],
               ),
             ),
@@ -666,7 +689,6 @@ class SidebarCurvePainter extends CustomPainter {
     Paint paint = Paint()
       ..color = bgColor
       ..style = PaintingStyle.fill;
-
     double radius = 35;
     double topY = 38;
     double bottomY = topY + 60;

@@ -536,3 +536,99 @@
 //   );
 // }
 
+
+
+//  Widget _buildDisplayPreferencesCard() {
+//     return Container(
+//       padding: const EdgeInsets.all(20),
+//       decoration: _cardDecoration(),
+//       child: Column(
+//         crossAxisAlignment: CrossAxisAlignment.start,
+//         children: [
+//           Row(
+//             children: const [
+//               Icon(
+//                 Icons.remove_red_eye_outlined,
+//                 color: Color(0xFF4FB7B5),
+//                 size: 20,
+//               ),
+//               SizedBox(width: 8),
+//               Text(
+//                 "تفضيلات العرض",
+//                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+//               ),
+//             ],
+//           ),
+//           const Spacer(),
+//           Row(
+//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//             children: [
+//               const Text(
+//                 "الوضع الداكن",
+//                 style: TextStyle(fontWeight: FontWeight.w600),
+//               ),
+//               Switch(
+//                 value: isDarkMode,
+//                 onChanged: (v) => setState(() => isDarkMode = v),
+//                 activeColor: const Color(0xFF4FB7B5),
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 10),
+//           const Text("اللغة", style: TextStyle(fontWeight: FontWeight.w600)),
+//           const SizedBox(height: 8),
+//           _buildLanguageDropdown(),
+//           const Spacer(),
+//         ],
+//       ),
+//     );
+//   }
+
+
+//-----------------------------------------------------------------------------------------
+//تغيير كله السر البط مع البايثون
+// Future<void> _changePasswordApi() async {
+//     // 1. رابط السيرفر (عنوان جهازك اللي شغال عليه البايثون)
+//     // إذا كنتِ تستخدمين محاكي أندرويد استخدمي 10.0.2.2 بدلاً من localhost
+//     final String apiUrl = "http://127.0.0.1:5000/update-password"; 
+
+//     try {
+//       // 2. إرسال الطلب للبايثون
+//       final response = await http.post(
+//         Uri.parse(apiUrl),
+//         headers: {"Content-Type": "application/json"},
+//         body: jsonEncode({
+//           "email": userEmail, // الإيميل المخزن عندك في المتغيرات فوق
+//           "old_password": _oldPasswordController.text,
+//           "new_password": _newPasswordController.text,
+//         }),
+//       );
+
+//       // 3. فحص رد البايثون (هل نجح التحديث في الـ Database؟)
+//       if (response.statusCode == 200) {
+//         // إذا رجع البايثون كود 200 يعني كل شيء تمام في SQL Server
+//         Navigator.pop(context); // إغلاق الدايلوق
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(content: Text("تم تحديث كلمة المرور في قاعدة البيانات بنجاح")),
+//         );
+        
+//         // تنظيف الحقول بعد النجاح
+//         _oldPasswordController.clear();
+//         _newPasswordController.clear();
+//         _confirmPasswordController.clear();
+//       } else {
+//         // إذا فيه مشكلة (مثلاً كلمة المرور القديمة غلط في الداتابيز)
+//         final errorData = jsonDecode(response.body);
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("فشل: ${errorData['message']}")),
+//         );
+//       }
+//     } catch (e) {
+//       // في حال كان سيرفر البايثون مطفي أو فيه مشكلة اتصال
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         const SnackBar(content: Text("خطأ: تعذر الاتصال بسيرفر البايثون")),
+//       );
+//     }
+//   }
+
+

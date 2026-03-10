@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'student_detiles.dart'; // تأكد أن هذا الملف يحتوي على كلاس SubjectDetailsScreen
+import 'student_detiles.dart';
+import '../core/colors.dart';
 
 class SubjectsScreen extends StatefulWidget {
   final String subjectName;
@@ -24,7 +25,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ أول ما تفتح الصفحة، تأخذ الاسم القادم من الداشبورد
     if (widget.subjectName.isNotEmpty) {
       selectedSubjectName = widget.subjectName;
     }
@@ -33,38 +33,26 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   @override
   void didUpdateWidget(covariant SubjectsScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // إذا تغيرت البيانات القادمة من الداشبورد وكان الاسم فارغاً
     if (widget.subjectName.isEmpty && selectedSubjectName != null) {
       setState(() {
-        selectedSubjectName = null; // يصفر الاختيار المحلي ليعود لعرض الكاردات
+        selectedSubjectName = null;
       });
     }
   }
 
-  // --- 📊 متغيرات الإحصائيات ---
   String topGrade = "92.0%";
   String averageGrade = "86.0%";
   String totalExams = "13";
   String totalSubjects = "6";
 
-  // --- 🛠️ أرقام التحكم ---
   final double horizontalPadding = 40.0;
   final double statCardWidth = 227.0;
   final double subjectCardWidth = 279.0;
 
-  final Color primaryTeal = const Color(0xFF4FB7B5);
-  final Color darkBlue = const Color(0xFF1E2939);
-  final Color greyText = const Color(0xFF4A5565);
-  final Color orangeIcon = const Color(0xFFF6AD55);
-
-  // ✅ تعديل الدالة لتعمل كجسر انتقال للداشبورد
   void onSubjectTap(String name) {
     if (selectedSubjectName == name) {
-      // إذا كانت المادة مفتوحة بالفعل وضغطنا "عرض التفاصيل"
-      // نقوم باستدعاء الدالة القادمة من الداشبورد (SelectedIndex = 4)
       widget.onSubjectTap(name);
     } else {
-      // إذا كانت أول مرة نضغط، نفتح صفحة التفاصيل فقط داخل المواد
       setState(() {
         selectedSubjectName = name;
       });
@@ -80,12 +68,12 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFDEF6F5),
+        // استخدمنا secondaryTeal للخلفية كما في ملف الألوان
+        backgroundColor: AppColors.secondaryTeal(context),
         body: selectedSubjectName != null
             ? SubjectDetailsScreen(
                 subjectName: selectedSubjectName!,
                 onBack: () => setState(() => selectedSubjectName = null),
-                // ✅ نمرر الدالة المعدلة لصفحة التفاصيل
                 onSubjectTap: onSubjectTap,
               )
             : SingleChildScrollView(
@@ -137,8 +125,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  // --- 🛠️ بناء واجهات المكونات ---
-
   Widget _buildResponsiveRow({
     required List<Widget> children,
     double spacing = 24,
@@ -176,7 +162,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       height: 124,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
       ),
@@ -188,7 +174,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: orangeIcon,
+                  color: AppColors.accentYellow(context),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, color: Colors.white, size: 18),
@@ -199,7 +185,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: greyText, fontSize: 14),
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -207,7 +196,11 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           const Spacer(),
           Text(
             value,
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary(context),
+            ),
           ),
         ],
       ),
@@ -225,16 +218,20 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
         height: 288,
         padding: const EdgeInsets.all(17.6),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBg(context),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? primaryTeal : Colors.transparent,
+            color: isSelected
+                ? AppColors.primaryTeal(context)
+                : Colors.transparent,
             width: 1.6,
           ),
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: primaryTeal.withValues(alpha: 0.3),
+                    color: AppColors.primaryTeal(
+                      context,
+                    ).withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
@@ -248,7 +245,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: primaryTeal,
+                    color: AppColors.primaryTeal(context),
                     borderRadius: BorderRadius.circular(14),
                   ),
                   child: const Icon(
@@ -267,12 +264,15 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: darkBlue,
+                          color: AppColors.textPrimary(context),
                         ),
                       ),
                       Text(
                         subject["teacher"],
-                        style: TextStyle(fontSize: 12, color: greyText),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary(context),
+                        ),
                       ),
                     ],
                   ),
@@ -297,7 +297,9 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFFF9FAFB),
+                color: _isDark(context)
+                    ? const Color(0xFF262626)
+                    : const Color(0xFFF9FAFB),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -305,11 +307,17 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                 children: [
                   Text(
                     "آخر امتحان",
-                    style: TextStyle(fontSize: 10, color: greyText),
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: AppColors.textSecondary(context),
+                    ),
                   ),
                   Text(
                     subject["lastExam"],
-                    style: TextStyle(fontSize: 12, color: darkBlue),
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textPrimary(context),
+                    ),
                   ),
                 ],
               ),
@@ -325,18 +333,26 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       width: 116,
       padding: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F4F2),
+        color: _isDark(context)
+            ? const Color(0xFF2D3748).withValues(alpha: 0.3)
+            : const Color(0xFFE8F4F2),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
         children: [
-          Text(label, style: TextStyle(fontSize: 10, color: greyText)),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: AppColors.textSecondary(context),
+            ),
+          ),
           Text(
             value,
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: primaryTeal,
+              color: AppColors.primaryTeal(context),
             ),
           ),
         ],
@@ -371,13 +387,15 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : Colors.transparent,
+          color: isSelected ? AppColors.cardBg(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           title,
           style: TextStyle(
-            color: isSelected ? primaryTeal : Colors.grey,
+            color: isSelected
+                ? AppColors.primaryTeal(context)
+                : AppColors.textSecondary(context),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
@@ -385,7 +403,11 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
+  bool _isDark(BuildContext context) =>
+      Theme.of(context).brightness == Brightness.dark;
+
   List<Map<String, dynamic>> _getSubjectsByTerm() {
+    // ... (بقية البيانات كما هي بدون تغيير)
     if (selectedTerm == 1) {
       return [
         {

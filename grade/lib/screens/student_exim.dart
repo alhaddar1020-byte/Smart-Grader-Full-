@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/colors.dart';
 
 class StudentExamScreen extends StatefulWidget {
   final String subjectName;
@@ -19,7 +20,6 @@ class StudentExamScreen extends StatefulWidget {
 class _StudentExamScreenState extends State<StudentExamScreen> {
   bool isDetailedCorrection = true;
 
-  // هذه المصفوفة هي التي ستربطها لاحقاً بالبيانات القادمة من البايثون (Database)
   final List<Map<String, dynamic>> questionsData = [
     {
       "id": "1",
@@ -42,16 +42,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     {
       "id": "3",
       "text": "حل المعادلة التالية: 2x + 5 = 15",
-      "score": 0.0,
-      "total": 10.0,
-      "modelAnswer": "x = 5",
-      "studentAnswer": "x = 10",
-      "evaluation": "إجابة خاطئة تماماً",
-    },
-
-    {
-      "id": "3",
-      "text": "حل المعادلة التالية: 2x + 5 = 15",
       "score": 2.0,
       "total": 10.0,
       "modelAnswer": "x = 5",
@@ -65,7 +55,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFDEF6F5),
+        backgroundColor: AppColors.secondaryTeal(context),
         body: Column(
           children: [
             _buildFixedHeader(),
@@ -99,21 +89,19 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  // دالة لتحديد اللون ديناميكياً بناءً على الدرجة
   Color _getStatusColor(double score, double total) {
-    if (score == total) return const Color(0xFF00A63E); // أخضر (كاملة)
-    if (score > 0) return const Color(0xFFD08700); // برتقالي (جزئية)
-    return const Color(0xFFE7000B); // أحمر (خطأ)
+    if (score == total) return const Color(0xFF00A63E);
+    if (score > 0) return const Color(0xFFD08700);
+    return const Color(0xFFE7000B);
   }
 
-  //   // --- 1. شريط المسار ---
   Widget _buildFixedHeader() {
     return Container(
       width: double.infinity,
       height: 43,
       margin: const EdgeInsets.fromLTRB(33, 20, 33, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
@@ -128,10 +116,10 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             _dividerIcon(),
             _breadcrumbItem(widget.subjectName, widget.onBack),
             _dividerIcon(),
-            const Text(
+            Text(
               "عرض التفاصيل",
               style: TextStyle(
-                color: Color(0xFF009689),
+                color: AppColors.primaryTeal(context),
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -147,18 +135,20 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
       onTap: onTap,
       child: Text(
         title,
-        style: const TextStyle(color: Color(0xFF64748B), fontSize: 14),
+        style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14),
       ),
     );
   }
 
-  // --- 2. كرت النتيجة النهائية ---
   Widget _buildFinalScoreCard() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4DB8AC), Color(0xFF3DA89C)],
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryTeal(context),
+            AppColors.primaryTeal(context).withOpacity(0.8),
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
       ),
@@ -190,12 +180,12 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             onPressed: () {},
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF4DB8AC),
+              foregroundColor: AppColors.primaryTeal(context),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(10),
               ),
-              minimumSize: const Size(double.infinity, 35), // تقليل ارتفاع الزر
+              minimumSize: const Size(double.infinity, 35),
             ),
             child: const Text(
               "تحميل التقرير  ",
@@ -207,12 +197,11 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  // --- 3. شبكة الإحصائيات ---
   Widget _buildStatsGrid() {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -273,22 +262,28 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
           label,
           textAlign: TextAlign.center,
           maxLines: 1,
-          style: const TextStyle(fontSize: 10, color: Colors.grey),
+          style: TextStyle(
+            fontSize: 10,
+            color: AppColors.textSecondary(context),
+          ),
         ),
         Text(
           value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary(context),
+          ),
         ),
       ],
     );
   }
 
-  // --- 4. الجزء الرئيسي (Tabs & List) ---
   Widget _buildMainContentSection() {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
@@ -312,7 +307,10 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               ],
             ),
           ),
-          const Divider(height: 1),
+          Divider(
+            height: 1,
+            color: AppColors.textSecondary(context).withOpacity(0.2),
+          ),
           Padding(
             padding: const EdgeInsets.all(25),
             child: isDetailedCorrection
@@ -324,7 +322,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  // توليد قائمة الكروت بناءً على مصفوفة البيانات
   Widget _buildDetailedList() {
     return Column(
       children: questionsData.map((data) {
@@ -369,9 +366,10 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             children: [
               Text(
                 "السؤال $questionNum",
-                style: const TextStyle(
+                style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
+                  color: AppColors.textPrimary(context),
                 ),
               ),
               Row(
@@ -379,9 +377,12 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text(
+                      Text(
                         "الدرجة",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary(context),
+                        ),
                       ),
                       Text(
                         "${score.toInt()}/${total.toInt()}",
@@ -408,7 +409,11 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
           const SizedBox(height: 10),
           Text(
             questionText,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary(context),
+            ),
           ),
           const SizedBox(height: 20),
           Row(
@@ -423,23 +428,23 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.secondaryTeal(context).withOpacity(0.3),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
               children: [
-                const Text(
+                Text(
                   "تقييم AI:",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4A5565),
+                    color: AppColors.primaryTeal(context),
                   ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     aiEvaluation,
-                    style: const TextStyle(color: Colors.black87),
+                    style: TextStyle(color: AppColors.textPrimary(context)),
                   ),
                 ),
               ],
@@ -455,18 +460,27 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
+          ),
           const SizedBox(height: 5),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.scaffoldBg(context),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
               content,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary(context),
+              ),
             ),
           ),
         ],
@@ -480,13 +494,13 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF4DB8AC) : Colors.transparent,
+          color: isActive ? AppColors.primaryTeal(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? Colors.white : const Color(0xFF64748B),
+            color: isActive ? Colors.white : AppColors.textSecondary(context),
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -497,14 +511,23 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
   Widget _buildOriginalPaperPlaceholder() => Container(
     height: 400,
     decoration: BoxDecoration(
-      color: const Color(0xFFF8FAFC),
+      color: AppColors.scaffoldBg(context),
       borderRadius: BorderRadius.circular(12),
     ),
-    child: const Center(child: Text("ورقة الإجابة الأصلية")),
+    child: Center(
+      child: Text(
+        "ورقة الإجابة الأصلية",
+        style: TextStyle(color: AppColors.textSecondary(context)),
+      ),
+    ),
   );
 
-  Widget _dividerIcon() => const Padding(
-    padding: EdgeInsets.symmetric(horizontal: 5),
-    child: Icon(Icons.chevron_left, color: Color(0xFFCBD5E1), size: 18),
+  Widget _dividerIcon() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 5),
+    child: Icon(
+      Icons.chevron_left,
+      color: AppColors.textSecondary(context).withOpacity(0.5),
+      size: 18,
+    ),
   );
 }

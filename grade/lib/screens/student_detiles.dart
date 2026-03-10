@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'student_exim.dart';
+// تأكد من استيراد ملف الألوان الخاص بك
+// import 'path_to_your_app_colors.dart';
+import '../core/colors.dart';
 
 class SubjectDetailsScreen extends StatelessWidget {
   final String subjectName;
@@ -15,9 +17,7 @@ class SubjectDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- قسم المتغيرات (هنا تضع القيم التي ستأتي من قاعدة البيانات لاحقاً) ---
-
-    // 1. إحصائيات المادة
+    // إحصائيات المادة
     final Map<String, String> subjectStats = {
       "min": "78%",
       "max": "92%",
@@ -25,7 +25,7 @@ class SubjectDetailsScreen extends StatelessWidget {
       "count": "5",
     };
 
-    // 2. قائمة الامتحانات (Map داخل List)
+    // قائمة الامتحانات
     final List<Map<String, String>> examsData = [
       {
         "title": "امتحان نهاية الفصل",
@@ -56,27 +56,18 @@ class SubjectDetailsScreen extends StatelessWidget {
       },
     ];
 
-    // 3. نقاط القوة والتحسين
-    final List<String> strengths = [
-      "أداء ممتاز",
-      "سرااااااااااااااااااااااااااااااااااااااااااااااااااااااااااعة البديهة",
-      "أداء ممتاز",
-      "أداء ممتاز",
-      "أداء ممتاز",
-      "أداء ممتاز",
-    ];
+    final List<String> strengths = ["أداء ممتاز", "سرعة البديهة"];
     final List<String> improvements = ["إدارة الوقت", "التركيز"];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE0F2F1),
+      // استخدام لون الخلفية الديناميكي
+      backgroundColor: AppColors.secondaryTeal(context),
       body: SafeArea(
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: Column(
             children: [
-              // 1. الهيدر المحدث (تم تصغير الطول عبر زيادة المارجن الجانبي)
-              _buildFixedHeader(),
-
+              _buildFixedHeader(context), // تمرير context للهيدر
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
@@ -86,21 +77,17 @@ class SubjectDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // 2. صف الإحصائيات باستخدام الماب
-                      _buildFullWidthStatsRow(subjectStats),
-
+                      _buildFullWidthStatsRow(context, subjectStats),
                       const SizedBox(height: 32),
-
-                      // 3. الجزء السفلي الموزع
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // قائمة الاختبارات الديناميكية
                           Expanded(
                             flex: 3,
                             child: Column(
                               children: examsData.map((exam) {
                                 return _buildExamCard(
+                                  context,
                                   exam["title"]!,
                                   exam["grade"]!,
                                   exam["date"]!,
@@ -112,13 +99,14 @@ class SubjectDetailsScreen extends StatelessWidget {
                               }).toList(),
                             ),
                           ),
-
                           const SizedBox(width: 24),
-
-                          // نقاط القوة والضعف
                           Expanded(
                             flex: 1,
-                            child: _buildSideSection(strengths, improvements),
+                            child: _buildSideSection(
+                              context,
+                              strengths,
+                              improvements,
+                            ),
                           ),
                         ],
                       ),
@@ -133,14 +121,13 @@ class SubjectDetailsScreen extends StatelessWidget {
     );
   }
 
-  // الهيدر بتعديل المارجن ليكون "أصغر" في العرض
-  Widget _buildFixedHeader() {
+  Widget _buildFixedHeader(BuildContext context) {
     return Container(
       width: double.infinity,
       height: 43,
       margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context), // لون الكارت الديناميكي
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -154,41 +141,30 @@ class SubjectDetailsScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
           children: [
-            // أيقونة البيت أو الرجوع (أصبحت للعرض فقط هنا)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 5),
-              child: Icon(
-                Icons.chevron_left,
-                color: Color(0xFFCBD5E1),
-                size: 18,
-              ),
+            Icon(
+              Icons.chevron_left,
+              color: AppColors.textSecondary(context),
+              size: 18,
             ),
-            // جعل كلمة "المواد" قابلة للضغط
             InkWell(
-              onTap: onBack, // تنفيذ وظيفة الرجوع عند الضغط على النص
-              borderRadius: BorderRadius.circular(4), // تأثير الضغط
-              child: const Padding(
-                padding: EdgeInsets.symmetric(),
-                child: Text(
-                  "المواد",
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+              onTap: onBack,
+              child: Text(
+                "المواد",
+                style: TextStyle(
+                  color: AppColors.textSecondary(context),
+                  fontSize: 14,
                 ),
               ),
             ),
-
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 5),
-              child: Icon(
-                Icons.chevron_left,
-                color: Color(0xFFCBD5E1),
-                size: 18,
-              ),
+            Icon(
+              Icons.chevron_left,
+              color: AppColors.textSecondary(context),
+              size: 18,
             ),
-
             Text(
               subjectName,
-              style: const TextStyle(
-                color: Color(0xFF009689),
+              style: TextStyle(
+                color: AppColors.primaryTeal(context), // لون التركواز الأساسي
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -199,24 +175,33 @@ class SubjectDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _dividerIcon() => const Padding(
-    padding: EdgeInsets.symmetric(horizontal: 5),
-    child: Icon(Icons.chevron_left, color: Color(0xFFCBD5E1), size: 18),
-  );
-
-  Widget _buildFullWidthStatsRow(Map<String, String> stats) {
+  Widget _buildFullWidthStatsRow(
+    BuildContext context,
+    Map<String, String> stats,
+  ) {
     return Row(
       children: [
         Expanded(
-          child: _statItem("أقل درجة", stats["min"]!, const Color(0xFFF6AD55)),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _statItem("أعلى درجة", stats["max"]!, const Color(0xFF4FB7B5)),
+          child: _statItem(
+            context,
+            "أقل درجة",
+            stats["min"]!,
+            AppColors.accentYellow(context),
+          ),
         ),
         const SizedBox(width: 16),
         Expanded(
           child: _statItem(
+            context,
+            "أعلى درجة",
+            stats["max"]!,
+            AppColors.primaryTeal(context),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: _statItem(
+            context,
             "المعدل العام",
             stats["avg"]!,
             const Color(0xFF63B3ED),
@@ -225,23 +210,27 @@ class SubjectDetailsScreen extends StatelessWidget {
         const SizedBox(width: 16),
         Expanded(
           child: _statItem(
+            context,
             "إجمالي الامتحانات",
             stats["count"]!,
-            const Color(0xFFF6AD55),
+            AppColors.accentYellow(context),
           ),
         ),
       ],
     );
   }
 
-  Widget _statItem(String label, String value, Color iconBg) {
+  Widget _statItem(
+    BuildContext context,
+    String label,
+    String value,
+    Color iconBg,
+  ) {
     return Container(
       height: 120,
       padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5),
@@ -252,11 +241,9 @@ class SubjectDetailsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.all(6),
-                margin: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
                   color: iconBg,
                   borderRadius: BorderRadius.circular(8),
@@ -267,15 +254,13 @@ class SubjectDetailsScreen extends StatelessWidget {
                   size: 20,
                 ),
               ),
+              const SizedBox(width: 8),
               Flexible(
                 child: Text(
                   label,
-
-                  style: const TextStyle(
-                    color: Color(0xFF4A5565),
-                    fontSize: 15,
-                    fontFamily: "Arimo",
-                    fontWeight: FontWeight.w200,
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -283,10 +268,10 @@ class SubjectDetailsScreen extends StatelessWidget {
           ),
           Text(
             value,
-            style: const TextStyle(
-              fontSize: 30,
+            style: TextStyle(
+              fontSize: 28,
               fontWeight: FontWeight.bold,
-              color: Color.fromARGB(255, 0, 0, 0),
+              color: AppColors.textPrimary(context),
             ),
           ),
         ],
@@ -295,29 +280,20 @@ class SubjectDetailsScreen extends StatelessWidget {
   }
 
   Widget _buildExamCard(
+    BuildContext context,
     String title,
     String grade,
     String date,
     String answers,
     String rating,
-    String totalQuestions,
-    String totalgrade,
+    String totalQ,
+    String totalG,
   ) {
     return Container(
-      margin: const EdgeInsets.only(
-        left: 0, // مارجن من اليسار
-        right: 8, // مارجن من اليمين
-        bottom: 20, // المارجن الأسفل الذي تريده
-        top: 0, // من الأعلى (اختياري، القيمة الافتراضية 0)
-      ),
-      padding: const EdgeInsets.only(
-        left: 20, // مارجن من اليسار
-        right: 16, // مارجن من اليمين
-        bottom: 16, // المارجن الأسفل الذي تريده
-        top: 16, // من الأعلى (اختياري، القيمة الافتراضية 0)
-      ),
+      margin: const EdgeInsets.only(right: 8, bottom: 20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5),
@@ -325,115 +301,39 @@ class SubjectDetailsScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const SizedBox(width: 20),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF1E2939),
+                    color: AppColors.textPrimary(context),
                   ),
                 ),
                 const SizedBox(height: 12),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Container(
-                      width: 119,
-
-                      child: _badgeInfo("التاريخ", date),
-                      padding: EdgeInsets.only(left: 30, right: 3),
-
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF3F4F6),
-
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      width: 119,
-
-                      child: _badgeInfo("الأسئلة", totalQuestions),
-                      padding: EdgeInsets.only(left: 30, right: 3),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF3F4F6),
-
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      width: 119,
-
-                      child: _badgeInfo("الإجابات", answers),
-
-                      padding: EdgeInsets.only(left: 30, right: 3),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF3F4F6),
-
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Container(
-                      width: 119,
-                      child: _badgeInfo("التقدير", rating, isBlue: true),
-
-                      padding: EdgeInsets.only(left: 30, right: 3),
-                      decoration: BoxDecoration(
-                        color: Color(0xFFF3F4F6),
-
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 5,
-                          ),
-                        ],
-                      ),
-                    ),
+                    _badgeInfo(context, "التاريخ", date),
+                    _badgeInfo(context, "الأسئلة", totalQ),
+                    _badgeInfo(context, "الإجابات", answers),
+                    _badgeInfo(context, "التقدير", rating, isBlue: true),
                   ],
                 ),
                 const SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.center,
-                  child: // استبدل الـ Align والـ Container الداخلي بهذا الكود
-                  InkWell(
-                    onTap: () {
-                      // نرسل اسم المادة أو معرف الاختبار للأب (الداش بورد)
-                      onSubjectTap(subjectName);
-                    },
-                    child: // لا تنسى إضافة الودجت التي سيتم الضغط عليها هنا
-                    Container(
+                Center(
+                  child: InkWell(
+                    onTap: () => onSubjectTap(subjectName),
+                    child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF4DB8AC),
+                        color: AppColors.primaryTeal(context),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Text(
@@ -441,7 +341,6 @@ class SubjectDetailsScreen extends StatelessWidget {
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
                         ),
                       ),
                     ),
@@ -450,15 +349,12 @@ class SubjectDetailsScreen extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(width: 20),
-
           Container(
-            width: 110,
-            height: 140,
+            width: 100,
+            height: 130,
             decoration: BoxDecoration(
-              color: Color(0xFF4FB7B5),
-
+              color: AppColors.primaryTeal(context),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -472,19 +368,19 @@ class SubjectDetailsScreen extends StatelessWidget {
                   grade,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 30,
+                    fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Text(
-                  "من ",
+                  "من",
                   style: TextStyle(color: Colors.white70, fontSize: 10),
                 ),
                 Text(
-                  totalgrade,
+                  totalG,
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -496,58 +392,76 @@ class SubjectDetailsScreen extends StatelessWidget {
     );
   }
 
-  Widget _badgeInfo(String label, String value, {bool isBlue = false}) {
-    return Column(
-      children: [
-        Text(
-          label,
-          style: const TextStyle(fontSize: 10, color: Color(0xFF718096)),
-        ),
-        const SizedBox(height: 4),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-          decoration: BoxDecoration(
-            color: isBlue ? const Color(0xFFDBEAFE) : const Color(0xFFF7FAFC),
-            borderRadius: BorderRadius.circular(8),
+  Widget _badgeInfo(
+    BuildContext context,
+    String label,
+    String value, {
+    bool isBlue = false,
+  }) {
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryTeal(
+          context,
+        ), // استخدام لون الخلفية الفاتح من كلاسك
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: AppColors.textSecondary(context),
+            ),
           ),
-          child: Text(
+          const SizedBox(height: 4),
+          Text(
             value,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isBlue ? const Color(0xFF1447E6) : const Color(0xFF2D3748),
+              color: isBlue
+                  ? Colors.blueAccent
+                  : AppColors.textPrimary(context),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildSideSection(List<String> strengths, List<String> improvements) {
+  Widget _buildSideSection(
+    BuildContext context,
+    List<String> strengths,
+    List<String> improvements,
+  ) {
     return Column(
       children: [
         _sideCard(
+          context,
           "نقاط القوة",
           strengths,
-          const Color(0xFF4FB7B5),
-          const Color(0xFFB9F8CF),
+          AppColors.primaryTeal(context),
         ),
         const SizedBox(height: 20),
         _sideCard(
+          context,
           "مجالات التحسين",
           improvements,
-          const Color(0xFFF6AD55),
-          const Color(0xFFFFD6A8),
+          AppColors.accentYellow(context),
         ),
       ],
     );
   }
 
   Widget _sideCard(
+    BuildContext context,
     String title,
     List<String> items,
     Color bgColor,
-    Color bulletColor,
   ) {
     return Container(
       width: double.infinity,
@@ -579,9 +493,9 @@ class SubjectDetailsScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 4),
               child: Row(
                 children: [
-                  Text(
+                  const Text(
                     "• ",
-                    style: TextStyle(color: bulletColor, fontSize: 18),
+                    style: TextStyle(color: Colors.white70, fontSize: 18),
                   ),
                   Flexible(
                     child: Text(
