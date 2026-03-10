@@ -15,7 +15,7 @@ class AppColors {
   // 2. اللون التركواز الفاتح (الخلفيات)
   static Color secondaryTeal(BuildContext context) {
     return _isDark(context)
-        ? const Color.fromARGB(255, 75, 97, 97)
+        ? const Color.fromARGB(255, 7, 7, 7)
         : const Color(0xFFE8F4F2);
   }
 
@@ -34,7 +34,7 @@ class AppColors {
   // 5. لون خلفية التطبيق (يصير رمادي غامق جداً في الداكن)
   static Color scaffoldBg(BuildContext context) {
     return _isDark(context)
-        ? const Color.fromARGB(255, 58, 58, 58)
+        ? const Color.fromARGB(255, 16, 16, 16)
         : const Color(0xFFF3F4F6);
   }
 
@@ -47,7 +47,9 @@ class AppColors {
 
   // 7. لون الأبيض (للبطاقات والعناصر)
   static Color cardBg(BuildContext context) {
-    return _isDark(context) ? const Color(0xFF1E1E1E) : Colors.white;
+    return _isDark(context)
+        ? const Color.fromARGB(255, 40, 40, 40)
+        : Colors.white;
   }
 
   static Color TherdTeal(BuildContext context) {
