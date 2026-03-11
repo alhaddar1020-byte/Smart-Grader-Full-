@@ -8,7 +8,7 @@ class AppColors {
   // 1. اللون التركواز الأساسي
   static Color primaryTeal(BuildContext context) {
     return _isDark(context)
-        ? const Color.fromARGB(255, 23, 87, 86)
+        ? const Color.fromARGB(255, 27, 102, 101)
         : const Color(0xFF4FB7B5);
   }
 
@@ -61,4 +61,8 @@ class AppColors {
   static Color ForthTeal(BuildContext context) {
     return _isDark(context) ? const Color(0xFF6A7282) : const Color(0xFFE8F4F2);
   }
+
+  //  Color.fromARGB(255, 83, 253, 145)  const Color(0xFF00A63E);
+  // if (score > 0) return const Color(0xFFD08700);
+  // return const Color(0xFFE7000B);
 }

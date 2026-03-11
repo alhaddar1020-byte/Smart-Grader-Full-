@@ -42,7 +42,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     {
       "id": "3",
       "text": "حل المعادلة التالية: 2x + 5 = 15",
-      "score": 2.0,
+      "score": 0.0,
       "total": 10.0,
       "modelAnswer": "x = 5",
       "studentAnswer": "x = 10",
@@ -90,9 +90,23 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
   }
 
   Color _getStatusColor(double score, double total) {
-    if (score == total) return const Color(0xFF00A63E);
-    if (score > 0) return const Color(0xFFD08700);
-    return const Color(0xFFE7000B);
+    bool _isDark(BuildContext context) {
+      return Theme.of(context).brightness == Brightness.dark;
+    }
+
+    if (score == total)
+      return _isDark(context)
+          ? const Color.fromARGB(255, 83, 253, 145)
+          : const Color(0xFF00A63E);
+    ;
+    ;
+    if (score > 0)
+      return _isDark(context)
+          ? const Color.fromARGB(255, 255, 194, 82)
+          : const Color(0xFFD08700);
+    return _isDark(context)
+        ? const Color.fromARGB(255, 255, 85, 94)
+        : const Color(0xFFE7000B);
   }
 
   Widget _buildFixedHeader() {
@@ -246,33 +260,45 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
 
   Widget _statItem(String label, String value, Color bgColor, IconData icon) {
     return Column(
+      mainAxisSize:
+          MainAxisSize.min, // يضمن أن العمود لا يأخذ مساحة الشاشة كاملة
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: 100,
-          height: 38,
+          // إزالة التمدد اللانهائي واستبداله بمرونة محكومة
+          width: double.infinity,
+          constraints: const BoxConstraints(
+            maxWidth: 150,
+          ), // حد أقصى للعرض لضمان التناسق
+          height: 40,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: Colors.black45, size: 20),
         ),
-        const SizedBox(height: 6),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          style: TextStyle(
-            fontSize: 10,
-            color: AppColors.textSecondary(context),
+        const SizedBox(height: 8),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            style: TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary(context),
+            ),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary(context),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary(context),
+            ),
           ),
         ),
       ],
@@ -380,7 +406,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
                       Text(
                         "الدرجة",
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           color: AppColors.textSecondary(context),
                         ),
                       ),
@@ -463,7 +489,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
           Text(
             title,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 15,
               color: AppColors.textSecondary(context),
             ),
           ),
@@ -472,7 +498,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppColors.scaffoldBg(context),
+              color: AppColors.cardBg(context),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(

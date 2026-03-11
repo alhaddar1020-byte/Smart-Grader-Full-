@@ -47,7 +47,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
   final double horizontalPadding = 40.0;
   final double statCardWidth = 227.0;
-  final double subjectCardWidth = 279.0;
 
   void onSubjectTap(String name) {
     if (selectedSubjectName == name) {
@@ -63,12 +62,13 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
     double responsiveStatSpacing = (screenWidth < 1200) ? 12.0 : 24.0;
-    double responsiveSubjectSpacing = (screenWidth * 0.08).clamp(20.0, 120.0);
+
+    // بيانات المواد الحالية
+    final currentSubjects = _getSubjectsByTerm();
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
-        // استخدمنا secondaryTeal للخلفية كما في ملف الألوان
         backgroundColor: AppColors.secondaryTeal(context),
         body: selectedSubjectName != null
             ? SubjectDetailsScreen(
@@ -112,11 +112,23 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     const SizedBox(height: 48),
                     _buildTermSwitcher(),
                     const SizedBox(height: 32),
-                    _buildResponsiveRoww(
-                      spacing: responsiveSubjectSpacing,
-                      children: _getSubjectsByTerm()
-                          .map((s) => _buildSubjectCard(s))
-                          .toList(),
+
+                    // --- استخدام GridView لضمان 4 أعمدة بالضبط ---
+                    GridView.builder(
+                      shrinkWrap: true, // مهم جداً داخل SingleChildScrollView
+                      physics:
+                          const NeverScrollableScrollPhysics(), // لمنع التعارض في السكرول
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 4, // عدد الكروت في الصف
+                            crossAxisSpacing: 12, // المسافة الأفقية
+                            mainAxisSpacing: 24, // المسافة الرأسية
+                            mainAxisExtent: 250, // ارتفاع الكارت الثابت
+                          ),
+                      itemCount: currentSubjects.length,
+                      itemBuilder: (context, index) {
+                        return _buildSubjectCard(currentSubjects[index]);
+                      },
                     ),
                   ],
                 ),
@@ -136,21 +148,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
         spacing: spacing,
         runSpacing: 24,
         alignment: alignment,
-        children: children,
-      ),
-    );
-  }
-
-  Widget _buildResponsiveRoww({
-    required List<Widget> children,
-    double spacing = 24,
-  }) {
-    return SizedBox(
-      width: double.infinity,
-      child: Wrap(
-        spacing: spacing,
-        runSpacing: 24,
-        alignment: WrapAlignment.start,
         children: children,
       ),
     );
@@ -214,12 +211,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       onTap: () => onSubjectTap(subject["name"]),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: subjectCardWidth,
-        height: 288,
-        padding: const EdgeInsets.all(17.6),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: AppColors.cardBg(context),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? AppColors.primaryTeal(context)
@@ -243,18 +238,18 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
                     color: AppColors.primaryTeal(context),
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
                     Icons.menu_book,
                     color: Colors.white,
-                    size: 24,
+                    size: 18,
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,10 +257,12 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                       Text(
                         subject["name"],
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 15, // تصغير بسيط ليناسب العمود
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary(context),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
                         subject["teacher"],
@@ -273,34 +270,36 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                           fontSize: 12,
                           color: AppColors.textSecondary(context),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
                 ),
-                Icon(
-                  Icons.arrow_forward,
-                  size: 18,
-                  color: Colors.grey.shade400,
+              ],
+            ),
+            const Divider(height: 20, thickness: 0.8, color: Color(0xFFE5E7EB)),
+
+            // إحصائيات المادة بداخل صف مرن
+            Row(
+              children: [
+                Expanded(child: _buildSubjectStat("الدرجة", subject["grade"])),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: _buildSubjectStat("الامتحانات", subject["exams"]),
                 ),
               ],
             ),
-            const Divider(height: 32, thickness: 0.8, color: Color(0xFFE5E7EB)),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildSubjectStat("الدرجة", subject["grade"]),
-                _buildSubjectStat("الامتحانات", subject["exams"]),
-              ],
-            ),
-            const SizedBox(height: 12),
+
+            const SizedBox(height: 8),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: _isDark(context)
                     ? const Color(0xFF262626)
                     : const Color(0xFFF9FAFB),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -308,16 +307,18 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                   Text(
                     "آخر امتحان",
                     style: TextStyle(
-                      fontSize: 10,
+                      fontSize: 14,
                       color: AppColors.textSecondary(context),
                     ),
                   ),
                   Text(
                     subject["lastExam"],
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 14,
                       color: AppColors.textPrimary(context),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -330,8 +331,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
   Widget _buildSubjectStat(String label, String value) {
     return Container(
-      width: 116,
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: _isDark(context)
             ? const Color(0xFF2D3748).withValues(alpha: 0.3)
@@ -343,14 +343,14 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 14,
               color: AppColors.textSecondary(context),
             ),
           ),
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 14,
               fontWeight: FontWeight.bold,
               color: AppColors.primaryTeal(context),
             ),
@@ -407,7 +407,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       Theme.of(context).brightness == Brightness.dark;
 
   List<Map<String, dynamic>> _getSubjectsByTerm() {
-    // ... (بقية البيانات كما هي بدون تغيير)
     if (selectedTerm == 1) {
       return [
         {
@@ -430,6 +429,13 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           "grade": "78%",
           "exams": "2",
           "lastExam": "2026-01-20",
+        },
+        {
+          "name": "اللغة العربية",
+          "teacher": "أ. فاطمة يوسف",
+          "grade": "88.5%",
+          "exams": "2",
+          "lastExam": "2026-02-18",
         },
         {
           "name": "اللغة العربية",

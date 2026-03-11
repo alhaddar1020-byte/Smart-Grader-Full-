@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-// تأكد من استيراد ملف الألوان الخاص بك
-// import 'path_to_your_app_colors.dart';
 import '../core/colors.dart';
 
 class SubjectDetailsScreen extends StatelessWidget {
   final String subjectName;
   final VoidCallback onBack;
   final Function(String) onSubjectTap;
+  bool _isDark(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark;
+  }
 
   const SubjectDetailsScreen({
     super.key,
@@ -60,14 +61,13 @@ class SubjectDetailsScreen extends StatelessWidget {
     final List<String> improvements = ["إدارة الوقت", "التركيز"];
 
     return Scaffold(
-      // استخدام لون الخلفية الديناميكي
       backgroundColor: AppColors.secondaryTeal(context),
       body: SafeArea(
         child: Directionality(
           textDirection: TextDirection.rtl,
           child: Column(
             children: [
-              _buildFixedHeader(context), // تمرير context للهيدر
+              _buildFixedHeader(context),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.symmetric(
@@ -127,7 +127,7 @@ class SubjectDetailsScreen extends StatelessWidget {
       height: 43,
       margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.cardBg(context), // لون الكارت الديناميكي
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
@@ -164,7 +164,7 @@ class SubjectDetailsScreen extends StatelessWidget {
             Text(
               subjectName,
               style: TextStyle(
-                color: AppColors.primaryTeal(context), // لون التركواز الأساسي
+                color: AppColors.primaryTeal(context),
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
               ),
@@ -204,7 +204,9 @@ class SubjectDetailsScreen extends StatelessWidget {
             context,
             "المعدل العام",
             stats["avg"]!,
-            const Color(0xFF63B3ED),
+            _isDark(context)
+                ? const Color.fromARGB(255, 38, 71, 127)
+                : const Color.fromARGB(255, 79, 133, 226),
           ),
         ),
         const SizedBox(width: 16),
@@ -318,8 +320,11 @@ class SubjectDetailsScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
                     _badgeInfo(context, "التاريخ", date),
+                    const SizedBox(width: 8),
                     _badgeInfo(context, "الأسئلة", totalQ),
+                    const SizedBox(width: 8),
                     _badgeInfo(context, "الإجابات", answers),
+                    const SizedBox(width: 8),
                     _badgeInfo(context, "التقدير", rating, isBlue: true),
                   ],
                 ),
@@ -392,43 +397,48 @@ class SubjectDetailsScreen extends StatelessWidget {
     );
   }
 
+  // التعديل هنا ليكون مستجيباً (Responsive)
   Widget _badgeInfo(
     BuildContext context,
     String label,
     String value, {
     bool isBlue = false,
   }) {
-    return Container(
-      width: 100,
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: AppColors.secondaryTeal(
-          context,
-        ), // استخدام لون الخلفية الفاتح من كلاسك
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: AppColors.textSecondary(context),
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: AppColors.secondaryTeal(context),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: AppColors.textSecondary(context),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: isBlue
-                  ? Colors.blueAccent
-                  : AppColors.textPrimary(context),
+            const SizedBox(height: 4),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                value,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isBlue
+                      ? Colors.blueAccent
+                      : AppColors.textPrimary(context),
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

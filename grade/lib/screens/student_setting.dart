@@ -20,7 +20,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String userEmail = "Rogaya@gradesys.edu";
   String phoneNumber = "4567 123 50 966+";
   String educationLevel = "الصف الثاني ثانوي- علمي";
-  bool isDarkMode = false;
   String selectedLanguage = "العربية";
   String lastPasswordChange = "منذ 3 أشهر";
 
@@ -292,6 +291,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
@@ -432,6 +432,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     IconData? icon,
     TextInputType keyboardType = TextInputType.text,
   }) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -444,15 +445,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         const SizedBox(height: 8),
         Container(
-          height: 52,
+          height: 45,
           decoration: BoxDecoration(
-            color: isDarkMode
-                ? const Color(0xFF2D3748)
-                : const Color(0xFFF7FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.secondaryTeal(context).withOpacity(0.5),
-            ),
+            // color: isDarkMode
+            //     ? const Color(0xFF2D3748)
+            //     : const Color.fromARGB(255, 43, 126, 182),
+            borderRadius: BorderRadius.circular(14),
           ),
           child: TextField(
             controller: controller,
@@ -462,8 +460,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             style: TextStyle(color: AppColors.textPrimary(context)),
             decoration: InputDecoration(
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none, // لإخفاء الخط تماماً
+              ),
               filled: true,
-              border: InputBorder.none,
+              // تأكدي من تحديد لون الخلفية هنا ليعمل الـ filled بشكل صحيح
+              fillColor: isDarkMode
+                  ? const Color.fromARGB(255, 54, 54, 54)
+                  : const Color(0xFFF3F4F6),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 15,
@@ -645,7 +650,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Text(
                   value,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: 14,
                     color: AppColors.textPrimary(context),
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -807,10 +812,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildDangerZoneCard() {
+    bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: _cardDecoration().copyWith(
-        color: isDarkMode ? const Color(0xFF441A1A) : const Color(0xFFFEF2F2),
+        color: isDarkMode
+            ? const Color.fromARGB(255, 40, 40, 40)
+            : Color.fromARGB(255, 255, 241, 241),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -820,7 +829,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w900,
-              color: AppColors.textSecondary(context),
+              color: isDarkMode
+                  ? const Color.fromARGB(255, 222, 45, 45)
+                  : const Color.fromARGB(255, 201, 35, 35),
             ),
           ),
           const Spacer(),
@@ -835,7 +846,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ElevatedButton(
             onPressed: () {},
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.textSecondary(context),
+              backgroundColor: isDarkMode
+                  ? const Color.fromARGB(255, 222, 45, 45)
+                  : const Color.fromARGB(255, 201, 35, 35),
 
               minimumSize: const Size(double.infinity, 42),
             ),

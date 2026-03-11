@@ -4,6 +4,8 @@ import 'student_matearial.dart';
 import 'student_setting.dart';
 import 'student_exim.dart';
 import 'student_detiles.dart';
+import 'student_detiles.dart';
+import 'student_matearial.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -133,24 +135,32 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _buildDashboardHome() {
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.all(32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // قسم الإحصائيات العلوية - ارتفاع ثابت
           _buildTopStatsGrid(context, studentData["stats"]),
+
           const SizedBox(height: 32),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLeftSummaryColumn(
-                context,
-                studentData["performance"],
-                studentData["badge"],
-              ),
-              const SizedBox(width: 32),
-              _buildMainResultsList(context, studentData["recent_results"]),
-            ],
+
+          // الجزء السفلي - نستخدم Expanded ليأخذ باقي مساحة الشاشة
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // العمود الأيسر (ملخص الأداء)
+                _buildLeftSummaryColumn(
+                  context,
+                  studentData["performance"],
+                  studentData["badge"],
+                ),
+                const SizedBox(width: 32),
+                // العمود الأيمن (النتائج الأخيرة)
+                _buildMainResultsList(context, studentData["recent_results"]),
+              ],
+            ),
           ),
         ],
       ),
@@ -326,7 +336,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(color: Colors.white, fontSize: 14),
+                  style: const TextStyle(color: Colors.white, fontSize: 17),
                 ),
                 const SizedBox(width: 10),
                 Container(
@@ -335,7 +345,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: cardColor, size: 20),
+                  child: Icon(icon, color: cardColor, size: 25),
                 ),
               ],
             ),
@@ -355,29 +365,57 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _buildMainResultsList(BuildContext context, List<dynamic> results) {
+    final lastThreeResults = results.take(3).toList();
+
     return Expanded(
       flex: 3,
       child: Container(
-        padding: const EdgeInsets.all(30),
+        padding: const EdgeInsets.all(24), // تقليل البادينج قليلاً لتوفير مساحة
         decoration: BoxDecoration(
           color: AppColors.cardBg(context),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(
-              "النتائج الأخيرة",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary(context),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => setState(() => selectedIndex = 1),
+                  child: Text(
+                    "عرض جميع المواد",
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  "النتائج الأخيرة",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            // نستخدم Expanded مع ListView هنا لضمان عدم حدوث Overflow
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics:
+                    const NeverScrollableScrollPhysics(), // لمنع السكرول الداخلي إذا كانت الشاشة تكفي
+                itemCount: lastThreeResults.length,
+                itemBuilder: (context, index) {
+                  return _resultItem(
+                    context,
+                    lastThreeResults[index] as Map<String, String>,
+                  );
+                },
               ),
             ),
-            const SizedBox(height: 25),
-            ...results
-                .map((res) => _resultItem(context, res as Map<String, String>))
-                .toList(),
           ],
         ),
       ),
@@ -385,50 +423,62 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _resultItem(BuildContext context, Map<String, String> data) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppColors.scaffoldBg(context).withOpacity(0.5),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              Text(
-                data["score"]!,
-                style: TextStyle(
-                  color: AppColors.primaryTeal(context),
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          selectedSubjectName =
+              data["subject"]; // نحدد اسم المادة التي ضغطنا عليها
+          selectedIndex =
+              4; // ننتقل لصفحة تفاصيل الاختبار (التي تحمل رقم 4 في كودك)
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: AppColors.scaffoldBg(context).withOpacity(0.5),
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // جزء الدرجة (Score)
+            Column(
+              children: [
+                Text(
+                  data["score"]!,
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
                 ),
-              ),
-              Text(
-                data["label"]!,
-                style: const TextStyle(color: Colors.blue, fontSize: 12),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                data["title"]!,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: AppColors.textPrimary(context),
+                Text(
+                  data["label"]!,
+                  style: const TextStyle(color: Colors.blue, fontSize: 12),
                 ),
-              ),
-              Text(
-                data["subject"]!,
-                style: TextStyle(color: AppColors.textSecondary(context)),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+            // جزء اسم المادة والوصف
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  data["title"]!,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
+                Text(
+                  data["subject"]!,
+                  style: TextStyle(color: AppColors.textSecondary(context)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -442,9 +492,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       flex: 1,
       child: Column(
         children: [
+          // كارد الطالب المتميز
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(25),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: AppColors.cardBg(context),
               borderRadius: BorderRadius.circular(24),
@@ -453,19 +504,19 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: AppColors.accentYellow(context),
-                  radius: 35,
+                  radius: 30, // تصغير بسيط للقطر
                   child: const Icon(
                     Icons.star_rounded,
                     color: Colors.white,
-                    size: 40,
+                    size: 35,
                   ),
                 ),
-                const SizedBox(height: 15),
+                const SizedBox(height: 10),
                 Text(
                   "طالب متميز",
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: 18,
+                    fontSize: 16,
                     color: AppColors.textPrimary(context),
                   ),
                 ),
@@ -474,14 +525,15 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: AppColors.textSecondary(context),
-                    fontSize: 13,
+                    fontSize: 12,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 25),
-          _buildPerformanceCard(context, perf),
+          const SizedBox(height: 20),
+          // كارد ملخص الأداء - نجعله مرن
+          Expanded(child: _buildPerformanceCard(context, perf)),
         ],
       ),
     );
@@ -491,51 +543,124 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     BuildContext context,
     Map<String, dynamic> perf,
   ) {
-    return Container(
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryTeal(context),
-            AppColors.primaryTeal(context).withOpacity(0.8),
-          ],
+    // --- التعديل هنا: المتغيرات التي ستحمل الأرقام ---
+    final String gradedCount = "12/15"; // الرقم الذي سيظهر في "المواد المصححة"
+    final String successRate = "100%"; // الرقم الذي سيظهر في "معدل النجاح"
+
+    // دالة تحول "12/15" إلى نسبة مئوية لتحريك الشريط
+    double calculateProgress() {
+      try {
+        List<String> parts = gradedCount.split('/');
+        return double.parse(parts[0]) / double.parse(parts[1]);
+      } catch (e) {
+        return 0.0;
+      }
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Container(
+          constraints: const BoxConstraints(maxWidth: 400, minWidth: 250),
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            // --- التعديل هنا: إضافة التدرج اللوني كما في التصميم ---
+            color: AppColors.primaryTeal(context),
+
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            children: [
+              const Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  "ملخص الأداء",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // عرض الرقم الأول
+              _rowInfoDesign(gradedCount, "المواد المصححة"),
+
+              const SizedBox(height: 16),
+
+              // شريط التقدم الذي يحسب النسبة تلقائياً
+              _buildResponsiveProgressBar(calculateProgress()),
+
+              const SizedBox(height: 16),
+
+              // عرض الرقم الثاني
+              _rowInfoDesign(successRate, "معدل النجاح"),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResponsiveProgressBar(double progress) {
+    return Stack(
+      children: [
+        Container(
+          height: 8,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(268435),
+          ),
         ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Text(
-            "ملخص الأداء الذكي",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
+        // LayoutBuilder هنا يضمن أن الشريط الأبيض يتحرك بدقة بناءً على عرض الأب
+        LayoutBuilder(
+          builder: (context, constraints) {
+            return Container(
+              height: 8,
+              width: constraints.maxWidth * progress,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(268435),
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _rowInfoDesign(String value, String title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // استخدام FittedBox لضمان عدم خروج النص عن الحواف في الشاشات الصغيرة جداً
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
-          const SizedBox(height: 20),
-          _rowInfo(perf["graded_count"], "المواد المصححة"),
-          const SizedBox(height: 10),
-          LinearProgressIndicator(
-            value: perf["progress_value"],
-            backgroundColor: Colors.white24,
-            color: Colors.white,
-          ),
-          const SizedBox(height: 25),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primaryTeal(context),
-              minimumSize: const Size(double.infinity, 50),
-            ),
-            child: const Text(
-              "عرض التقرير الكامل",
-              style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(width: 10),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              title,
+              textAlign: TextAlign.right,
+              style: const TextStyle(color: Colors.white, fontSize: 14),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
