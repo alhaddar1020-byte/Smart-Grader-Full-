@@ -69,7 +69,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         return Scaffold(
           key: _scaffoldKey,
           backgroundColor: AppColors.secondaryTeal(context),
-          // 1. تغيير الـ drawer إلى endDrawer ليفتح من اليمين في الجوال
           endDrawer: isMobile
               ? Drawer(
                   width: 280,
@@ -79,15 +78,14 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     selectedIndex: selectedIndex,
                     onItemSelected: (index) {
                       setState(() => selectedIndex = index);
-                      _scaffoldKey.currentState
-                          ?.closeEndDrawer(); // إغلاق من اليمين
+                      _scaffoldKey.currentState?.closeEndDrawer();
                     },
                   ),
                 )
               : null,
           body: Row(
             children: [
-              // 2. المحتوى أولاً (ليصبح السايدبار على اليمين)
+              // 1. المحتوى الأساسي مع التمرير
               Expanded(
                 child: Column(
                   children: [
@@ -106,11 +104,13 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                           studentData["level"],
                         ),
                       ),
+                    // استخدمنا Expanded هنا لضمان أن الجسم يأخذ المساحة المتبقية
+                    // لكن داخله يجب أن يكون هناك تمرير
                     Expanded(child: _buildBody(isMobile, isTablet, isWeb)),
                   ],
                 ),
               ),
-              // 3. السايدبار يوضع هنا ليظهر في اليمين
+              // 2. السايدبار في اليمين
               if (!isMobile)
                 CustSidebar(
                   isCompact: isTablet,
