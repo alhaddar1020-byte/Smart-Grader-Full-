@@ -45,6 +45,9 @@ class CustomSidebar extends StatelessWidget {
           _menuItem("لوحة التحكم", Icons.home_rounded, 0),
           _menuItem("المواد", Icons.library_books, 1),
           _menuItem("إعدادات", Icons.settings_rounded, 2),
+          _menuItem("المواد", Icons.library_books, 1),
+          _menuItem("المواد", Icons.library_books, 1),
+          _menuItem("المواد", Icons.library_books, 1),
 
           const Spacer(),
         ],
@@ -92,7 +95,7 @@ class CustomSidebar extends StatelessWidget {
                 bottom: -40,
                 width: 50,
                 child: CustomPaint(
-                  painter: SidebarCurvePainter(AppColors.scaffoldBg),
+                  painter: SidebarCurvePainter(Color(0xFFDEF6F5)),
                 ),
               ),
             Container(
@@ -100,7 +103,7 @@ class CustomSidebar extends StatelessWidget {
               margin: EdgeInsets.only(left: isActive ? 0 : 25, right: 20),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: isActive ? AppColors.scaffoldBg : Colors.transparent,
+                color: isActive ? const Color(0xFFDEF6F5) : Colors.transparent,
                 borderRadius: BorderRadius.only(
                   topRight: const Radius.circular(30),
                   bottomRight: const Radius.circular(30),
