@@ -4,6 +4,8 @@ import 'screens/student_dashboard.dart'; // ينادي ملف صديقتك
 import 'screens/teacher_dashboard.dart';
 import 'screens/teacher_matearial.dart';
 import 'screens/student_matearial.dart';
+import 'screens/grading.dart';
+import 'screens/material_detail.dart';
 import 'widgets/slider.dart';
 
 
@@ -22,7 +24,7 @@ class GradeAI extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       // هنا حددنا "الخط" و "الصفحة الأولى" بس
       theme: ThemeData(fontFamily: 'Arimo'),
-      home:  StudentDashboardScreen(),
+      home:  IntelligentGradingApp(),
       title: 'Grade AI',
       // إعداد الثيم العام
       

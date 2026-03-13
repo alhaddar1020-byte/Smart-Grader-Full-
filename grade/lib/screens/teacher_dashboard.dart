@@ -1,390 +1,6 @@
-// import 'package:flutter/material.dart';
-// import '../core/colors.dart';
-// import 'dart:math';
-
-// class AppColors {
-//   static const Color primaryTeal = Color(0xFF4FB7B5);
-//   static const Color secondaryTeal = Color(0xFFDEF6F5);
-//   static const Color accentYellow = Color(0xFFF6AD55);
-//   static const Color textprimary = Color(0xFF000000);
-//   static const Color scaffoldBg = Color(0xFFF3F4F6);
-//   static const Color textseccondary = Color(0xFF6A7282);
-//   static const Color textWhite = Colors.white;
-// }
-
-// class DashboardScreen extends StatelessWidget {
-//   const DashboardScreen({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: AppColors.secondaryTeal,
-//       body: Row(
-//         children: [
-//           _buildMain(),
-//           _buildSidebar(),
-//         ],
-//       ),
-//     );
-//   }
-
-//   // ================= MAIN =================
-
-//   Widget _buildMain() {
-//     return Expanded(
-//       child: Padding(
-//         padding: const EdgeInsets.all(30),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-
-//             // Header Card
-//             Container(
-//               height: 80,
-//               padding: const EdgeInsets.symmetric(horizontal: 25),
-//               decoration: _cardDecoration(),
-//               child: Row(
-//                 children: [
-//                   const CircleAvatar(
-//                     backgroundColor: AppColors.secondaryTeal,
-//                     child: Icon(Icons.person, color: AppColors.primaryTeal),
-//                   ),
-//                   const SizedBox(width: 10),
-//                   const CircleAvatar(
-//                     backgroundColor: AppColors.secondaryTeal,
-//                     child: Icon(Icons.notifications_none,
-//                         color: AppColors.primaryTeal),
-//                   ),
-//                   const Spacer(),
-//                   Column(
-//                     mainAxisAlignment: MainAxisAlignment.center,
-//                     crossAxisAlignment: CrossAxisAlignment.end,
-//                     children: const [
-//                       Text("مرحباً م.خديجة!",
-//                           style: TextStyle(
-//                               fontSize: 18, fontWeight: FontWeight.bold)),
-//                       SizedBox(height: 4),
-//                       Text("تحقق من إحصائياتك",
-//                           style: TextStyle(
-//                               color: AppColors.textseccondary,
-//                               fontSize: 13))
-//                     ],
-//                   )
-//                 ],
-//               ),
-//             ),
-
-//             const SizedBox(height: 25),
-
-//             // Stats
-//             Row(
-//               children: [
-//                 _statCard("المسوّدات", "5"),
-//                 _statCard("الاختبارات المنشأة", "13"),
-//                 _statCard("الأوراق المصححة", "780"),
-//                 _statCard("الطلاب", "340",
-//                     color: AppColors.accentYellow),
-//               ],
-//             ),
-
-//             const SizedBox(height: 25),
-
-//             Expanded(
-//               child: Row(
-//                 children: [
-
-//                   // Calendar
-//                   Container(
-//                     width: 260,
-//                     decoration: _cardDecoration(),
-//                     child: const Center(
-//                       child: Text("📅 التقويم"),
-//                     ),
-//                   ),
-
-//                   const SizedBox(width: 20),
-
-//                   // Chart
-//                   Expanded(
-//                     child: Container(
-//                       padding: const EdgeInsets.all(20),
-//                       decoration: _cardDecoration(),
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           const Text("متوسط درجات الطلاب شهرياً",
-//                               style: TextStyle(
-//                                   fontWeight: FontWeight.bold)),
-//                           const SizedBox(height: 20),
-//                           Expanded(
-//                             child: CustomPaint(
-//                               painter: BarChartPainter(),
-//                             ),
-//                           )
-//                         ],
-//                       ),
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-
-//             const SizedBox(height: 25),
-
-//             Row(
-//               children: [
-//                 _gaugeCard(
-//                     "نسبة اكتمال مراجعة الاوراق المصححة", 0.8),
-//                 _gaugeCard(
-//                     "نسبة اكتمال نشر النتائج", 0.6,
-//                     color: AppColors.accentYellow),
-//                 _resultCard(),
-//               ],
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   // ================= SIDEBAR =================
-
-//   Widget _buildSidebar() {
-//     return Container(
-//       width: 250,
-//       padding: const EdgeInsets.all(30),
-//       decoration: const BoxDecoration(
-//         color: AppColors.primaryTeal,
-//         borderRadius: BorderRadius.only(
-//           topLeft: Radius.circular(40),
-//           bottomLeft: Radius.circular(40),
-//         ),
-//       ),
-//       child: Column(
-//         children: const [
-//           SizedBox(height: 30),
-//           Icon(Icons.task_alt,
-//               color: Colors.white, size: 60),
-//           SizedBox(height: 10),
-//           Text("Intelligent Grading System",
-//               textAlign: TextAlign.center,
-//               style: TextStyle(
-//                   color: Colors.white,
-//                   fontWeight: FontWeight.bold)),
-//           SizedBox(height: 50),
-//           _MenuItem(Icons.dashboard, "لوحة التحكم"),
-//           _MenuItem(Icons.assignment, "إدارة الامتحانات"),
-//           _MenuItem(Icons.menu_book, "المواد"),
-//           _MenuItem(Icons.check_circle, "تصحيح"),
-//           _MenuItem(Icons.rate_review, "مراجعة"),
-//           _MenuItem(Icons.settings, "اعدادات"),
-//         ],
-//       ),
-//     );
-//   }
-
-//   // ================= COMPONENTS =================
-
-//   Widget _statCard(String title, String value,
-//       {Color color = AppColors.primaryTeal}) {
-//     return Expanded(
-//       child: Container(
-//         height: 100,
-//         margin: const EdgeInsets.symmetric(horizontal: 8),
-//         padding: const EdgeInsets.all(15),
-//         decoration: BoxDecoration(
-//           color: color,
-//           borderRadius: BorderRadius.circular(18),
-//         ),
-//         child: Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(title,
-//                 style:
-//                     const TextStyle(color: Colors.white, fontSize: 13)),
-//             const Spacer(),
-//             Text(value,
-//                 style: const TextStyle(
-//                     fontSize: 22,
-//                     fontWeight: FontWeight.bold,
-//                     color: Colors.white))
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _gaugeCard(String title, double value,
-//       {Color color = AppColors.primaryTeal}) {
-//     return Expanded(
-//       child: Container(
-//         height: 170,
-//         margin: const EdgeInsets.all(8),
-//         padding: const EdgeInsets.all(20),
-//         decoration: _cardDecoration(),
-//         child: Column(
-//           children: [
-//             Expanded(
-//               child: CustomPaint(
-//                 painter: GaugePainter(value, color),
-//               ),
-//             ),
-//             Text(title,
-//                 textAlign: TextAlign.center,
-//                 style: const TextStyle(fontSize: 12))
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   Widget _resultCard() {
-//     return Expanded(
-//       child: Container(
-//         height: 170,
-//         margin: const EdgeInsets.all(8),
-//         decoration: _cardDecoration(),
-//         child: const Center(
-//           child: Text("حالة نتائج الطلاب"),
-//         ),
-//       ),
-//     );
-//   }
-
-//   BoxDecoration _cardDecoration() => BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(20),
-//         boxShadow: const [
-//           BoxShadow(
-//             color: Colors.black12,
-//             blurRadius: 12,
-//             offset: Offset(0, 5),
-//           )
-//         ],
-//       );
-// }
-
-// // ================= MENU ITEM =================
-
-// class _MenuItem extends StatelessWidget {
-//   final IconData icon;
-//   final String title;
-//   const _MenuItem(this.icon, this.title);
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Padding(
-//       padding: const EdgeInsets.symmetric(vertical: 14),
-//       child: Row(
-//         children: [
-//           Icon(icon, color: Colors.white),
-//           const SizedBox(width: 15),
-//           Text(title,
-//               style:
-//                   const TextStyle(color: Colors.white, fontSize: 15)),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-// // ================= BAR CHART =================
-
-// class BarChartPainter extends CustomPainter {
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final paint = Paint()
-//       ..color = AppColors.primaryTeal
-//       ..style = PaintingStyle.fill;
-
-//     double barWidth = size.width / 15;
-//     List<double> values = [60, 50, 40, 25, 30, 55, 90, 75, 70, 45, 55, 50];
-
-//     for (int i = 0; i < values.length; i++) {
-//       double left = i * (barWidth + 8);
-//       double height = (values[i] / 100) * size.height;
-//       canvas.drawRRect(
-//         RRect.fromRectAndRadius(
-//           Rect.fromLTWH(left, size.height - height, barWidth, height),
-//           const Radius.circular(6),
-//         ),
-//         paint,
-//       );
-//     }
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-// }
-
-// // ================= GAUGE =================
-
-// class GaugePainter extends CustomPainter {
-//   final double value;
-//   final Color color;
-//   GaugePainter(this.value, this.color);
-
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final basePaint = Paint()
-//       ..color = Colors.grey.shade200
-//       ..strokeWidth = 15
-//       ..style = PaintingStyle.stroke;
-
-//     final valuePaint = Paint()
-//       ..color = color
-//       ..strokeWidth = 15
-//       ..strokeCap = StrokeCap.round
-//       ..style = PaintingStyle.stroke;
-
-//     final center = Offset(size.width / 2, size.height);
-//     final radius = size.width / 2.5;
-
-//     canvas.drawArc(
-//         Rect.fromCircle(center: center, radius: radius),
-//         pi,
-//         pi,
-//         false,
-//         basePaint);
-
-//     canvas.drawArc(
-//         Rect.fromCircle(center: center, radius: radius),
-//         pi,
-//         pi * value,
-//         false,
-//         valuePaint);
-
-//     final textPainter = TextPainter(
-//       text: TextSpan(
-//           text: "${(value * 100).toInt()}%",
-//           style: const TextStyle(
-//               fontSize: 18, fontWeight: FontWeight.bold)),
-//       textDirection: TextDirection.rtl,
-//     );
-
-//     textPainter.layout();
-//     textPainter.paint(
-//         canvas,
-//         Offset(size.width / 2 - textPainter.width / 2,
-//             size.height - radius - 20));
-//   }
-
-//   @override
-//   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-// }
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
-
-// ملف الألوان الذي زودتني به مع بعض الإضافات للتوافق
-class AppColors {
-  static const Color primaryTeal = Color(0xFF4FB7B5);
-  static const Color secondaryTeal = Color(0xFFDEF6F5);
-  static const Color accentYellow = Color(0xFFF6AD55);
-  static const Color textprimary = Color(0xFF000000);
-  static const Color scaffoldBg = Color(0xFFF3F4F6);
-  static const Color textseccondary = Color(0xFF6A7282);
-  static const Color textWhite = Colors.white;
-}
+import '../core/colors.dart'; // هنا جلبنا ملف الألوان من core/colors.dart
 
 void main() {
   runApp(const IntelligentGradingApp());
@@ -397,7 +13,7 @@ class IntelligentGradingApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'Cairo'), // يفضل استخدام خط Cairo للغة العربية
+      theme: ThemeData(fontFamily: 'Cairo'),
       home: const Directionality(
         textDirection: TextDirection.rtl,
         child: DashboardScreen(),
@@ -412,39 +28,29 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.scaffoldBg,
+      backgroundColor: AppColors.secondaryTeal,
       body: Row(
         children: [
-          // 1. القائمة الجانبية (Sidebar)
           const SidebarWidget(),
-
-          // 2. المحتوى الرئيسي (Main Content)
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  //Header
                   const HeaderWidget(),
                   const SizedBox(height: 24),
-
-                  // الإحصائيات العلوية (Cards)
                   const TopStatsGrid(),
                   const SizedBox(height: 24),
-
-                  // الصف الأوسط (التقويم والرسم البياني)
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Expanded(flex: 3, child: MonthlyAverageChart()),
-                      const SizedBox(width: 20),
-                      const Expanded(flex: 1, child: CalendarWidget()),
+                    children: const [
+                      Expanded(flex: 3, child: MonthlyAverageChart()),
+                      SizedBox(width: 20),
+                      Expanded(flex: 1, child: CalendarWidget()),
                     ],
                   ),
                   const SizedBox(height: 24),
-
-                  // الصف السفلي (العدادات الدائرية وحالة النتائج)
                   const BottomStatsRow(),
                 ],
               ),
@@ -456,7 +62,7 @@ class DashboardScreen extends StatelessWidget {
   }
 }
 
-// --- مكونات القائمة الجانبية ---
+// --- القائمة الجانبية ---
 class SidebarWidget extends StatelessWidget {
   const SidebarWidget({super.key});
 
@@ -500,7 +106,7 @@ class SidebarWidget extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
       decoration: BoxDecoration(
-        color: active ? Colors.white.withOpacity(0.2) : Colors.transparent,
+        color: active ? AppColors.primaryTeal.withOpacity(0.2) : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
       ),
       child: ListTile(
@@ -511,37 +117,63 @@ class SidebarWidget extends StatelessWidget {
   }
 }
 
-// --- الهيدر (الترحيب) ---
+// --- الهيدر ---
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: const [
-            Text("مرحباً م.خديجة!", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text("تحقق من إحصائياتك", style: TextStyle(color: AppColors.textseccondary)),
-          ],
-        ),
-        Row(
-          children: [
-            _iconButton(Icons.notifications_none),
-            const SizedBox(width: 10),
-            _iconButton(Icons.person_outline),
-          ],
-        )
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          
+          /// النصوص
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              Text(
+                "مرحباً م.خديجة!",
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "تحقق من إحصائياتك",
+                style: TextStyle(
+                  color: AppColors.textseccondary,
+                ),
+              ),
+            ],
+          ),
+
+          /// الأيقونات
+          Row(
+            children: [
+              _iconButton(Icons.notifications_none),
+              const SizedBox(width: 10),
+              _iconButton(Icons.person_outline),
+            ],
+          )
+        ],
+      ),
     );
   }
 
   Widget _iconButton(IconData icon) {
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryTeal,
+        shape: BoxShape.circle,
+      ),
       child: Icon(icon, color: AppColors.primaryTeal),
     );
   }
@@ -557,7 +189,7 @@ class TopStatsGrid extends StatelessWidget {
       children: [
         _statCard("الطلاب", "340", AppColors.accentYellow, Icons.people),
         _statCard("الأوراق المصححة", "780", AppColors.primaryTeal, Icons.description),
-        _statCard("الاختبارات المنشئة", "13", AppColors.primaryTeal, Icons.quiz),
+        _statCard("الاختبارات المنشئة", "13", AppColors.primaryTeal, Icons.create),
         _statCard("المسودات", "5", AppColors.primaryTeal, Icons.edit_note),
       ],
     );
@@ -587,42 +219,223 @@ class TopStatsGrid extends StatelessWidget {
   }
 }
 
-// --- الرسم البياني للأعمدة ---
+// --- الرسم البياني ---
+
+// class MonthlyAverageChart extends StatelessWidget {
+//   const MonthlyAverageChart({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // البيانات التقريبية بناءً على تصميم فيقما
+//     final List<Map<String, dynamic>> chartData = [
+//       {"label": "ديسمبر", "value": 0.45, "special": false},
+//       {"label": "نوفمبر", "value": 0.53, "special": false},
+//       {"label": "أكتوبر", "value": 0.45, "special": false},
+//       {"label": "سبتمبر", "value": 0.72, "special": true}, 
+//       {"label": "أغسطس", "value": 0.82, "special": true}, 
+//       {"label": "يوليو", "value": 0.95, "special": true}, 
+//       {"label": "يونيو", "value": 0.55, "special": false},
+//       {"label": "مايو", "value": 0.28, "special": false},
+//       {"label": "أبريل", "value": 0.20, "special": false},
+//       {"label": "مارس", "value": 0.35, "special": false},
+//       {"label": "فبراير", "value": 0.45, "special": false},
+//       {"label": "يناير", "value": 0.65, "special": false},
+//     ];
+
+//     return Container(
+//       height: 300, 
+//       padding: const EdgeInsets.all(20),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(25),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withValues(alpha: 0.05),
+//             blurRadius: 15,
+//             offset: const Offset(0, 5),
+//           )
+//         ],
+//       ),
+//       child: Column(
+//         children: [
+//           // رأس الرسم البياني مع تبديل الجهات
+//           Row(
+//             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//             children: [
+              
+//               const Text(
+//                 "متوسط درجات الطلاب شهرياً",
+//                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+//               ),
+//               Row(
+//                 children: [
+//                   Container(
+//                     width: 8,
+//                     height: 8,
+//                     decoration: const BoxDecoration(color: Color(0xFFF5A623), shape: BoxShape.circle),
+//                   ),
+//                   const SizedBox(width: 5),
+//                   const Text("أفضل 3 أشهر", style: TextStyle(fontSize: 11, color: Color(0xFFF5A623)),
+//               )],
+//               ),
+//             ],
+//           ),
+//           const SizedBox(height: 30),
+//           Expanded(
+//             child: Row(
+//               children: [
+//                 // الأعمدة البيانية (تأخذ المساحة الأكبر لمنع الـ Overflow)
+//                 Expanded(
+//                   child: LayoutBuilder(
+//                     builder: (context, constraints) {
+//                       return Row(
+//                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+//                         crossAxisAlignment: CrossAxisAlignment.end,
+//                         children: chartData.map((data) {
+//                           return _bar(
+//                             constraints.maxHeight * (data['value'] as double),
+//                             data['label'],
+//                             isSpecial: data['special'],
+//                           );
+//                         }).toList(),
+//                       );
+//                     },
+//                   ),
+//                 ),
+//                 const SizedBox(width: 10),
+//                 // تم نقل النسب المئوية إلى الجهة اليمنى
+//                 Column(
+//                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                   children: ["100%", "80%", "60%", "40%", "20%", "0%"]
+//                       .map((label) => Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey)))
+//                       .toList(),
+//                 ),
+//               ],
+//             ),
+//           )
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _bar(double height, String label, {bool isSpecial = false}) {
+//     return Column(
+//       mainAxisAlignment: MainAxisAlignment.end,
+//       children: [
+//         Container(
+//           width: 18, 
+//           height: height.clamp(0, double.infinity),
+//           decoration: BoxDecoration(
+//             color: isSpecial ? const Color(0xFFF5A623) : const Color(0xFF5AB2B0),
+//             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+//           ),
+//         ),
+//         const SizedBox(height: 8),
+//         // استخدام التسمية المختصرة أو FittedBox لمنع الخطأ في يونيو
+//         SizedBox(
+//           width: 25,
+//           child: Center(
+//             child: FittedBox(
+//               fit: BoxFit.scaleDown,
+//               child: Text(
+//                 label,
+//                 style: const TextStyle(fontSize: 8, color: Colors.grey),
+//               ),
+            
+//           ),
+//         ),
+//         )
+//       ],
+//     );
+//   }
+// }
 class MonthlyAverageChart extends StatelessWidget {
   const MonthlyAverageChart({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // البيانات التقريبية بناءً على تصميم فيقما
+    final List<Map<String, dynamic>> chartData = [
+      {"label": "ديسمبر", "value": 0.45, "special": false},
+      {"label": "نوفمبر", "value": 0.53, "special": false},
+      {"label": "أكتوبر", "value": 0.45, "special": false},
+      {"label": "سبتمبر", "value": 0.72, "special": true}, 
+      {"label": "أغسطس", "value": 0.82, "special": true}, 
+      {"label": "يوليو", "value": 0.95, "special": true}, 
+      {"label": "يونيو", "value": 0.55, "special": false},
+      {"label": "مايو", "value": 0.28, "special": false},
+      {"label": "أبريل", "value": 0.20, "special": false},
+      {"label": "مارس", "value": 0.35, "special": false},
+      {"label": "فبراير", "value": 0.45, "special": false},
+      {"label": "يناير", "value": 0.65, "special": false},
+    ];
+
     return Container(
+      height: 300, // تم التعديل ليتناسب مع طول التقويم
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("متوسط درجات الطلاب شهرياً", style: TextStyle(fontWeight: FontWeight.bold)),
+              const Text(
+                "متوسط درجات الطلاب شهرياً",
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
               Row(
                 children: [
-                  Container(width: 10, height: 10, decoration: const BoxDecoration(color: AppColors.accentYellow, shape: BoxShape.circle)),
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(color: Color(0xFFF5A623), shape: BoxShape.circle),
+                  ),
                   const SizedBox(width: 5),
-                  const Text("أفضل 3 أشهر", style: TextStyle(fontSize: 12, color: AppColors.textseccondary)),
+                  const Text("أفضل 3 أشهر", style: TextStyle(fontSize: 11, color: Color(0xFFF5A623))),
                 ],
-              )
+              ),
             ],
           ),
           const SizedBox(height: 30),
-          SizedBox(
-            height: 200,
+          Expanded(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                _bar(40, "يناير"), _bar(60, "فبراير"), _bar(30, "مارس"),
-                _bar(50, "ابريل"), _bar(70, "مايو"), _bar(90, "يونيو", isSpecial: true),
-                _bar(85, "يوليو", isSpecial: true), _bar(75, "اغسطس", isSpecial: true),
-                _bar(60, "سبتمبر"), _bar(55, "اكتوبر"), _bar(45, "نوفمبر"), _bar(35, "ديسمبر"),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: chartData.map((data) {
+                          // إرسال أقصى ارتفاع متاح للويدجت الفرعية
+                          return _bar(
+                            constraints.maxHeight,
+                            data['value'] as double,
+                            data['label'],
+                            isSpecial: data['special'],
+                          );
+                        }).toList(),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: ["100%", "80%", "60%", "40%", "20%", "0%"]
+                      .map((label) => Text(label, style: const TextStyle(fontSize: 9, color: Colors.grey)))
+                      .toList(),
+                ),
               ],
             ),
           )
@@ -631,53 +444,197 @@ class MonthlyAverageChart extends StatelessWidget {
     );
   }
 
-  Widget _bar(double heightFactor, String label, {bool isSpecial = false}) {
+  // تم تعديل المدخلات لتشمل maxHeight الخاص بـ LayoutBuilder
+  Widget _bar(double maxHeight, double value, String label, {bool isSpecial = false}) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
+      mainAxisSize: MainAxisSize.min, // يمنع تمدد العمود عمودياً بشكل زائد
       children: [
         Container(
-          width: 25,
-          height: heightFactor,
+          width: 18, 
+          // طرح مساحة ثابتة (30 بكسل) للنص والمسافات لمنع الـ Overflow من الأسفل
+          height: (maxHeight - 30) * value, 
           decoration: BoxDecoration(
-            color: isSpecial ? AppColors.accentYellow : AppColors.primaryTeal,
-            borderRadius: BorderRadius.circular(5),
+            color: isSpecial ? const Color(0xFFF5A623) : const Color(0xFF5AB2B0),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
           ),
         ),
         const SizedBox(height: 8),
-        Text(label, style: const TextStyle(fontSize: 10, color: AppColors.textseccondary)),
+        SizedBox(
+          width: 25,
+          child: Center(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Text(
+                label,
+                style: const TextStyle(fontSize: 8, color: Colors.grey),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 }
+// // --- التقويم ---
+// class CalendarWidget extends StatelessWidget {
+//   const CalendarWidget({super.key});
 
-// --- التقويم ---
+//   @override
+//   Widget build(BuildContext context) {
+//     return Container(
+//       padding: const EdgeInsets.all(25),
+//       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+//       child: Column(
+//         children: [
+//           const Text("التقويم", style: TextStyle(fontWeight: FontWeight.bold)),
+//           const Divider(),
+//           const Text("فبراير 2026", style: TextStyle(color: AppColors.primaryTeal, fontWeight: FontWeight.bold)),
+//           const SizedBox(height: 0),
+//                     // const SizedBox(height: 30),
+
+//           GridView.builder(
+//             shrinkWrap: true,
+//             itemCount: 28,
+//             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 7),
+//             itemBuilder: (context, index) {
+//               final isToday = index + 1 == 3;
+//               return Container(
+//                 margin: const EdgeInsets.all(2),
+//                 decoration: BoxDecoration(
+//                   color: isToday ? AppColors.primaryTeal : Colors.transparent,
+//                   shape: BoxShape.circle,
+//                 ),
+//                 child: Center(child: Text("${index + 1}", style: TextStyle(fontSize: 12, color: isToday ? Colors.white : Colors.black))),
+//               );
+//             },
+//           )
+//         ],
+//       ),
+//     );
+//   }
+// }
 class CalendarWidget extends StatelessWidget {
   const CalendarWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
+    // قائمة الأيام لتطابق تصميم فيقما (الأيام الرمادية من الشهر السابق + أيام الشهر الحالي)
+    final List<String> days = [
+      "27", "28", "29", "30", "31", "1", "2",
+      "3", "4", "5", "6", "7", "8", "9",
+      "10", "11", "12", "13", "14", "15", "16",
+      "17", "18", "19", "20", "21", "22", "23",
+      "24", "25", "26", "27", "28", "29", "30"
+    ];
+
+    // أيام الأسبوع كما في الصورة
+    final List<String> weekDays = ["ح", "ن", "ث", "ر", "خ", "ج", "س"];
+
     return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          )
+        ],
+      ),
       child: Column(
         children: [
-          const Text("التقويم", style: TextStyle(fontWeight: FontWeight.bold)),
-          const Divider(),
-          const Text("فبراير 2026", style: TextStyle(color: AppColors.primaryTeal, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 10),
-          GridView.count(
-            shrinkWrap: true,
-            crossAxisCount: 7,
-            children: List.generate(28, (index) => Center(
-                child: Text("${index + 1}", style: TextStyle(fontSize: 12, color: (index + 1 == 3) ? Colors.white : Colors.black))),
-            ).map((e) => Container(
-              margin: const EdgeInsets.all(2),
-              decoration: BoxDecoration(
-                color: (e.child as Text).data == "3" ? AppColors.primaryTeal : Colors.transparent,
-                shape: BoxShape.circle,
+          // العنوان "التقويم"
+          const Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "التقويم",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Color(0xFF2D3142),
               ),
-              child: e,
-            )).toList(),
+            ),
+          ),
+          const SizedBox(height: 15),
+          
+          // زر اختيار الشهر (فبراير 2026)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF4F6F6),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.keyboard_arrow_down, size: 18, color: Colors.grey),
+                SizedBox(width: 5),
+                Text(
+                  "فبراير 2026",
+                  style: TextStyle(fontSize: 13, color: Color(0xFF2D3142)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 20),
+          
+          // عرض أيام الأسبوع (ح، ن، ث...)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: weekDays
+                .map((d) => Expanded(
+                      child: Center(
+                        child: Text(
+                          d,
+                          style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
+                      ),
+                    ))
+                .toList(),
+          ),
+          const SizedBox(height: 10),
+          
+          // شبكة توزيع الأيام
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: days.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 7,
+              mainAxisSpacing: 5,
+              crossAxisSpacing: 5,
+            ),
+            itemBuilder: (context, index) {
+              final day = days[index];
+              
+              // تمييز اليوم الحالي (3 فبراير) بناءً على موقعه في المصفوفة
+              bool isToday = day == "3" && index == 7; 
+              
+              // تمييز الأيام الرمادية (قبل بداية الشهر وبعد نهايته)
+              bool isGrey = index < 5 || index > 32;
+
+              return Container(
+                decoration: BoxDecoration(
+                  color: isToday ? const Color(0xFF5AB2B0) : Colors.transparent,
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    day,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                      color: isToday 
+                          ? Colors.white 
+                          : (isGrey ? Colors.grey.withValues(alpha: 0.3) : Colors.black),
+                    ),
+                  ),
+                ),
+              );
+            },
           )
         ],
       ),
@@ -685,7 +642,179 @@ class CalendarWidget extends StatelessWidget {
   }
 }
 
-// --- الصف السفلي (العدادات) ---
+// --- الصف السفلي ---
+// class BottomStatsRow extends StatelessWidget {
+//   const BottomStatsRow({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Row(
+//       children: [
+//         // كارت نسبة اكتمال مراجعة الأوراق (اللون التيلي)
+//         _gaugeCard("نسبة اكتمال مراجعة الأوراق المصححة", 0.8, const Color(0xFF5AB2B0), "80%"),
+//         // كارت نسبة اكتمال نشر النتائج (اللون الأصفر)
+//         _gaugeCard("نسبة اكتمال نشر النتائج", 0.6, const Color(0xFFF5A623), "60%"),
+//         // كارت حالة نتائج الطلاب (الدائرة)
+//         _statusCircleCard(),
+//       ],
+//     );
+//   }
+
+//   Widget _gaugeCard(String title, double percent, Color color, String text) {
+//     return Expanded(
+//       child: Container(
+//         height: 200, // ضبط الارتفاع ليتناسب مع الصورة
+//         margin: const EdgeInsets.symmetric(horizontal: 8),
+//         padding: const EdgeInsets.all(20),
+//         decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.circular(25),
+//           boxShadow: [
+//             BoxShadow(
+//               color: Colors.black.withValues(alpha: 0.05),
+//               blurRadius: 10,
+//               offset: const Offset(0, 5),
+//             )
+//           ],
+//         ),
+//         child: Column(
+//           children: [
+//             Text(
+//               title,
+//               textAlign: TextAlign.center,
+//               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+//             ),
+//             const Spacer(),
+//             // رسم العداد النصف دائري
+//             CustomPaint(
+//               size: const Size(140, 70),
+//               painter: GaugePainter(percent: percent, color: color),
+//               child: SizedBox(
+//                 width: 140,
+//                 height: 70,
+//                 child: Center(
+//                   child: Padding(
+//                     padding: const EdgeInsets.only(top: 20),
+//                     child: Text(
+//                       text,
+//                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+//                     ),
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             const Spacer(),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _statusCircleCard() {
+//     return Expanded(
+//       child: Container(
+//         height: 200,
+//         margin: const EdgeInsets.symmetric(horizontal: 8),
+//         padding: const EdgeInsets.all(20),
+//         decoration: BoxDecoration(
+//           color: Colors.white, 
+//           borderRadius: BorderRadius.circular(25),
+//           boxShadow: [
+//             BoxShadow(
+//               color: Colors.black.withValues(alpha: 0.05),
+//               blurRadius: 10,
+//               offset: const Offset(0, 5),
+//             )
+//           ],
+//         ),
+//         child: Column(
+//           children: [
+//             const Text(
+//               "حالة نتائج الطلاب", 
+//               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+//             ),
+//             const Spacer(),
+//             // الدائرة اللونية (تيلي وأصفر)
+//             SizedBox(
+//               width: 90,
+//               height: 90,
+//               child: Stack(
+//                 children: [
+//                   Positioned.fill(
+//                     child: CircularProgressIndicator(
+//                       value: 0.7, // نسبة النجاح
+//                       strokeWidth: 12,
+//                       color: const Color(0xFF5AB2B0),
+//                       backgroundColor: const Color(0xFFF5A623),
+//                       strokeCap: StrokeCap.round,
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ),
+//             const Spacer(),
+//             // مفتاح الألوان (نجاح / فشل)
+//             Row(
+//               mainAxisAlignment: MainAxisAlignment.center,
+//               children: [
+//                 _dot(const Color(0xFF5AB2B0), "نجاح"),
+//                 const SizedBox(width: 20),
+//                 _dot(const Color(0xFFF5A623), "فشل"),
+//               ],
+//             )
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _dot(Color c, String t) {
+//     return Row(
+//       children: [
+//         Container(width: 8, height: 8, decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
+//         const SizedBox(width: 6),
+//         Text(t, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+//       ],
+//     );
+//   }
+// }
+
+// // الرسام الخاص بالعداد المقوس (Gauge) ليطابق شكل الصورة تماماً
+// class GaugePainter extends CustomPainter {
+//   final double percent;
+//   final Color color;
+//   GaugePainter({required this.percent, required this.color});
+
+//   @override
+//   void paint(Canvas canvas, Size size) {
+//     final rect = Rect.fromLTRB(0, 0, size.width, size.height * 2);
+//     const startAngle = math.pi * 1.1; // بداية القوس من اليسار قليلاً للأسفل
+//     const sweepAngle = math.pi * 0.8; // طول القوس الإجمالي (أقل من نصف دائرة كاملة)
+
+//     Paint bgPaint = Paint()
+//       ..color = const Color(0xFFF4F6F6)
+//       ..style = PaintingStyle.stroke
+//       ..strokeWidth = 15
+//       ..strokeCap = StrokeCap.round;
+
+//     Paint activePaint = Paint()
+//       ..color = color
+//       ..style = PaintingStyle.stroke
+//       ..strokeWidth = 15
+//       ..strokeCap = StrokeCap.round;
+
+//     // رسم الخلفية الرمادية للقوس
+//     canvas.drawArc(rect, startAngle, sweepAngle, false, bgPaint);
+//     // رسم الجزء النشط الملون بناءً على النسبة
+//     canvas.drawArc(rect, startAngle, sweepAngle * percent, false, activePaint);
+//   }
+
+//   @override
+//   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+// }
+
+
+// الكلاس الرئيسي لتوزيع الكروت الثلاثة
 class BottomStatsRow extends StatelessWidget {
   const BottomStatsRow({super.key});
 
@@ -693,9 +822,13 @@ class BottomStatsRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _gaugeCard("نسبة اكتمال مراجعة الأوراق", 0.8, AppColors.primaryTeal, "80%"),
-        _gaugeCard("نسبة اكتمال نشر النتائج", 0.6, AppColors.accentYellow, "60%"),
+         // كارت حالة نتائج الطلاب (الدائرة)
         _statusCircleCard(),
+        // كارت نسبة اكتمال مراجعة الأوراق (اللون التيلي)
+        _gaugeCard("نسبة اكتمال مراجعة الأوراق المصححة", 0.8, const Color(0xFF5AB2B0), "80%"),
+        // كارت نسبة اكتمال نشر النتائج (اللون الأصفر)
+        _gaugeCard("نسبة اكتمال نشر النتائج", 0.6, const Color(0xFFF5A623), "60%"),
+       
       ],
     );
   }
@@ -703,22 +836,44 @@ class BottomStatsRow extends StatelessWidget {
   Widget _gaugeCard(String title, double percent, Color color, String text) {
     return Expanded(
       child: Container(
-        height: 180,
+        height: 190, // ضبط الارتفاع ليتناسب مع الصورة
         margin: const EdgeInsets.symmetric(horizontal: 8),
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            )
+          ],
+        ),
         child: Column(
           children: [
-            Text(title, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-            const Spacer(),
-            CustomPaint(
-              size: const Size(120, 60),
-              painter: GaugePainter(percent: percent, color: color),
-              child: Center(child: Padding(
-                padding: const EdgeInsets.only(top: .0),
-                child: Text(text, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              )),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
             ),
+            const Spacer(),
+            // رسم القوس المقوس (Gauge) المفتوح
+            CustomPaint(
+              size: const Size(130, 65),
+              painter: OpenArcPainter(percent: percent, color: color),
+              child: SizedBox(
+                width: 130,
+                height: 65,
+                child: Center(
+                  child: Text(
+                    text,
+                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
+                  ),
+                ),
+              ),
+            ),
+            const Spacer(),
           ],
         ),
       ),
@@ -728,30 +883,53 @@ class BottomStatsRow extends StatelessWidget {
   Widget _statusCircleCard() {
     return Expanded(
       child: Container(
-        height: 180,
+        height: 190,
         margin: const EdgeInsets.symmetric(horizontal: 8),
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            )
+          ],
+        ),
         child: Column(
           children: [
-            const Text("حالة نتائج الطلاب", style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 15),
-            Stack(
-              alignment: Alignment.center,
-              children: [
-                SizedBox(
-                  width: 80, height: 80,
-                  child: CircularProgressIndicator(value: 0.7, strokeWidth: 10, color: AppColors.primaryTeal, backgroundColor: AppColors.accentYellow),
-                ),
-              ],
+            const Text(
+              "حالة نتائج الطلاب", 
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF2D3142)),
             ),
-            const SizedBox(height: 10),
+            const Spacer(),
+            // الدائرة اللونية (تيلي وأصفر)
+            SizedBox(
+              width: 85,
+              height: 85,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: CircularProgressIndicator(
+                      value: 0.7, // نسبة النجاح
+                      strokeWidth: 10,
+                      color: const Color(0xFF5AB2B0),
+                      backgroundColor: const Color(0xFFF5A623),
+                      strokeCap: StrokeCap.round,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Spacer(),
+            // مفتاح الألوان (نجاح / فشل)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _dot(AppColors.primaryTeal, "نجاح"),
-                const SizedBox(width: 15),
-                _dot(AppColors.accentYellow, "فشل"),
+                _dot(const Color(0xFF5AB2B0), "نجاح"),
+                const SizedBox(width: 18),
+                _dot(const Color(0xFFF5A623), "فشل"),
               ],
             )
           ],
@@ -761,29 +939,55 @@ class BottomStatsRow extends StatelessWidget {
   }
 
   Widget _dot(Color c, String t) {
-    return Row(children: [
-      Container(width: 8, height: 8, decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
-      const SizedBox(width: 5),
-      Text(t, style: const TextStyle(fontSize: 10)),
-    ]);
+    return Row(
+      children: [
+        Container(width: 8, height: 8, decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
+        const SizedBox(width: 6),
+        Text(t, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+      ],
+    );
   }
 }
 
-// رسام مخصص للعدادات النصف دائرية
-class GaugePainter extends CustomPainter {
+// الرسام الخاص برسم الأقواس المفتوحة والسميكة لتطابق الصورة تماماً
+class OpenArcPainter extends CustomPainter {
   final double percent;
   final Color color;
-  GaugePainter({required this.percent, required this.color});
+  OpenArcPainter({required this.percent, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint bgPaint = Paint()..color = Colors.grey.shade200..style = PaintingStyle.stroke..strokeWidth = 12..strokeCap = StrokeCap.round;
-    Paint activePaint = Paint()..color = color..style = PaintingStyle.stroke..strokeWidth = 12..strokeCap = StrokeCap.round;
+    final rect = Rect.fromLTWH(0, 0, size.width, size.height * 2);
+    const double strokeWidth = 16;
+    
+    // زوايا البداية والنهاية لخلق شكل الأنبوب المفتوح
+    const startAngle = math.pi * 1.15; // بداية القوس من اليسار مائلاً للأسفل
+    const sweepAngle = math.pi * 0.7; // طول القوس الإجمالي (أقل من نصف دائرة)
 
-    canvas.drawArc(Rect.fromLTRB(0, 0, size.width, size.height * 2), math.pi, math.pi, false, bgPaint);
-    canvas.drawArc(Rect.fromLTRB(0, 0, size.width, size.height * 2), math.pi, math.pi * percent, false, activePaint);
+    Paint bgPaint = Paint()
+      ..color = const Color(0xFFF4F6F6) // خلفية رمادية فاتحة جداً للقوس
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round; // حواف دائرية ناعمة
+
+    Paint activePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth
+      ..strokeCap = StrokeCap.round;
+
+    // رسم الخلفية الرمادية أولاً
+    canvas.drawArc(rect, startAngle, sweepAngle, false, bgPaint);
+    // رسم الجزء النشط الملون فوقه بناءً على النسبة
+    canvas.drawArc(rect, startAngle, sweepAngle * percent, false, activePaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
+
+
+
+
+
+
