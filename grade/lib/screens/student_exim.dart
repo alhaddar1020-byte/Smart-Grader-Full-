@@ -62,24 +62,40 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 33,
+                  horizontal: 20,
                   vertical: 10,
                 ),
-                child: Column(
-                  children: [
-                    IntrinsicHeight(
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Expanded(flex: 5, child: _buildStatsGrid()),
-                          const SizedBox(width: 20),
-                          Expanded(flex: 2, child: _buildFinalScoreCard()),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    _buildMainContentSection(),
-                  ],
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // تحديد إذا كانت الشاشة جوال (أصغر من 600)
+                    bool isMobile = constraints.maxWidth < 600;
+
+                    return Column(
+                      children: [
+                        // القسم العلوي: يحافظ على الـ Row في كل الحالات
+                        IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // شبكة الإحصائيات (تأخذ مساحة أكبر)
+                              Expanded(
+                                flex: 5,
+                                child: _buildStatsGrid(isMobile),
+                              ),
+                              SizedBox(width: isMobile ? 10 : 20),
+                              // كرت النتيجة (يصغر جداً في الجوال)
+                              Expanded(
+                                flex: isMobile ? 3 : 2,
+                                child: _buildFinalScoreCard(isMobile),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        _buildMainContentSection(isMobile),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -89,131 +105,10 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  Color _getStatusColor(double score, double total) {
-    bool _isDark(BuildContext context) {
-      return Theme.of(context).brightness == Brightness.dark;
-    }
-
-    if (score == total)
-      return _isDark(context)
-          ? const Color.fromARGB(255, 83, 253, 145)
-          : const Color(0xFF00A63E);
-    ;
-    ;
-    if (score > 0)
-      return _isDark(context)
-          ? const Color.fromARGB(255, 255, 194, 82)
-          : const Color(0xFFD08700);
-    return _isDark(context)
-        ? const Color.fromARGB(255, 255, 85, 94)
-        : const Color(0xFFE7000B);
-  }
-
-  Widget _buildFixedHeader() {
+  // دالة الإحصائيات - تصغير المسافات والبادينق
+  Widget _buildStatsGrid(bool isMobile) {
     return Container(
-      width: double.infinity,
-      height: 43,
-      margin: const EdgeInsets.fromLTRB(33, 20, 33, 10),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg(context),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            const SizedBox(width: 8),
-            _breadcrumbItem("المواد", () => widget.onItemSelected(1)),
-            _dividerIcon(),
-            _breadcrumbItem(widget.subjectName, widget.onBack),
-            _dividerIcon(),
-            Text(
-              "عرض التفاصيل",
-              style: TextStyle(
-                color: AppColors.primaryTeal(context),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _breadcrumbItem(String title, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      child: Text(
-        title,
-        style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14),
-      ),
-    );
-  }
-
-  Widget _buildFinalScoreCard() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppColors.primaryTeal(context),
-            AppColors.primaryTeal(context).withOpacity(0.8),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          const Text(
-            "النتيجة النهائية",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Text(
-            "85",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 44,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Text(
-            "من 100",
-            style: TextStyle(color: Colors.white70, fontSize: 19),
-          ),
-          const SizedBox(height: 5),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primaryTeal(context),
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              minimumSize: const Size(double.infinity, 35),
-            ),
-            child: const Text(
-              "تحميل التقرير  ",
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatsGrid() {
-    return Container(
-      padding: const EdgeInsets.all(10),
+      padding: EdgeInsets.all(isMobile ? 8 : 15),
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(16),
@@ -227,6 +122,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "10",
               const Color(0xFFDBEAFE),
               Icons.list_alt,
+              isMobile,
             ),
           ),
           Expanded(
@@ -235,6 +131,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "1",
               const Color(0xFFFFE2E2),
               Icons.close,
+              isMobile,
             ),
           ),
           Expanded(
@@ -243,6 +140,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "1",
               const Color(0xFFFEF9C2),
               Icons.priority_high,
+              isMobile,
             ),
           ),
           Expanded(
@@ -251,6 +149,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "8",
               const Color(0xFFDCFCE7),
               Icons.check,
+              isMobile,
             ),
           ),
         ],
@@ -258,54 +157,112 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  Widget _statItem(String label, String value, Color bgColor, IconData icon) {
+  Widget _statItem(
+    String label,
+    String value,
+    Color bgColor,
+    IconData icon,
+    bool isMobile,
+  ) {
     return Column(
-      mainAxisSize:
-          MainAxisSize.min, // يضمن أن العمود لا يأخذ مساحة الشاشة كاملة
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          // إزالة التمدد اللانهائي واستبداله بمرونة محكومة
-          width: double.infinity,
-          constraints: const BoxConstraints(
-            maxWidth: 150,
-          ), // حد أقصى للعرض لضمان التناسق
-          height: 40,
+          width: isMobile ? 28 : 45, // تصغير الأيقونة جداً
+          height: isMobile ? 28 : 45,
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: Colors.black45, size: 20),
+          child: Icon(icon, color: Colors.black45, size: isMobile ? 14 : 22),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         FittedBox(
           fit: BoxFit.scaleDown,
           child: Text(
             label,
-            textAlign: TextAlign.center,
-            maxLines: 1,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: isMobile ? 9 : 12,
               color: AppColors.textSecondary(context),
             ),
           ),
         ),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary(context),
-            ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: isMobile ? 13 : 18,
+            fontWeight: FontWeight.bold,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildMainContentSection() {
+  // كرت النتيجة - تصغير الخطوط والأزرار بشكل حاد
+  Widget _buildFinalScoreCard(bool isMobile) {
+    return Container(
+      padding: EdgeInsets.all(isMobile ? 8 : 16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primaryTeal(context),
+            AppColors.primaryTeal(context).withValues(alpha: 0.8),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          FittedBox(
+            child: Text(
+              "النتيجة النهائية",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isMobile ? 10 : 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Text(
+            "85",
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: isMobile ? 28 : 44,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            "من 100",
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: isMobile ? 12 : 19,
+            ),
+          ),
+          if (isMobile)
+            const SizedBox(height: 4)
+          else
+            const SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: AppColors.primaryTeal(context),
+              elevation: 0,
+              padding: EdgeInsets.symmetric(horizontal: isMobile ? 4 : 8),
+              minimumSize: Size(double.infinity, isMobile ? 25 : 35),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(6),
+              ),
+            ),
+            child: Text("تحميل", style: TextStyle(fontSize: isMobile ? 9 : 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainContentSection(bool isSmall) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -319,15 +276,19 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // زر التصحيح التفصيلي
                 _buildTabButton(
                   "التصحيح التفصيلي",
                   isDetailedCorrection,
+                  isSmall,
                   () => setState(() => isDetailedCorrection = true),
                 ),
-                const SizedBox(width: 15),
+                const SizedBox(width: 10),
+                // زر ورقة الإجابة
                 _buildTabButton(
-                  "ورقة الاجابة الاصلية",
+                  "ورقة الاجابة",
                   !isDetailedCorrection,
+                  isSmall,
                   () => setState(() => isDetailedCorrection = false),
                 ),
               ],
@@ -335,54 +296,51 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
           ),
           Divider(
             height: 1,
-            color: AppColors.textSecondary(context).withOpacity(0.2),
+            color: AppColors.textSecondary(context).withValues(alpha: 0.2),
           ),
-          Padding(
-            padding: const EdgeInsets.all(25),
-            child: isDetailedCorrection
-                ? _buildDetailedList()
-                : _buildOriginalPaperPlaceholder(),
+          // عرض المحتوى بناءً على الزر المختار
+          AnimatedSwitcher(
+            // أضفت تأثير انتقال ناعم عند التبديل
+            duration: const Duration(milliseconds: 300),
+            child: Padding(
+              key: ValueKey<bool>(
+                isDetailedCorrection,
+              ), // مفتاح ليعرف الـ Switcher أن المحتوى تغير
+              padding: EdgeInsets.all(isSmall ? 15 : 25),
+              child: isDetailedCorrection
+                  ? _buildDetailedList(isSmall)
+                  : _buildOriginalPaperPlaceholder(),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailedList() {
+  Widget _buildDetailedList(bool isMobile) {
     return Column(
-      children: questionsData.map((data) {
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 20),
-          child: _buildQuestionCard(
-            questionNum: data['id'],
-            questionText: data['text'],
-            score: data['score'],
-            total: data['total'],
-            modelAnswer: data['modelAnswer'],
-            studentAnswer: data['studentAnswer'],
-            aiEvaluation: data['evaluation'],
-          ),
-        );
-      }).toList(),
+      children: questionsData
+          .map(
+            (data) => Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: _buildQuestionCard(isMobile: isMobile, data: data),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildQuestionCard({
-    required String questionNum,
-    required String questionText,
-    required double score,
-    required double total,
-    required String modelAnswer,
-    required String studentAnswer,
-    required String aiEvaluation,
+    required bool isMobile,
+    required Map<String, dynamic> data,
   }) {
-    final Color statusColor = _getStatusColor(score, total);
+    final Color statusColor = _getStatusColor(data['score'], data['total']);
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(isMobile ? 12 : 20),
       decoration: BoxDecoration(
-        color: statusColor.withOpacity(0.05),
+        color: statusColor.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: statusColor.withOpacity(0.3)),
+        border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,42 +349,29 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "السؤال $questionNum",
+                "السؤال ${data['id']}",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: AppColors.textPrimary(context),
+                  fontSize: isMobile ? 14 : 16,
                 ),
               ),
               Row(
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        "الدرجة",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.textSecondary(context),
-                        ),
-                      ),
-                      Text(
-                        "${score.toInt()}/${total.toInt()}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: statusColor,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ],
+                  Text(
+                    "${data['score'].toInt()}/${data['total'].toInt()}",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: statusColor,
+                      fontSize: isMobile ? 15 : 18,
+                    ),
                   ),
-                  const SizedBox(width: 15),
+                  const SizedBox(width: 8),
                   Icon(
-                    score == total
+                    data['score'] == data['total']
                         ? Icons.check_circle_outline
                         : Icons.error_outline,
                     color: statusColor,
-                    size: 28,
+                    size: isMobile ? 20 : 24,
                   ),
                 ],
               ),
@@ -434,78 +379,46 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
           ),
           const SizedBox(height: 10),
           Text(
-            questionText,
+            data['text'],
             style: TextStyle(
-              fontSize: 16,
+              fontSize: isMobile ? 13 : 15,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary(context),
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 15),
+          // الـ Row للأجوبة تبقى Row لكن مع Expanded متساوي
           Row(
             children: [
-              _buildAnswerBox("الإجابة النموذجية:", modelAnswer),
-              const SizedBox(width: 15),
-              _buildAnswerBox("إجابة الطالب:", studentAnswer),
+              _buildAnswerBox("النموذجية:", data['modelAnswer'], isMobile),
+              const SizedBox(width: 10),
+              _buildAnswerBox("إجابتك:", data['studentAnswer'], isMobile),
             ],
           ),
           const SizedBox(height: 15),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: AppColors.secondaryTeal(context).withOpacity(0.3),
+              color: AppColors.secondaryTeal(context).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Row(
-              children: [
-                Text(
-                  "تقييم AI:",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primaryTeal(context),
-                  ),
+            child: RichText(
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: isMobile ? 11 : 13,
+                  color: AppColors.textPrimary(context),
+                  fontFamily: 'Cairo',
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    aiEvaluation,
-                    style: TextStyle(color: AppColors.textPrimary(context)),
+                children: [
+                  TextSpan(
+                    text: "تقييم AI: ",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primaryTeal(context),
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnswerBox(String title, String content) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 15,
-              color: AppColors.textSecondary(context),
-            ),
-          ),
-          const SizedBox(height: 5),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.cardBg(context),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text(
-              content,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary(context),
+                  TextSpan(text: data['evaluation']),
+                ],
               ),
             ),
           ),
@@ -514,11 +427,60 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  Widget _buildTabButton(String label, bool isActive, VoidCallback onTap) {
+  Widget _buildAnswerBox(String title, String content, bool isMobile) {
+    return Expanded(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: isMobile ? 10 : 12, color: Colors.grey),
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppColors.cardBg(context),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerRight,
+              child: Text(
+                content,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // دالة المساعدة للألوان
+  Color _getStatusColor(double score, double total) {
+    if (score == total) return const Color(0xFF00A63E);
+    if (score > 0) return const Color(0xFFD08700);
+    return const Color(0xFFE7000B);
+  }
+
+  Widget _buildTabButton(
+    String label,
+    bool isActive,
+    bool isSmall,
+    VoidCallback onTap,
+  ) {
     return InkWell(
+      // أضفنا الـ InkWell هنا لتفعيل الضغط
       onTap: onTap,
+      borderRadius: BorderRadius.circular(
+        10,
+      ), // لجعل تأثير الضغط متناسق مع الحواف
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+        padding: EdgeInsets.symmetric(
+          horizontal: isSmall ? 15 : 30,
+          vertical: 10,
+        ),
         decoration: BoxDecoration(
           color: isActive ? AppColors.primaryTeal(context) : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
@@ -526,34 +488,70 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? Colors.white : AppColors.textSecondary(context),
+            color: isActive ? Colors.white : Colors.grey,
             fontWeight: FontWeight.bold,
+            fontSize: isSmall ? 12 : 14,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildOriginalPaperPlaceholder() => Container(
-    height: 400,
-    decoration: BoxDecoration(
-      color: AppColors.scaffoldBg(context),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Center(
-      child: Text(
-        "ورقة الإجابة الأصلية",
-        style: TextStyle(color: AppColors.textSecondary(context)),
+  Widget _buildFixedHeader() {
+    return Container(
+      width: double.infinity,
+      height: 43,
+      margin: const EdgeInsets.fromLTRB(33, 20, 33, 10),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg(context),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
+        ],
       ),
-    ),
-  );
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () => widget.onItemSelected(1),
+              child: const Text(
+                "المواد",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Icon(Icons.chevron_left, color: Colors.grey, size: 16),
+            ),
+            InkWell(
+              onTap: widget.onBack,
+              child: Text(
+                widget.subjectName,
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Icon(Icons.chevron_left, color: Colors.grey, size: 16),
+            ),
+            Text(
+              "التفاصيل",
+              style: TextStyle(
+                color: AppColors.primaryTeal(context),
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-  Widget _dividerIcon() => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 5),
-    child: Icon(
-      Icons.chevron_left,
-      color: AppColors.textSecondary(context).withOpacity(0.5),
-      size: 18,
-    ),
-  );
+  Widget _buildOriginalPaperPlaceholder() =>
+      const Center(child: Text("ورقة الإجابة الأصلية"));
 }

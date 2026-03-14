@@ -51,8 +51,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isMobile = constraints.maxWidth < 600;
-        bool isTablet =
-            constraints.maxWidth >= 600 && constraints.maxWidth < 1100;
         bool isWeb = constraints.maxWidth >= 1100;
 
         return Directionality(
@@ -72,8 +70,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     ),
                     child: Column(
                       children: [
-                        // 1. الإحصائيات (تدعم اليمين لليسار في الجوال)
-                        _buildTopStatsGrid(isMobile, isTablet),
+                        // 1. الإحصائيات (تدعم التمرير العربي في الجوال)
+                        _buildTopStatsGrid(isMobile),
 
                         const SizedBox(height: 48),
 
@@ -82,12 +80,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
                         const SizedBox(height: 32),
 
-                        // 3. عرض المواد (مرن: 4 ويب، 3 تابلت، طولي جوال)
-                        _buildSubjectsResponsiveLayout(
-                          isMobile,
-                          isTablet,
-                          isWeb,
-                        ),
+                        // 3. عرض المواد المتجاوب (4 أو 3 أو 2 أو 1)
+                        _buildFluidSubjectsLayout(),
                       ],
                     ),
                   ),
@@ -97,76 +91,128 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  // الإحصائيات مع ضبط اتجاه الجوال
-  Widget _buildTopStatsGrid(bool isMobile, bool isTablet) {
+  // الإحصائيات مع دعم RTL للجوال
+  Widget _buildTopStatsGrid(bool isMobile) {
+    // تحديد حالة التابلت بناءً على العرض
+    double width = MediaQuery.of(context).size.width;
+    bool isTablet = width >= 600 && width < 1100;
+
     var stats = [
-      _buildStatCard("أعلى معدل", topGrade, Icons.trending_up),
-      _buildStatCard("المعدل العام", averageGrade, Icons.analytics),
-      _buildStatCard("إجمالي الامتحانات", totalExams, Icons.description),
-      _buildStatCard("إجمالي المواد", totalSubjects, Icons.book),
+      _statCard(
+        context,
+        "أعلى معدل",
+        topGrade,
+        Icons.trending_up,
+        AppColors.primaryTeal(context),
+        isTablet,
+      ),
+      _statCard(
+        context,
+        "المعدل العام",
+        averageGrade,
+        Icons.analytics,
+        AppColors.primaryTeal(context),
+        isTablet,
+      ),
+      _statCard(
+        context,
+        "إجمالي الامتحانات",
+        totalExams,
+        Icons.description,
+        AppColors.primaryTeal(context),
+        isTablet,
+      ),
+      _statCard(
+        context,
+        "إجمالي المواد",
+        totalSubjects,
+        Icons.book,
+        AppColors.accentYellow(context),
+        isTablet,
+      ),
     ];
 
     if (isMobile) {
       return SingleChildScrollView(
-        reverse: true, // يضمن البدء من اليمين في العربية
+        reverse: false, // يبدأ من اليمين للعربي
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
-          children: stats
-              .map(
-                (card) => Container(
-                  width: MediaQuery.of(context).size.width * 0.42,
-                  margin: const EdgeInsetsDirectional.only(end: 12),
-                  child: card,
+          children: [
+            for (int i = 0; i < stats.length; i++)
+              Container(
+                width: MediaQuery.of(context).size.width * 0.33,
+                margin: EdgeInsetsDirectional.only(
+                  end: i == stats.length - 1 ? 0 : 12,
                 ),
-              )
-              .toList(),
+                child: stats[i],
+              ),
+          ],
         ),
       );
     }
 
     return Row(
-      children: stats
-          .map(
-            (card) => Expanded(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 16),
-                child: card,
-              ),
-            ),
-          )
-          .toList(),
+      children: [
+        for (int i = 0; i < stats.length; i++) ...[
+          Expanded(child: stats[i]),
+          if (i != stats.length - 1) const SizedBox(width: 16),
+        ],
+      ],
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon) {
+  Widget _statCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color cardColor,
+    bool isTablet,
+  ) {
     return Container(
-      height: 110,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isTablet ? 12 : 17),
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey.withOpacity(0.1)),
+        borderRadius: BorderRadius.circular(24), // حواف دائرية كبيرة وفخمة
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, color: AppColors.accentYellow(context), size: 24),
-          const Spacer(),
-          Text(
-            title,
-            style: TextStyle(
-              color: AppColors.textSecondary(context),
-              fontSize: 12,
-            ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Icon(icon, color: Color(0xFFF6AD55), size: isTablet ? 20 : 25),
+              const SizedBox(width: 4),
+
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment
+                      .centerRight, // لجعل النص يزحف لليمان عند التصغير
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontSize: isTablet ? 13 : 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary(context),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: AppColors.textPrimary(context),
+                fontSize: isTablet ? 22 : 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -174,38 +220,33 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  // توزيع الكروت حسب حجم الشاشة
-  Widget _buildSubjectsResponsiveLayout(
-    bool isMobile,
-    bool isTablet,
-    bool isWeb,
-  ) {
+  // المنطق الذكي لتوزيع الكروت (Fluid Layout)
+  Widget _buildFluidSubjectsLayout() {
     final subjects = _getSubjectsByTerm();
 
     return LayoutBuilder(
-      builder: (context, subjectsConstraints) {
-        double width = subjectsConstraints.maxWidth;
-
-        // المنطق الجديد لعدد الأعمدة:
+      builder: (context, box) {
+        double width = box.maxWidth;
         int crossAxisCount;
-        if (width > 1100) {
-          crossAxisCount = 4; // وضع الويب
-        } else if (width > 750) {
-          crossAxisCount = 3; // تابلت (العرض واسع)
-        } else if (width > 500) {
-          crossAxisCount = 2; // تابلت (العرض ضيق - الحجم اللي في صورتك)
+
+        // تحديد عدد الأعمدة بناءً على العرض بكسل ببكسل
+        if (width > 900) {
+          crossAxisCount = 4; // ويب
+        } else if (width > 650) {
+          crossAxisCount = 3; // تابلت كبير أو ويب مصغر
+        } else if (width > 400) {
+          crossAxisCount = 2; // تابلت صغير أو جوال بالعرض
         } else {
-          crossAxisCount = 1; // جوال
+          crossAxisCount = 1; // جوال طولي
         }
 
-        // إذا كان عمود واحد (جوال)، نستخدم Column، وإذا أكثر نستخدم Grid
         if (crossAxisCount == 1) {
           return Column(
             children: subjects
                 .map(
                   (s) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: _buildOldStyleSubjectCard(s, true),
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: _buildOldStyleSubjectCard(s),
                   ),
                 )
                 .toList(),
@@ -219,22 +260,18 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: 16,
             mainAxisSpacing: 20,
-            // تحكمي في هذا الرقم لضبط "طول" الكارت (كل ما قل الرقم زاد الطول)
-            childAspectRatio: crossAxisCount == 2 ? 1.3 : 1.1,
+            mainAxisExtent: 210, // الارتفاع الثابت الآمن لمنع الأوفر فلو
           ),
           itemCount: subjects.length,
           itemBuilder: (context, index) =>
-              _buildOldStyleSubjectCard(subjects[index], false),
+              _buildOldStyleSubjectCard(subjects[index]),
         );
       },
     );
   }
 
-  // الكارد بتنسيقك القديم المفضل
-  Widget _buildOldStyleSubjectCard(
-    Map<String, dynamic> subject,
-    bool isListMode,
-  ) {
+  // الكارد بتنسيقك الأصلي المفضل
+  Widget _buildOldStyleSubjectCard(Map<String, dynamic> subject) {
     bool isSelected = selectedSubjectName == subject["name"];
 
     return GestureDetector(
@@ -316,7 +353,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            // الجزء الرمادي في الأسفل لآخر امتحان
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(8),

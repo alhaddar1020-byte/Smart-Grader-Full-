@@ -61,7 +61,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        bool isMobile = constraints.maxWidth < 650;
+        bool isMobile = constraints.maxWidth < 600;
         bool isTablet =
             constraints.maxWidth >= 600 && constraints.maxWidth < 1100;
         bool isWeb = constraints.maxWidth >= 1100;
@@ -383,7 +383,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: isSmallScreen
-                                ? 14
+                                ? 12
                                 : 16, // تصغير الخط في التابلت
                             color: AppColors.textPrimary(context),
                           ),
@@ -395,7 +395,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                           style: TextStyle(
                             color: AppColors.textSecondary(context),
                             fontSize: isSmallScreen
-                                ? 10
+                                ? 8
                                 : 12, // تصغير الخط في التابلت
                           ),
                         ),
@@ -499,18 +499,24 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       ),
     ];
 
-    if (isMobile) {
+    // التعديل هنا: إذا كانت الشاشة تابلت ولكن عرضها صغير جداً، نحولها لتمرير أفقي لمنع الأوفر فلو
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isSmallTablet = isTablet && screenWidth < 750;
+
+    if (isMobile || isSmallTablet) {
       return SingleChildScrollView(
-        reverse: true, // اتركيها false للغة العربية
+        reverse: true,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
             for (int i = 0; i < children.length; i++) ...[
               Container(
-                width: MediaQuery.of(context).size.width * 0.42,
+                // في التابلت الصغير نجعل الكروت أعرض قليلاً لتظهر النصوص بوضوح
+                width: isSmallTablet
+                    ? 180
+                    : MediaQuery.of(context).size.width * 0.42,
                 margin: EdgeInsetsDirectional.only(
-                  // نستخدم end لتعني "اليسار" في العربية و "اليمين" في الإنجليزية
                   end: i == children.length - 1 ? 0 : 12,
                 ),
                 child: children[i],
@@ -520,12 +526,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         ),
       );
     }
-    // حالة التابلت والويب
+
+    // حالة التابلت الكبير والويب
     return Row(
       children: [
         for (int i = 0; i < children.length; i++) ...[
           Expanded(child: children[i]),
-          // إضافة مسافة فقط إذا لم يكن هذا هو الكرت الأخير
           if (i != children.length - 1) const SizedBox(width: 16),
         ],
       ],
@@ -538,10 +544,10 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     String value,
     IconData icon,
     Color cardColor,
-    bool isTablet, // أضفنا هذا المتغير
+    bool isTablet,
   ) {
     return Container(
-      padding: EdgeInsets.all(isTablet ? 12 : 17), // تقليل البادينق في التابلت
+      padding: EdgeInsets.all(isTablet ? 12 : 17),
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
@@ -553,29 +559,36 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: isTablet ? 11 : 16,
-                  fontWeight: FontWeight.bold,
+              // حماية النص هنا باستخدام Expanded و FittedBox
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.topRight,
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isTablet ? 13 : 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Icon(
-                icon,
-                color: Colors.white,
-                size: isTablet ? 16 : 20,
-              ), // تصغير الأيقونة
+              const SizedBox(width: 4),
+              Icon(icon, color: Colors.white, size: isTablet ? 16 : 20),
             ],
           ),
           const SizedBox(height: 8),
-          Text(
-            value,
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: isTablet ? 18 : 22, // تصغير القيمة
-              fontWeight: FontWeight.bold,
+          // حماية القيمة الرقمية أيضاً
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isTablet ? 18 : 22,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
@@ -746,7 +759,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       padding: EdgeInsets.only(
         left: isSmall ? 12 : 20,
         right: isSmall ? 12 : 20,
-        bottom: isSmall ? 23 : 2,
+        bottom: isSmall ? 23 : 20,
         top: isSmall ? 23 : 20,
       ),
       decoration: BoxDecoration(
@@ -769,16 +782,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
             "طالب متميز",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              fontSize: isSmall ? 12 : 16,
+              fontSize: isSmall ? 14 : 16,
               color: AppColors.textPrimary(context),
             ),
           ),
           Text(
-            "معدل %$badge",
+            "حافظت على معدل %$badge",
             textAlign: TextAlign.center,
             style: TextStyle(
               color: AppColors.textSecondary(context),
-              fontSize: isSmall ? 10 : 12,
+              fontSize: isSmall ? 12 : 14,
             ),
           ),
         ],
@@ -834,7 +847,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           // عرض الرقم الأول (المواد المصححة)
           _rowInfoDesign(
             gradedCount,
-            isSmall ? "المنتهية" : "المواد المصححة",
+            isSmall ? "المصححة" : "المواد المصححة",
             isSmall,
           ),
 
@@ -864,7 +877,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
               value,
               style: TextStyle(
                 color: Colors.white,
-                fontSize: isSmall ? 16 : 20,
+                fontSize: isSmall ? 12 : 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -875,7 +888,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           child: Text(
             title,
             textAlign: TextAlign.right,
-            style: TextStyle(color: Colors.white, fontSize: isSmall ? 11 : 14),
+            style: TextStyle(color: Colors.white, fontSize: isSmall ? 9 : 14),
           ),
         ),
       ],
@@ -1020,7 +1033,7 @@ class CustSidebar extends StatelessWidget {
                       ),
                     ),
                   if (!isCompact) const SizedBox(width: 15),
-                  Icon(icon, color: AppColors.accentYellow(context), size: 26),
+                  Icon(icon, color: Color(0xFFF6AD55), size: 26),
                 ],
               ),
             ),
