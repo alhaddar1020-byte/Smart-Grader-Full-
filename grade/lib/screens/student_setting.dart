@@ -426,7 +426,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Text(
                   value,
                   style: TextStyle(
-                    fontSize: isMobile ? 14 : 16,
+                    fontSize: isMobile ? 14 : 14,
                     color: AppColors.textPrimary(context),
                   ),
                   overflow: TextOverflow.ellipsis,
