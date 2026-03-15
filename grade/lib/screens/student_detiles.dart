@@ -56,25 +56,13 @@ class SubjectDetailsScreen extends StatelessWidget {
       },
     ];
 
-    final List<String> strengths = [
-      "أداء ممتاز",
-      "سرعة البللللللللللللللللللللللللللللللللللللللللللللللللللللللللديهة",
-    ];
-    final List<String> improvements = [
-      "إدارة الوقت",
-      "التركيلللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللز",
-      " لللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللللل",
-    ];
+    final List<String> strengths = ["أداء ممتاز", "سرعة البديهة"];
+    final List<String> improvements = ["إدارة الوقت", "التركيز"];
 
     return LayoutBuilder(
       builder: (context, constraints) {
         double width = constraints.maxWidth;
-
-        // تطبيق المنطق الذي طلبته بدقة:
-        // 1. إذا العرض أكبر من 650 (ويب وتابلت كبير): التصميم "جنب بعض" (Side-by-Side)
-        // 2. إذا العرض أصغر من 650 (تابلت صغير وجوال): التصميم "فوق بعض" (Stacked)
         bool showSideLayout = width > 750;
-        bool isMobile = width < 400;
 
         return Scaffold(
           backgroundColor: AppColors.secondaryTeal(context),
@@ -86,6 +74,7 @@ class SubjectDetailsScreen extends StatelessWidget {
                   _buildFixedHeader(context),
                   Expanded(
                     child: SingleChildScrollView(
+                      // تم تعديل المحاذاة هنا لتكون 30 بكسل بالضبط لتطابق الهيدر العلوي
                       padding: const EdgeInsets.symmetric(
                         horizontal: 30.0,
                         vertical: 5,
@@ -93,13 +82,9 @@ class SubjectDetailsScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // الإحصائيات تتغير بناءً على الـ Breakpoints الخاصة بك
                           _buildFullWidthStatsRow(context, subjectStats, width),
-
                           const SizedBox(height: 20),
-
                           if (showSideLayout)
-                            // الويب والتابلت الكبير (حسب قياسك > 650)
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -113,9 +98,7 @@ class SubjectDetailsScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 24),
                                 SizedBox(
-                                  width: width > 900
-                                      ? 300
-                                      : 220, // تصغير عرض الكاردات في التابلت
+                                  width: width > 900 ? 300 : 220,
                                   child: _buildSideSection(
                                     context,
                                     strengths,
@@ -126,7 +109,6 @@ class SubjectDetailsScreen extends StatelessWidget {
                               ],
                             )
                           else
-                            // التابلت الصغير والجوال (حسب قياسك < 650)
                             Column(
                               children: [
                                 _buildSideSection(
@@ -154,14 +136,14 @@ class SubjectDetailsScreen extends StatelessWidget {
     );
   }
 
-  // --- دالة الإحصائيات المحدثة حسب قياساتك ---
+  // --- دوال البناء (تم الحفاظ عليها كما هي مع ضمان استجابة الأبعاد الداخلية) ---
+
   Widget _buildFullWidthStatsRow(
     BuildContext context,
     Map<String, String> stats,
     double width,
   ) {
     bool isTablet = width >= 600 && width < 1100;
-
     var items = [
       _statItem(
         context,
@@ -198,7 +180,6 @@ class SubjectDetailsScreen extends StatelessWidget {
     ];
 
     if (width < 600) {
-      // جوال
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
@@ -214,7 +195,6 @@ class SubjectDetailsScreen extends StatelessWidget {
         ),
       );
     }
-    // تابلت وويب: عرض كامل ممتد
     return Row(
       children: items
           .map(
@@ -228,8 +208,6 @@ class SubjectDetailsScreen extends StatelessWidget {
           .toList(),
     );
   }
-
-  // --- بقية الـ Widgets (ثابتة مع السكرول الدائم) ---
 
   Widget _statItem(
     BuildContext context,
@@ -260,7 +238,11 @@ class SubjectDetailsScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Icon(icon, color: Color(0xFFF6AD55), size: isTablet ? 20 : 25),
+              Icon(
+                icon,
+                color: const Color(0xFFF6AD55),
+                size: isTablet ? 20 : 25,
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: FittedBox(
@@ -270,7 +252,7 @@ class SubjectDetailsScreen extends StatelessWidget {
                     label,
                     style: TextStyle(
                       color: AppColors.textSecondary(context),
-                      fontSize: isTablet ? 13 : 13,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -325,7 +307,7 @@ class SubjectDetailsScreen extends StatelessWidget {
                     Expanded(
                       child: _badgeInfo(context, "التاريخ", exam["date"]!),
                     ),
-                    const SizedBox(width: 8), // مسافة بسيطة بين العناصر
+                    const SizedBox(width: 8),
                     Expanded(
                       child: _badgeInfo(context, "الأسئلة", exam["total"]!),
                     ),
@@ -347,7 +329,6 @@ class SubjectDetailsScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Center(
                   child: InkWell(
-                    // نقوم بتمرير subjectName (اسم المادة الأصلي) بدلاً من عنوان الامتحان
                     onTap: () => onSubjectTap(subjectName),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -538,11 +519,9 @@ class SubjectDetailsScreen extends StatelessWidget {
     bool isBlue = false,
   }) {
     return Container(
-      // لا تضع width هنا
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       decoration: BoxDecoration(
-        color: AppColors.scaffoldBg(context).withOpacity(0.5),
-
+        color: AppColors.scaffoldBg(context).withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(

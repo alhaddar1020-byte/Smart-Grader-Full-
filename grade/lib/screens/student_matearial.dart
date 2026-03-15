@@ -51,7 +51,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isMobile = constraints.maxWidth < 600;
-        bool isWeb = constraints.maxWidth >= 1100;
+        // تم توحيد المحاذاة هنا لتكون 30 بكسل دائماً لتطابق الهيدر
+        double horizontalPadding = 30.0;
 
         return Directionality(
           textDirection: TextDirection.rtl,
@@ -65,12 +66,12 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                   )
                 : SingleChildScrollView(
                     padding: EdgeInsets.symmetric(
-                      horizontal: isWeb ? 40 : 16,
+                      horizontal: horizontalPadding,
                       vertical: 32,
                     ),
                     child: Column(
                       children: [
-                        // 1. الإحصائيات (تدعم التمرير العربي في الجوال)
+                        // 1. الإحصائيات
                         _buildTopStatsGrid(isMobile),
 
                         const SizedBox(height: 48),
@@ -80,7 +81,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
                         const SizedBox(height: 32),
 
-                        // 3. عرض المواد المتجاوب (4 أو 3 أو 2 أو 1)
+                        // 3. عرض المواد
                         _buildFluidSubjectsLayout(),
                       ],
                     ),
@@ -91,9 +92,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  // الإحصائيات مع دعم RTL للجوال
   Widget _buildTopStatsGrid(bool isMobile) {
-    // تحديد حالة التابلت بناءً على العرض
     double width = MediaQuery.of(context).size.width;
     bool isTablet = width >= 600 && width < 1100;
 
@@ -134,7 +133,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
     if (isMobile) {
       return SingleChildScrollView(
-        reverse: false, // يبدأ من اليمين للعربي
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
@@ -174,7 +172,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       padding: EdgeInsets.all(isTablet ? 12 : 17),
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
-        borderRadius: BorderRadius.circular(24), // حواف دائرية كبيرة وفخمة
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,19 +181,21 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Icon(icon, color: Color(0xFFF6AD55), size: isTablet ? 20 : 25),
+              Icon(
+                icon,
+                color: const Color(0xFFF6AD55),
+                size: isTablet ? 20 : 25,
+              ),
               const SizedBox(width: 4),
-
               Expanded(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment
-                      .centerRight, // لجعل النص يزحف لليمان عند التصغير
+                  alignment: Alignment.centerRight,
                   child: Text(
                     title,
                     style: TextStyle(
                       color: AppColors.textSecondary(context),
-                      fontSize: isTablet ? 13 : 13,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -220,24 +220,21 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  // المنطق الذكي لتوزيع الكروت (Fluid Layout)
   Widget _buildFluidSubjectsLayout() {
     final subjects = _getSubjectsByTerm();
-
     return LayoutBuilder(
       builder: (context, box) {
         double width = box.maxWidth;
         int crossAxisCount;
 
-        // تحديد عدد الأعمدة بناءً على العرض بكسل ببكسل
         if (width > 900) {
-          crossAxisCount = 4; // ويب
+          crossAxisCount = 4;
         } else if (width > 650) {
-          crossAxisCount = 3; // تابلت كبير أو ويب مصغر
+          crossAxisCount = 3;
         } else if (width > 400) {
-          crossAxisCount = 2; // تابلت صغير أو جوال بالعرض
+          crossAxisCount = 2;
         } else {
-          crossAxisCount = 1; // جوال طولي
+          crossAxisCount = 1;
         }
 
         if (crossAxisCount == 1) {
@@ -260,7 +257,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             crossAxisCount: crossAxisCount,
             crossAxisSpacing: 16,
             mainAxisSpacing: 20,
-            mainAxisExtent: 210, // الارتفاع الثابت الآمن لمنع الأوفر فلو
+            mainAxisExtent: 210,
           ),
           itemCount: subjects.length,
           itemBuilder: (context, index) =>
@@ -270,10 +267,8 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  // الكارد بتنسيقك الأصلي المفضل
   Widget _buildOldStyleSubjectCard(Map<String, dynamic> subject) {
     bool isSelected = selectedSubjectName == subject["name"];
-
     return GestureDetector(
       onTap: () => onSubjectTap(subject["name"]),
       child: AnimatedContainer(

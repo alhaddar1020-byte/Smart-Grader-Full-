@@ -61,38 +61,35 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             _buildFixedHeader(),
             Expanded(
               child: SingleChildScrollView(
+                // تم تعديل الـ Padding الجانبي ليكون 33 بكسل تماماً مثل الهيدر
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
+                  horizontal: 33,
                   vertical: 10,
                 ),
                 child: LayoutBuilder(
                   builder: (context, constraints) {
-                    // تحديد إذا كانت الشاشة جوال (أصغر من 600)
-                    bool isMobile = constraints.maxWidth < 600;
+                    bool isSmall = constraints.maxWidth < 750;
 
                     return Column(
                       children: [
-                        // القسم العلوي: يحافظ على الـ Row في كل الحالات
                         IntrinsicHeight(
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // شبكة الإحصائيات (تأخذ مساحة أكبر)
                               Expanded(
                                 flex: 5,
-                                child: _buildStatsGrid(isMobile),
+                                child: _buildStatsGrid(isSmall),
                               ),
-                              SizedBox(width: isMobile ? 10 : 20),
-                              // كرت النتيجة (يصغر جداً في الجوال)
+                              SizedBox(width: isSmall ? 10 : 20),
                               Expanded(
-                                flex: isMobile ? 3 : 2,
-                                child: _buildFinalScoreCard(isMobile),
+                                flex: isSmall ? 3 : 2,
+                                child: _buildFinalScoreCard(isSmall),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 30),
-                        _buildMainContentSection(isMobile),
+                        _buildMainContentSection(isSmall),
                       ],
                     );
                   },
@@ -105,10 +102,11 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  // دالة الإحصائيات - تصغير المسافات والبادينق
-  Widget _buildStatsGrid(bool isMobile) {
+  // --- دوال البناء (تم الحفاظ عليها كما هي) ---
+
+  Widget _buildStatsGrid(bool isSmall) {
     return Container(
-      padding: EdgeInsets.all(isMobile ? 8 : 15),
+      padding: EdgeInsets.all(isSmall ? 8 : 15),
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(16),
@@ -122,7 +120,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "10",
               const Color(0xFFDBEAFE),
               Icons.list_alt,
-              isMobile,
+              isSmall,
             ),
           ),
           Expanded(
@@ -131,7 +129,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "1",
               const Color(0xFFFFE2E2),
               Icons.close,
-              isMobile,
+              isSmall,
             ),
           ),
           Expanded(
@@ -140,7 +138,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "1",
               const Color(0xFFFEF9C2),
               Icons.priority_high,
-              isMobile,
+              isSmall,
             ),
           ),
           Expanded(
@@ -149,7 +147,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
               "8",
               const Color(0xFFDCFCE7),
               Icons.check,
-              isMobile,
+              isSmall,
             ),
           ),
         ],
@@ -162,19 +160,19 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     String value,
     Color bgColor,
     IconData icon,
-    bool isMobile,
+    bool isSmall,
   ) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          width: isMobile ? 28 : 45, // تصغير الأيقونة جداً
-          height: isMobile ? 28 : 45,
+          width: isSmall ? 28 : 45,
+          height: isSmall ? 28 : 45,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, color: Colors.black45, size: isMobile ? 14 : 22),
+          child: Icon(icon, color: Colors.black45, size: isSmall ? 14 : 22),
         ),
         const SizedBox(height: 6),
         FittedBox(
@@ -182,7 +180,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
           child: Text(
             label,
             style: TextStyle(
-              fontSize: isMobile ? 9 : 12,
+              fontSize: isSmall ? 9 : 12,
               color: AppColors.textSecondary(context),
             ),
           ),
@@ -190,7 +188,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
         Text(
           value,
           style: TextStyle(
-            fontSize: isMobile ? 13 : 18,
+            fontSize: isSmall ? 13 : 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -198,7 +196,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  // كرت النتيجة - تصغير الخطوط والأزرار بشكل حاد
   Widget _buildFinalScoreCard(bool isMobile) {
     return Container(
       padding: EdgeInsets.all(isMobile ? 8 : 16),
@@ -276,7 +273,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // زر التصحيح التفصيلي
                 _buildTabButton(
                   "التصحيح التفصيلي",
                   isDetailedCorrection,
@@ -284,7 +280,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
                   () => setState(() => isDetailedCorrection = true),
                 ),
                 const SizedBox(width: 10),
-                // زر ورقة الإجابة
                 _buildTabButton(
                   "ورقة الاجابة",
                   !isDetailedCorrection,
@@ -298,14 +293,10 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             height: 1,
             color: AppColors.textSecondary(context).withValues(alpha: 0.2),
           ),
-          // عرض المحتوى بناءً على الزر المختار
           AnimatedSwitcher(
-            // أضفت تأثير انتقال ناعم عند التبديل
             duration: const Duration(milliseconds: 300),
             child: Padding(
-              key: ValueKey<bool>(
-                isDetailedCorrection,
-              ), // مفتاح ليعرف الـ Switcher أن المحتوى تغير
+              key: ValueKey<bool>(isDetailedCorrection),
               padding: EdgeInsets.all(isSmall ? 15 : 25),
               child: isDetailedCorrection
                   ? _buildDetailedList(isSmall)
@@ -386,7 +377,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             ),
           ),
           const SizedBox(height: 15),
-          // الـ Row للأجوبة تبقى Row لكن مع Expanded متساوي
           Row(
             children: [
               _buildAnswerBox("النموذجية:", data['modelAnswer'], isMobile),
@@ -427,6 +417,12 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
+  Color _getStatusColor(double score, double total) {
+    if (score == total) return const Color(0xFF00A63E);
+    if (score > 0) return const Color(0xFFD08700);
+    return const Color(0xFFE7000B);
+  }
+
   Widget _buildAnswerBox(String title, String content, bool isMobile) {
     return Expanded(
       child: Column(
@@ -457,13 +453,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     );
   }
 
-  // دالة المساعدة للألوان
-  Color _getStatusColor(double score, double total) {
-    if (score == total) return const Color(0xFF00A63E);
-    if (score > 0) return const Color(0xFFD08700);
-    return const Color(0xFFE7000B);
-  }
-
   Widget _buildTabButton(
     String label,
     bool isActive,
@@ -471,11 +460,8 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     VoidCallback onTap,
   ) {
     return InkWell(
-      // أضفنا الـ InkWell هنا لتفعيل الضغط
       onTap: onTap,
-      borderRadius: BorderRadius.circular(
-        10,
-      ), // لجعل تأثير الضغط متناسق مع الحواف
+      borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: EdgeInsets.symmetric(
           horizontal: isSmall ? 15 : 30,
@@ -501,6 +487,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     return Container(
       width: double.infinity,
       height: 43,
+      // الـ margin الجانبي 33 بكسل
       margin: const EdgeInsets.fromLTRB(33, 20, 33, 10),
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
