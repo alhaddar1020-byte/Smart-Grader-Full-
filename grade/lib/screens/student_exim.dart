@@ -52,48 +52,112 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppColors.secondaryTeal(context),
-        body: Column(
-          children: [
-            _buildFixedHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                // تم تعديل الـ Padding الجانبي ليكون 33 بكسل تماماً مثل الهيدر
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 33,
-                  vertical: 10,
-                ),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    bool isSmall = constraints.maxWidth < 750;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // تحديد نوع الشاشة والقاعدة الصارمة للفراغات
+        bool isMobile = constraints.maxWidth < 600;
+        double sideSpace = isMobile ? 16.0 : 30.0;
 
-                    return Column(
+        return Directionality(
+          textDirection: TextDirection.rtl,
+          child: Scaffold(
+            backgroundColor: AppColors.secondaryTeal(context),
+            body: Column(
+              children: [
+                // 1. الهيدر يلتزم بالفراغ (16 أو 30)
+                _buildFixedHeader(sideSpace),
+                Expanded(
+                  child: SingleChildScrollView(
+                    // 2. توحيد الفراغ الجانبي لكل محتوى الصفحة
+                    padding: EdgeInsets.symmetric(
+                      horizontal: sideSpace,
+                      vertical: 10,
+                    ),
+                    child: Column(
                       children: [
                         IntrinsicHeight(
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
+                              // 3. شبكة الإحصائيات (تتبع نفس المحاذاة)
                               Expanded(
                                 flex: 5,
-                                child: _buildStatsGrid(isSmall),
+                                child: _buildStatsGrid(isMobile),
                               ),
-                              SizedBox(width: isSmall ? 10 : 20),
+                              SizedBox(width: isMobile ? 10 : 20),
+                              // 4. كرت النتيجة (يتبع نفس المحاذاة)
                               Expanded(
-                                flex: isSmall ? 3 : 2,
-                                child: _buildFinalScoreCard(isSmall),
+                                flex: isMobile ? 3 : 2,
+                                child: _buildFinalScoreCard(isMobile),
                               ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 30),
-                        _buildMainContentSection(isSmall),
+                        // 5. المحتوى الرئيسي (يتبع نفس المحاذاة)
+                        _buildMainContentSection(isMobile),
                       ],
-                    );
-                  },
+                    ),
+                  ),
                 ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // --- دوال البناء (كودك الأصلي تماماً مع مراعاة sideSpace) ---
+
+  Widget _buildFixedHeader(double sideSpace) {
+    return Container(
+      width: double.infinity,
+      height: 43,
+      // الالتزام التام بالفراغ الجانبي المحدد
+      margin: EdgeInsets.fromLTRB(sideSpace, 20, sideSpace, 10),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg(context),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 10,
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            InkWell(
+              onTap: () => widget.onItemSelected(1),
+              child: const Text(
+                "المواد",
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Icon(Icons.chevron_left, color: Colors.grey, size: 16),
+            ),
+            InkWell(
+              onTap: widget.onBack,
+              child: Text(
+                widget.subjectName,
+                style: const TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 5),
+              child: Icon(Icons.chevron_left, color: Colors.grey, size: 16),
+            ),
+            Text(
+              "التفاصيل",
+              style: TextStyle(
+                color: AppColors.primaryTeal(context),
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
               ),
             ),
           ],
@@ -101,8 +165,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
       ),
     );
   }
-
-  // --- دوال البناء (تم الحفاظ عليها كما هي) ---
 
   Widget _buildStatsGrid(bool isSmall) {
     return Container(
@@ -478,62 +540,6 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
             fontWeight: FontWeight.bold,
             fontSize: isSmall ? 12 : 14,
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFixedHeader() {
-    return Container(
-      width: double.infinity,
-      height: 43,
-      // الـ margin الجانبي 33 بكسل
-      margin: const EdgeInsets.fromLTRB(33, 20, 33, 10),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg(context),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            InkWell(
-              onTap: () => widget.onItemSelected(1),
-              child: const Text(
-                "المواد",
-                style: TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 5),
-              child: Icon(Icons.chevron_left, color: Colors.grey, size: 16),
-            ),
-            InkWell(
-              onTap: widget.onBack,
-              child: Text(
-                widget.subjectName,
-                style: const TextStyle(color: Colors.grey, fontSize: 14),
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 5),
-              child: Icon(Icons.chevron_left, color: Colors.grey, size: 16),
-            ),
-            Text(
-              "التفاصيل",
-              style: TextStyle(
-                color: AppColors.primaryTeal(context),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
         ),
       ),
     );

@@ -51,8 +51,9 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isMobile = constraints.maxWidth < 600;
-        // تم توحيد المحاذاة هنا لتكون 30 بكسل دائماً لتطابق الهيدر
-        double horizontalPadding = 30.0;
+
+        // القاعدة الصارمة للفراغات: 16 للجوال و 30 للتابلت والويب
+        double dynamicPadding = isMobile ? 16.0 : 30.0;
 
         return Directionality(
           textDirection: TextDirection.rtl,
@@ -65,23 +66,24 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
                     onSubjectTap: onSubjectTap,
                   )
                 : SingleChildScrollView(
+                    // نطبق الفراغ الموحد على الـ Padding الجانبي للـ ScrollView بالكامل
                     padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding,
+                      horizontal: dynamicPadding,
                       vertical: 32,
                     ),
                     child: Column(
                       children: [
-                        // 1. الإحصائيات
+                        // 1. الإحصائيات (تتبع نفس المحاذاة)
                         _buildTopStatsGrid(isMobile),
 
                         const SizedBox(height: 48),
 
-                        // 2. مفتاح تبديل الفصول
+                        // 2. مفتاح تبديل الفصول (يتبع نفس المحاذاة)
                         _buildTermSwitcher(),
 
                         const SizedBox(height: 32),
 
-                        // 3. عرض المواد
+                        // 3. عرض المواد (يتبع نفس المحاذاة)
                         _buildFluidSubjectsLayout(),
                       ],
                     ),
@@ -92,6 +94,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
+  // الإحصائيات مع دعم التمرير
   Widget _buildTopStatsGrid(bool isMobile) {
     double width = MediaQuery.of(context).size.width;
     bool isTablet = width >= 600 && width < 1100;
@@ -133,6 +136,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
 
     if (isMobile) {
       return SingleChildScrollView(
+        reverse: false,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
@@ -494,3 +498,5 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           ];
   }
 }
+
+// اسمع خلاص بغير ابغا في شاشه الجوال كل شي يكون فيه فراغ من الحواف 16 لازم كككل شييييي وفي التابلت والويب كل شي يكون 30 لازم كل العناصر تبدا من بعد 30 فراغ وتنتهي قبل 30 فراغ حتى لما اصغره واكبره بين التابلت والويب ابغا كل العناصر نفس المحاداه وحتى الاحصائيات بس  بس بشرط مهم جدددددداااا باقي الاكواد ابغاها نفسها لا تغير شييي ابدا وخلي كل شي شغال بنفس الاحجام والتغيرات وكل شي بس خذ الكود حقي عدل حق الفراغات واعطيني الكود كامل بدون ماتلمس اي شي ثاني ترا يويلك لو لصقته وطلع يختلف ولو بملي واحد عن حقي فاهم

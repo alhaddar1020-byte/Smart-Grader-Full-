@@ -56,13 +56,20 @@ class SubjectDetailsScreen extends StatelessWidget {
       },
     ];
 
-    final List<String> strengths = ["أداء ممتاز", "سرعة البديهة"];
+    final List<String> strengths = [
+      "أداء ممتاز",
+      "سرعة البديععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععععهة",
+    ];
     final List<String> improvements = ["إدارة الوقت", "التركيز"];
 
     return LayoutBuilder(
       builder: (context, constraints) {
         double width = constraints.maxWidth;
+        bool isMobile = width < 600;
         bool showSideLayout = width > 750;
+
+        // القاعدة الصارمة: 16 للجوال و 30 للويب/التابلت
+        double sidePadding = isMobile ? 16.0 : 30.0;
 
         return Scaffold(
           backgroundColor: AppColors.secondaryTeal(context),
@@ -71,19 +78,22 @@ class SubjectDetailsScreen extends StatelessWidget {
               textDirection: TextDirection.rtl,
               child: Column(
                 children: [
-                  _buildFixedHeader(context),
+                  _buildFixedHeader(context, sidePadding),
                   Expanded(
                     child: SingleChildScrollView(
-                      // تم تعديل المحاذاة هنا لتكون 30 بكسل بالضبط لتطابق الهيدر العلوي
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 30.0,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: sidePadding,
                         vertical: 5,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // 1. الإحصائيات (تم تعديل الدالة بالأسفل لإلغاء الفراغ الأخير)
                           _buildFullWidthStatsRow(context, subjectStats, width),
+
                           const SizedBox(height: 20),
+
+                          // 2. المحتوى الرئيسي
                           if (showSideLayout)
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,8 +146,62 @@ class SubjectDetailsScreen extends StatelessWidget {
     );
   }
 
-  // --- دوال البناء (تم الحفاظ عليها كما هي مع ضمان استجابة الأبعاد الداخلية) ---
+  // --- الهيدر يلتزم بالهوامش الجانبية ---
+  Widget _buildFixedHeader(BuildContext context, double sidePadding) {
+    return Container(
+      width: double.infinity,
+      height: 43,
+      margin: EdgeInsets.symmetric(horizontal: sidePadding, vertical: 16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg(context),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 7,
+            offset: const Offset(0, 7),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          children: [
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondary(context),
+              size: 18,
+            ),
+            InkWell(
+              onTap: onBack,
+              child: Text(
+                "المواد",
+                style: TextStyle(
+                  color: AppColors.textSecondary(context),
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: AppColors.textSecondary(context),
+              size: 18,
+            ),
+            Text(
+              subjectName,
+              style: TextStyle(
+                color: AppColors.primaryTeal(context),
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
+  // --- دالة الإحصائيات المعدلة لإلغاء الفراغ الزائد ---
   Widget _buildFullWidthStatsRow(
     BuildContext context,
     Map<String, String> stats,
@@ -183,31 +247,36 @@ class SubjectDetailsScreen extends StatelessWidget {
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: items
-              .map(
-                (i) => Container(
-                  width: 145,
-                  margin: const EdgeInsetsDirectional.only(end: 12),
-                  child: i,
-                ),
-              )
-              .toList(),
+          children: List.generate(items.length, (index) {
+            return Container(
+              width: 200,
+              // إلغاء الهامش في العنصر الأخير لضمان مطابقة الـ Padding
+              margin: EdgeInsetsDirectional.only(
+                end: index == items.length - 1 ? 0 : 12,
+              ),
+              child: items[index],
+            );
+          }),
         ),
       );
     }
+
     return Row(
-      children: items
-          .map(
-            (i) => Expanded(
-              child: Padding(
-                padding: const EdgeInsetsDirectional.only(end: 16),
-                child: i,
-              ),
+      children: List.generate(items.length, (index) {
+        return Expanded(
+          child: Padding(
+            // إلغاء الحشو في العنصر الأخير تماماً لضبط المحاذاة
+            padding: EdgeInsetsDirectional.only(
+              end: index == items.length - 1 ? 0 : 16,
             ),
-          )
-          .toList(),
+            child: items[index],
+          ),
+        );
+      }),
     );
   }
+
+  // --- بقية الدوال (كودك الأصلي) ---
 
   Widget _statItem(
     BuildContext context,
@@ -552,60 +621,6 @@ class SubjectDetailsScreen extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFixedHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 43,
-      margin: const EdgeInsets.symmetric(horizontal: 30, vertical: 16),
-      decoration: BoxDecoration(
-        color: AppColors.cardBg(context),
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 7,
-            offset: const Offset(0, 7),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: Row(
-          children: [
-            Icon(
-              Icons.chevron_right,
-              color: AppColors.textSecondary(context),
-              size: 18,
-            ),
-            InkWell(
-              onTap: onBack,
-              child: Text(
-                "المواد",
-                style: TextStyle(
-                  color: AppColors.textSecondary(context),
-                  fontSize: 14,
-                ),
-              ),
-            ),
-            Icon(
-              Icons.chevron_right,
-              color: AppColors.textSecondary(context),
-              size: 18,
-            ),
-            Text(
-              subjectName,
-              style: TextStyle(
-                color: AppColors.primaryTeal(context),
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

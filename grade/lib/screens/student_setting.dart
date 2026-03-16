@@ -192,6 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _oldPasswordController.clear();
     _newPasswordController.clear();
     _confirmPasswordController.clear();
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -314,12 +315,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         body: LayoutBuilder(
           builder: (context, constraints) {
             double width = constraints.maxWidth;
-            bool isMobile = width < 850;
+            // تطبيق القاعدة: 16 للجوال و 30 للتابلت والويب
+            bool isMobile = width < 750;
+            double sidePadding = isMobile ? 16.0 : 30.0;
 
             return SafeArea(
               child: Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: isMobile ? 20 : 40,
+                  horizontal: sidePadding,
                   vertical: 20,
                 ),
                 child: Column(
@@ -613,7 +616,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
             child: const Text(
               "إلغاء تنشيط الحساب",
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Colors.white, fontSize: 13),
             ),
           ),
         ],
@@ -737,7 +740,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 child: Text(
                   value,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 12,
                     color: AppColors.textPrimary(context),
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -761,6 +764,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     ],
   );
+
   Widget _buildEditButton() => Container(
     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
     decoration: BoxDecoration(
@@ -776,6 +780,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     ),
   );
+
   Widget _buildLanguageDropdown() => Container(
     padding: const EdgeInsets.symmetric(horizontal: 12),
     decoration: BoxDecoration(
@@ -797,6 +802,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       onChanged: (v) => setState(() => selectedLanguage = v!),
     ),
   );
+
   Widget _buildActionRow(
     String title,
     String sub,
