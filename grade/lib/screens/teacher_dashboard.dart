@@ -463,14 +463,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
       body: Row(
         children: [
           // 1. القائمة الجانبية
-          CustSidebar(
-            selectedIndex: selectedIndex,
-            onItemSelected: (index) {
-              setState(() {
-                selectedIndex = index;
-              });
-            },
-          ),
+          // // CustSidebar(
+          //   selectedIndex: selectedIndex,
+          //   onItemSelected: (index) {
+          //     setState(() {
+          //       selectedIndex = index;
+          //     });
+          //   },
+          // ),
 
           // 2. المحتوى الرئيسي
           Expanded(
@@ -981,139 +981,139 @@ class GaugePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
-}
+  // }
 
-// --- القائمة الجانبية (Custom Sidebar) ---
-class CustSidebar extends StatelessWidget {
-  final int selectedIndex;
-  final Function(int) onItemSelected;
+  // // --- القائمة الجانبية (Custom Sidebar) ---
+  // class CustSidebar extends StatelessWidget {
+  //   final int selectedIndex;
+  //   final Function(int) onItemSelected;
 
-  const CustSidebar({
-    super.key,
-    required this.selectedIndex,
-    required this.onItemSelected,
-  });
+  //   const CustSidebar({
+  //     super.key,
+  //     required this.selectedIndex,
+  //     required this.onItemSelected,
+  //   });
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 280,
-      height: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryTeal,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(55),
-          bottomLeft: Radius.circular(55),
-        ),
-      ),
-      child: Column(
-        children: [
-          const SizedBox(height: 30),
-          const Icon(
-            Icons.check_circle_outline,
-            size: 70,
-            color: AppColors.textWhite,
-          ),
-          const Text(
-            "Intelligent\nGrading System",
-            textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textWhite, fontSize: 16),
-          ),
-          const SizedBox(height: 50),
-          _menuItem("لوحة التحكم", Icons.home_rounded, 0),
-          _menuItem("المواد", Icons.library_books, 1),
-          _menuItem("إعدادات", Icons.settings_rounded, 2),
-          const Spacer(),
-        ],
-      ),
-    );
-  }
+  //   @override
+  //   Widget build(BuildContext context) {
+  //     return Container(
+  //       width: 280,
+  //       height: double.infinity,
+  //       decoration: const BoxDecoration(
+  //         color: AppColors.primaryTeal,
+  //         borderRadius: BorderRadius.only(
+  //           topLeft: Radius.circular(55),
+  //           bottomLeft: Radius.circular(55),
+  //         ),
+  //       ),
+  //       child: Column(
+  //         children: [
+  //           const SizedBox(height: 30),
+  //           const Icon(
+  //             Icons.check_circle_outline,
+  //             size: 70,
+  //             color: AppColors.textWhite,
+  //           ),
+  //           const Text(
+  //             "Intelligent\nGrading System",
+  //             textAlign: TextAlign.center,
+  //             style: TextStyle(color: AppColors.textWhite, fontSize: 16),
+  //           ),
+  //           const SizedBox(height: 50),
+  //           _menuItem("لوحة التحكم", Icons.home_rounded, 0),
+  //           _menuItem("المواد", Icons.library_books, 1),
+  //           _menuItem("إعدادات", Icons.settings_rounded, 2),
+  //           const Spacer(),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-  Widget _menuItem(String title, IconData icon, int index) {
-    bool isActive = selectedIndex == index;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: InkWell(
-        onTap: () => onItemSelected(index),
-        hoverColor: Colors.transparent,
-        child: Stack(
-          clipBehavior: Clip.none,
-          alignment: Alignment.centerLeft,
-          children: [
-            if (isActive)
-              Positioned(
-                left: 0,
-                top: -40,
-                bottom: -40,
-                width: 50,
-                child: CustomPaint(
-                  painter: SidebarCurvePainter(const Color(0xFFDEF6F5)),
-                ),
-              ),
-            Container(
-              height: 60,
-              margin: EdgeInsets.only(left: isActive ? 0 : 25, right: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: BoxDecoration(
-                color: isActive ? const Color(0xFFDEF6F5) : Colors.transparent,
-                borderRadius: BorderRadius.only(
-                  topRight: const Radius.circular(30),
-                  bottomRight: const Radius.circular(30),
-                  topLeft: Radius.circular(isActive ? 0 : 30),
-                  bottomLeft: Radius.circular(isActive ? 0 : 30),
-                ),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Icon(icon, color: AppColors.accentYellow, size: 26),
-                  const SizedBox(width: 15),
+  //   Widget _menuItem(String title, IconData icon, int index) {
+  //     bool isActive = selectedIndex == index;
+  //     return Padding(
+  //       padding: const EdgeInsets.only(bottom: 15),
+  //       child: InkWell(
+  //         onTap: () => onItemSelected(index),
+  //         hoverColor: Colors.transparent,
+  //         child: Stack(
+  //           clipBehavior: Clip.none,
+  //           alignment: Alignment.centerLeft,
+  //           children: [
+  //             if (isActive)
+  //               Positioned(
+  //                 left: 0,
+  //                 top: -40,
+  //                 bottom: -40,
+  //                 width: 50,
+  //                 child: CustomPaint(
+  //                   painter: SidebarCurvePainter(const Color(0xFFDEF6F5)),
+  //                 ),
+  //               ),
+  //             Container(
+  //               height: 60,
+  //               margin: EdgeInsets.only(left: isActive ? 0 : 25, right: 20),
+  //               padding: const EdgeInsets.symmetric(horizontal: 20),
+  //               decoration: BoxDecoration(
+  //                 color: isActive ? const Color(0xFFDEF6F5) : Colors.transparent,
+  //                 borderRadius: BorderRadius.only(
+  //                   topRight: const Radius.circular(30),
+  //                   bottomRight: const Radius.circular(30),
+  //                   topLeft: Radius.circular(isActive ? 0 : 30),
+  //                   bottomLeft: Radius.circular(isActive ? 0 : 30),
+  //                 ),
+  //               ),
+  //               child: Row(
+  //                 mainAxisAlignment: MainAxisAlignment.start,
+  //                 children: [
+  //                   Icon(icon, color: AppColors.accentYellow, size: 26),
+  //                   const SizedBox(width: 15),
 
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: "Arimo",
-                      color: isActive ? AppColors.primaryTeal : Colors.white,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+  //                   Text(
+  //                     title,
+  //                     style: TextStyle(
+  //                       fontFamily: "Arimo",
+  //                       color: isActive ? AppColors.primaryTeal : Colors.white,
+  //                       fontSize: 23,
+  //                       fontWeight: FontWeight.w900,
+  //                     ),
+  //                   ),
+  //                 ],
+  //               ),
+  //             ),
+  //           ],
+  //         ),
+  //       ),
+  //     );
+  //   }
+  // }
 
-class SidebarCurvePainter extends CustomPainter {
-  final Color bgColor;
-  SidebarCurvePainter(this.bgColor);
+  // class SidebarCurvePainter extends CustomPainter {
+  //   final Color bgColor;
+  //   SidebarCurvePainter(this.bgColor);
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = bgColor
-      ..style = PaintingStyle.fill;
-    double radius = 35;
-    double topY = 40;
-    double bottomY = topY + 60;
-    Path pathTop = Path();
-    pathTop.moveTo(0, topY - radius);
-    pathTop.quadraticBezierTo(0, topY, radius, topY);
-    pathTop.lineTo(0, topY);
-    pathTop.close();
-    canvas.drawPath(pathTop, paint);
-    Path pathBottom = Path();
-    pathBottom.moveTo(0, bottomY + radius);
-    pathBottom.quadraticBezierTo(0, bottomY, radius, bottomY);
-    pathBottom.lineTo(0, bottomY);
-    pathBottom.close();
-    canvas.drawPath(pathBottom, paint);
-  }
+  //   @override
+  //   void paint(Canvas canvas, Size size) {
+  //     Paint paint = Paint()
+  //       ..color = bgColor
+  //       ..style = PaintingStyle.fill;
+  //     double radius = 35;
+  //     double topY = 40;
+  //     double bottomY = topY + 60;
+  //     Path pathTop = Path();
+  //     pathTop.moveTo(0, topY - radius);
+  //     pathTop.quadraticBezierTo(0, topY, radius, topY);
+  //     pathTop.lineTo(0, topY);
+  //     pathTop.close();
+  //     canvas.drawPath(pathTop, paint);
+  //     Path pathBottom = Path();
+  //     pathBottom.moveTo(0, bottomY + radius);
+  //     pathBottom.quadraticBezierTo(0, bottomY, radius, bottomY);
+  //     pathBottom.lineTo(0, bottomY);
+  //     pathBottom.close();
+  //     canvas.drawPath(pathBottom, paint);
+  //   }
 
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  //   @override
+  //   bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

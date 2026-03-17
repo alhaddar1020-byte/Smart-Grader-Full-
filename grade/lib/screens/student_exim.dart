@@ -459,7 +459,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
                 style: TextStyle(
                   fontSize: isMobile ? 11 : 13,
                   color: AppColors.textPrimary(context),
-                  fontFamily: 'Cairo',
+                  fontFamily: 'Arimo',
                 ),
                 children: [
                   TextSpan(
