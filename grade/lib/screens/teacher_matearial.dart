@@ -1,55 +1,58 @@
-
 import 'package:flutter/material.dart';
+import 'teacher_dashboard.dart';
+import '../core/colors.dart';
+import 'material_detail.dart';
+import 'grading.dart';
+import 'exam_page.dart';
+class Material1 extends StatefulWidget {
+  const Material1({super.key});
 
-// الألوان المستخدمة بناءً على الهوية البصرية في الصور
-class AppColors {
-  static const Color primaryTeal = Color(0xFF4FB7B5);
-  static const Color lightTealBg = Color(0xFFDEF6F5);
-  static const Color accentOrange = Color(0xFFF6AD55);
-  static const Color textGray = Color(0xFF6A7282);
-  static const Color cardBg = Colors.white;
+  @override
+  State<Material1> createState() => _Material1State();
 }
 
-class Material1 extends StatelessWidget {
-  const Material1({super.key}); // تم إصلاح هذا السطر (إضافة اسم الكلاس)
+class _Material1State extends State<Material1> {
+
+  int _selectedIndex = 2;
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
-      textDirection: TextDirection.rtl, // لضمان ظهور الواجهة باللغة العربية بشكل صحيح
+      textDirection: TextDirection.rtl,
       child: Scaffold(
-        backgroundColor: const Color(0xFFF3FBFB),
+        backgroundColor: AppColors.secondaryTeal,
         body: Row(
           children: [
-            // 1. القائمة الجانبية (Sidebar)
-            const SidebarWidget(),
-            
-            // 2. منطقة المحتوى الرئيسية
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // الهيدر العلوي
-                    const HeaderWidget(),
-                    const SizedBox(height: 20),
-                    
-                    // صف الإحصائيات العلوية
-                    const StatsTopRow(),
-                    const SizedBox(height: 30),
-                    
-                    const Text(
-                      "المواد الدراسية",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 15),
-                    
-                    // شبكة المواد
-                    const SubjectsGrid(),
-                  ],
-                ),
-              ),
+            CustSidebar(
+              selectedIndex: _selectedIndex,
+              onItemSelected: (index) {
+              setState(() {
+                _selectedIndex = index;
+              });
+
+                if (index == 0) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DashboardScreen()),
+                  );
+                }
+                else if (index == 1) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const FinalExamPage()),
+                  );
+                }
+                else if (index == 3) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const GradingPage()),
+                  );
+                }
+},
+            ),
+
+            const Expanded(
+              child: MainContent(),
             ),
           ],
         ),
@@ -57,127 +60,135 @@ class Material1 extends StatelessWidget {
     );
   }
 }
+////////////////////////////////////////////////////////////
+/// المحتوى الرئيسي
+////////////////////////////////////////////////////////////
 
-// كود القائمة الجانبية
-class SidebarWidget extends StatelessWidget {
-  const SidebarWidget({super.key});
+class MainContent extends StatelessWidget {
+  const MainContent({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 260,
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.primaryTeal,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 40),
-          const CircleAvatar(
-            radius: 40,
-            backgroundColor: Colors.white24,
-            child: Icon(Icons.auto_graph, color: Colors.white, size: 40),
-          ),
-          const SizedBox(height: 10),
-          const Text("Intelligent Grading System", 
-            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 40),
-          _buildMenuItem(Icons.dashboard, "لوحة التحكم"),
-          _buildMenuItem(Icons.assignment, "إدارة الامتحانات"),
-          _buildMenuItem(Icons.book, "المواد", active: true),
-          _buildMenuItem(Icons.check_circle, "تصحيح"),
-          _buildMenuItem(Icons.rate_review, "مراجعة"),
-          _buildMenuItem(Icons.settings, "إعدادات"),
+          HeaderWidget(),
+          SizedBox(height: 25),
+          TopStatsGrid(),
+          SizedBox(height: 35),
+          SubjectsGrid(),
         ],
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(IconData icon, String title, {bool active = false}) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
-      decoration: BoxDecoration(
-        color: active ? Colors.white.withValues(alpha: 0.2) : Colors.transparent,
-        borderRadius: BorderRadius.circular(15),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.white),
-        title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 14)),
       ),
     );
   }
 }
 
-// كود الهيدر
+////////////////////////////////////////////////////////////
+/// الهيدر
+////////////////////////////////////////////////////////////
+
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("المواد الدراسية", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-            Text("قم بإدارة جميع المواد والامتحانات الخاصة بك", style: TextStyle(color: AppColors.textGray)),
-          ],
-        ),
-        Row(
-          children: [
-            _headerIcon(Icons.notifications_none),
-            const SizedBox(width: 10),
-            _headerIcon(Icons.person_outline),
-          ],
-        )
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(
+        color: AppColors.textWhite,
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "المواد الدراسية",
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textprimary),
+              ),
+              SizedBox(height: 4),
+              Text(
+                "قم بإدارة جميع المواد والامتحانات الخاصة بك",
+                style: TextStyle(color: AppColors.textseccondary),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              _iconButton(Icons.notifications_none),
+              const SizedBox(width: 10),
+              _iconButton(Icons.person_outline),
+            ],
+          )
+        ],
+      ),
     );
   }
 
-  Widget _headerIcon(IconData icon) {
+  static Widget _iconButton(IconData icon) {
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+      decoration: const BoxDecoration(
+        color: AppColors.secondaryTeal,
+        shape: BoxShape.circle,
+      ),
       child: Icon(icon, color: AppColors.primaryTeal),
     );
   }
 }
 
-// كود الإحصائيات
-class StatsTopRow extends StatelessWidget {
-  const StatsTopRow({super.key});
+////////////////////////////////////////////////////////////
+/// البطاقات العلوية
+////////////////////////////////////////////////////////////
+
+class TopStatsGrid extends StatelessWidget {
+  const TopStatsGrid({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        _statCard("الطلاب", "340", Icons.people, AppColors.accentOrange),
-        _statCard("الأوراق المصححة", "780", Icons.description, AppColors.primaryTeal),
-        _statCard("الاختبارات المنشئة", "13", Icons.quiz, AppColors.primaryTeal),
-        _statCard("المسودات", "5", Icons.edit_note, AppColors.primaryTeal),
+        _statCard("الطلاب", "340", AppColors.accentYellow, Icons.people),
+        _statCard("الأوراق المصححة", "780", AppColors.primaryTeal, Icons.description),
+        _statCard("الاختبارات المنشئة", "13", AppColors.primaryTeal, Icons.create),
+        _statCard("المسودات", "5", AppColors.primaryTeal, Icons.edit_note),
       ],
     );
   }
 
-  Widget _statCard(String label, String value, IconData icon, Color color) {
+  Widget _statCard(String title, String value, Color color, IconData icon) {
     return Expanded(
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 5),
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(15)),
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(15),
+        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(value, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(value,
+                    style: const TextStyle(
+                        color: AppColors.textWhite,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold)),
+                Text(title,
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 14)),
               ],
             ),
-            Icon(icon, color: Colors.white54, size: 30),
+            Icon(icon, color: Colors.white54, size: 40),
           ],
         ),
       ),
@@ -185,51 +196,116 @@ class StatsTopRow extends StatelessWidget {
   }
 }
 
-// شبكة المواد
+////////////////////////////////////////////////////////////
+/// شبكة المواد
+////////////////////////////////////////////////////////////
+
 class SubjectsGrid extends StatelessWidget {
   const SubjectsGrid({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 20,
-      runSpacing: 20,
-      children: [
-        _subjectCard("discrete - المستوى الأول", "علوم حاسوب", "1", "340"),
-        _subjectCard("فيزياء عملي - المستوى الأول", "تقنية معلومات", "0", "101"),
-        _subjectCard("تفاضل - المستوى الأول", "تقنية معلومات", "9", "101"),
-        _subjectCard("تكامل - المستوى الأول", "تقنية معلومات", "0", "101"),
-        _addSubjectCard(),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+
+        double width = constraints.maxWidth;
+        double cardWidth = (width - 40) / 3;
+
+        return Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: [
+
+            _subjectCard(context, cardWidth,
+                "discrete - المستوى الأول", "علوم حاسوب", "1", "340"),
+
+            _subjectCard(context, cardWidth,
+                "فيزياء عملي - المستوى الأول", "تقنية معلومات", "0", "101"),
+
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const SubjectDetailsPage(),
+                  ),
+                );
+              },
+              child: _subjectCard(context, cardWidth,
+                  "تفاضل - المستوى الأول", "تقنية معلومات", "9", "101"),
+            ),
+
+            _subjectCard(context, cardWidth,
+                "تكامل - المستوى الأول", "تقنية معلومات", "0", "101"),
+
+            _addSubjectCard(context, cardWidth),
+          ],
+        );
+      },
     );
   }
 
-  Widget _subjectCard(String title, String dept, String exams, String students) {
+  ////////////////////////////////////////////////////////////
+
+  Widget _subjectCard(BuildContext context, double width,
+      String title, String dept, String exams, String students) {
+
     return Container(
-      width: 250,
-      padding: const EdgeInsets.all(15),
+      width: width,
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        color: AppColors.textWhite,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.textprimary.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Icon(Icons.book_outlined, color: AppColors.primaryTeal),
+              const Icon(Icons.book_outlined,
+                  color: AppColors.primaryTeal, size: 30),
+
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(color: AppColors.lightTealBg, borderRadius: BorderRadius.circular(10)),
-                child: Text(dept, style: const TextStyle(fontSize: 10, color: AppColors.primaryTeal)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryTeal,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  dept,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.primaryTeal,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               )
             ],
           ),
-          const SizedBox(height: 15),
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 25),
+
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 17,
+              color: AppColors.textprimary,
+            ),
+          ),
+
+          const SizedBox(height: 35),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -242,35 +318,136 @@ class SubjectsGrid extends StatelessWidget {
     );
   }
 
+  ////////////////////////////////////////////////////////////
+
   Widget _infoTile(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: AppColors.textGray, fontSize: 10)),
-        Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        Text(label,
+            style: const TextStyle(
+                color: AppColors.textseccondary, fontSize: 13)),
+        Text(value,
+            style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: AppColors.textprimary)),
       ],
     );
   }
 
-  Widget _addSubjectCard() {
-    return Container(
-      width: 250,
-      height: 160,
-      decoration: BoxDecoration(
-        color: AppColors.lightTealBg.withValues(alpha: 0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: AppColors.primaryTeal.withValues(alpha: 0.3),
-          width: 1.5,
+  ////////////////////////////////////////////////////////////
+
+  Widget _addSubjectCard(BuildContext context, double width) {
+
+    return InkWell(
+      onTap: () => _showAddSubjectDialog(context),
+
+      borderRadius: BorderRadius.circular(28),
+
+      child: Container(
+        width: width,
+        height: 220,
+
+        decoration: BoxDecoration(
+          color: AppColors.secondaryTeal.withValues(alpha: 0.4),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(
+              color: AppColors.primaryTeal.withValues(alpha: 0.3),
+              width: 1.5),
+        ),
+
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.add_circle_outline,
+                color: AppColors.primaryTeal, size: 50),
+            SizedBox(height: 12),
+            Text("إضافة مادة",
+                style: TextStyle(
+                    color: AppColors.primaryTeal,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15)),
+          ],
         ),
       ),
-      child: const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.add_circle_outline, color: AppColors.primaryTeal, size: 40),
-          SizedBox(height: 10),
-          Text("إضافة مادة", style: TextStyle(color: AppColors.primaryTeal, fontWeight: FontWeight.bold)),
-        ],
+    );
+  }
+
+  ////////////////////////////////////////////////////////////
+
+  void _showAddSubjectDialog(BuildContext context) {
+
+    showDialog(
+      context: context,
+      builder: (context) {
+
+        return Dialog(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25)),
+
+          child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(25),
+
+            decoration: BoxDecoration(
+              color: AppColors.textWhite,
+              borderRadius: BorderRadius.circular(25),
+            ),
+
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+
+              children: [
+
+                const Text("إضافة مادة جديدة",
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textprimary)),
+
+                const SizedBox(height: 20),
+
+                _buildField("اسم المادة"),
+                _buildField("التخصص"),
+                _buildField("المستوى الدراسي"),
+                _buildField("عدد الطلاب"),
+
+                const SizedBox(height: 20),
+
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("إضافة مادة"),
+                )
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  ////////////////////////////////////////////////////////////
+
+  Widget _buildField(String label) {
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+
+      child: TextField(
+        textAlign: TextAlign.right,
+
+        decoration: InputDecoration(
+          hintText: label,
+
+          filled: true,
+          fillColor: AppColors.secondaryTeal.withValues(alpha: 0.3),
+
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+        ),
       ),
     );
   }

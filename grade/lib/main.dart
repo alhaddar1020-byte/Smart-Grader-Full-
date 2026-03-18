@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'screens/start.dart'; // ينادي ملف صديقتك
-import 'screens/student_dashboard.dart'; // ينادي ملف صديقتك
+import 'screens/start.dart'; 
+import 'screens/student_dashboard.dart';
 import 'screens/teacher_dashboard.dart';
 import 'screens/teacher_matearial.dart';
 import 'screens/student_matearial.dart';
+import 'screens/grading.dart';
+import 'screens/material_detail.dart';
 import 'widgets/slider.dart';
 import 'screens/student_exim.dart';
 import '../core/colors.dart';
@@ -27,6 +29,11 @@ void main() async {
       child: const GradeAI(),
     ),
   );
+
+import 'screens/exam_page.dart';
+import 'screens/exam_page2.dart';
+void main() {
+  runApp(const GradeAI());
 }
 
 class GradeAI extends StatelessWidget {
@@ -38,6 +45,7 @@ class GradeAI extends StatelessWidget {
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+
       title: 'Grade AI',
       themeMode: themeProvider.themeMode,
       theme: ThemeData(
