@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../core/colors.dart';
-import 'student_matearial.dart'; // تأكد من صحة مسار الملف
+import 'student_matearial.dart';
 import 'student_setting.dart';
+import 'student_exim.dart';
+import 'student_detiles.dart';
 
 class StudentDashboardScreen extends StatefulWidget {
   const StudentDashboardScreen({super.key});
@@ -11,8 +13,9 @@ class StudentDashboardScreen extends StatefulWidget {
 }
 
 class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
-  // 0: لوحة التحكم، 1: المواد، 2: الإعدادات
   int selectedIndex = 0;
+  String? selectedSubjectName;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final Map<String, dynamic> studentData = {
     "name": "أحمد محمد السعيد",
@@ -54,177 +57,266 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     },
   };
 
+  // --- دالة التنقل الذكية لحل مشكلة العودة لصفحة المواد ---
+  void _handleNavigation(int index) {
+    setState(() {
+      selectedIndex = index;
+      if (index == 1) {
+        selectedSubjectName =
+            null; // تصفير المادة المختارة عند الضغط على زر المواد
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 251, 252, 252),
-      body: Center(
-        child: Container(
-          constraints: const BoxConstraints(maxWidth: 1440),
-          decoration: const BoxDecoration(color: Color(0xFFDEF6F5)),
-          child: Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        bool isMobile = constraints.maxWidth < 600;
+        bool isTablet =
+            constraints.maxWidth >= 600 && constraints.maxWidth < 1100;
+        bool isWeb = constraints.maxWidth >= 1100;
+
+        double sidePadding = isMobile ? 16.0 : 30.0;
+
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: AppColors.secondaryTeal(context),
+          endDrawer: isMobile
+              ? Drawer(
+                  width: 280,
+                  backgroundColor: Colors.transparent,
+                  child: CustSidebar(
+                    isCompact: false,
+                    selectedIndex: selectedIndex,
+                    onItemSelected: (index) {
+                      _handleNavigation(index);
+                      _scaffoldKey.currentState?.closeEndDrawer();
+                    },
+                  ),
+                )
+              : null,
+          body: Row(
             children: [
-              // المنطقة المتغيرة (المحتوى الهيدر + الصفحة الحالية)
               Expanded(
-                flex: 5,
                 child: Column(
                   children: [
-                    // الهيدر ثابت في كل الصفحات
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(32, 32, 32, 0),
-                      child: _buildHeader(
-                        studentData["name"],
-                        studentData["level"],
+                    if (isMobile) _buildMobileTopBar(),
+                    if (!isMobile)
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          sidePadding,
+                          32,
+                          sidePadding,
+                          0,
+                        ),
+                        child: _buildHeader(
+                          context,
+                          studentData["name"],
+                          studentData["level"],
+                        ),
                       ),
+                    Expanded(
+                      child: _buildBody(isMobile, isTablet, isWeb, sidePadding),
                     ),
-
-                    // تبديل المحتوى بناءً على الزر المختار
-                    Expanded(child: _buildBodyContent()),
                   ],
                 ),
               ),
-
-              // القائمة الجانبية ثابتة
-              CustSidebar(
-                selectedIndex: selectedIndex,
-                onItemSelected: (index) {
-                  setState(() {
-                    selectedIndex = index;
-                  });
-                },
-              ),
+              if (!isMobile)
+                CustSidebar(
+                  isCompact: isTablet,
+                  selectedIndex: selectedIndex,
+                  onItemSelected: (index) => _handleNavigation(index),
+                ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  // دالة اختيار الصفحة التي ستظهر في الـ Body
-  Widget _buildBodyContent() {
+  Widget _buildBody(
+    bool isMobile,
+    bool isTablet,
+    bool isWeb,
+    double sidePadding,
+  ) {
     switch (selectedIndex) {
       case 0:
-        return _buildDashboardHome();
+        return SingleChildScrollView(
+          padding: EdgeInsets.symmetric(vertical: isWeb ? 32 : 16),
+          child: _buildDashboardHome(isMobile, isTablet, isWeb, sidePadding),
+        );
       case 1:
-        return const SubjectsScreen();
+        return SubjectsScreen(
+          subjectName: selectedSubjectName ?? "",
+          onBack: () => setState(() => selectedSubjectName = null),
+          onSubjectTap: (name) {
+            setState(() {
+              selectedSubjectName = name;
+              selectedIndex = 4;
+            });
+          },
+        );
       case 2:
-        return SettingsScreen(); // الصفحة الجديدة للإعدادات
+        return const SettingsScreen();
+      case 4:
+        return StudentExamScreen(
+          subjectName: selectedSubjectName ?? "المادة",
+          onBack: () => setState(() => selectedIndex = 1),
+          onItemSelected: (index) => _handleNavigation(index),
+        );
       default:
-        return _buildDashboardHome();
+        return const Center(child: Text("الصفحة غير موجودة"));
     }
   }
 
-  // --- صفحة الإعدادات (يمكنك لاحقاً وضعها في ملف منفصل) ---
-
-  // --- دالة محتوى لوحة التحكم الأصلية ---
-  Widget _buildDashboardHome() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(32),
+  Widget _buildDashboardHome(
+    bool isMobile,
+    bool isTablet,
+    bool isWeb,
+    double sidePadding,
+  ) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: sidePadding),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTopStatsGrid(studentData["stats"]),
-          const SizedBox(height: 32),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildLeftSummaryColumn(
-                studentData["performance"],
-                studentData["badge"],
-              ),
-              const SizedBox(width: 32),
-              _buildMainResultsList(studentData["recent_results"]),
-            ],
-          ),
+          _buildTopStatsGrid(context, studentData["stats"], isMobile, isTablet),
+          SizedBox(height: isMobile ? 15 : 32),
+          if (isMobile)
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildPerformanceCard(
+                        context,
+                        studentData["performance"],
+                        isSmall: true,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildBadgeCard(
+                        context,
+                        studentData["badge"],
+                        isSmall: true,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 15),
+                _buildMainResultsList(
+                  context,
+                  studentData["recent_results"],
+                  isMobile: true,
+                ),
+              ],
+            )
+          else
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    children: [
+                      _buildBadgeCard(
+                        context,
+                        studentData["badge"],
+                        isSmall: isTablet,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildPerformanceCard(
+                        context,
+                        studentData["performance"],
+                        isSmall: isTablet,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 32),
+                _buildMainResultsList(
+                  context,
+                  studentData["recent_results"],
+                  isMobile: false,
+                ),
+              ],
+            ),
         ],
       ),
     );
   }
 
-  // --- Widgets الهيدر والإحصائيات (نفس كودك السابق دون تغيير) ---
-  Widget _buildHeader(String name, String level) {
+  Widget _buildMobileTopBar() {
+    String subTitle;
+    switch (selectedIndex) {
+      case 0:
+        subTitle = "نتمنى لك يوماً دراسياً موفقاً";
+        break;
+      case 1:
+        subTitle = "استكشف موادك الدراسية وتابع تقدمك";
+        break;
+      case 2:
+        subTitle = "تخصيص إعدادات الحساب والتطبيقات";
+        break;
+      case 4:
+        subTitle = "تفاصيل الاختبار والمراجعة النهائية";
+        break;
+      default:
+        subTitle = "مرحباً بك في نظام التصحيح الذكي";
+    }
     return Container(
-      height: 101,
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      height: 80,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.cardBg(context),
+        borderRadius: const BorderRadius.only(
+          bottomLeft: Radius.circular(24),
+          bottomRight: Radius.circular(24),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 2,
-            offset: const Offset(0, 1),
-            spreadRadius: -1,
-          ),
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 3,
-            offset: const Offset(0, 1),
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE0F2F1),
-              borderRadius: BorderRadius.circular(40),
+          IconButton(
+            icon: const Icon(
+              Icons.menu,
+              color: Color.fromARGB(255, 99, 98, 98),
+              size: 30,
             ),
-            child: Row(
-              children: [
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontFamily: "Arimo",
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: Color(0xFF1E2939),
-                      ),
-                    ),
-                    Text(
-                      level,
-                      style: TextStyle(
-                        fontFamily: "Arimo",
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(width: 12),
-                const CircleAvatar(
-                  radius: 20,
-                  backgroundColor: Color(0xFF4DB8AC),
-                  child: Icon(Icons.person, color: Colors.white, size: 24),
-                ),
-              ],
-            ),
+            onPressed: () => _scaffoldKey.currentState?.openEndDrawer(),
           ),
           Column(
-            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "مرحباً ${name.split(' ')[0]}!",
-                style: const TextStyle(
-                  fontFamily: "Arimo",
-                  fontSize: 22,
+                "مرحباً ${studentData["name"].split(' ')[0]}!",
+                style: TextStyle(
+                  color: AppColors.textPrimary(context),
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E2939),
                 ),
               ),
-              const Text(
-                "نتمنى لك يوماً دراسياً موفقاً",
-                style: TextStyle(
-                  fontFamily: "Arimo",
-                  color: Colors.grey,
-                  fontSize: 14,
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  subTitle,
+                  key: ValueKey<String>(subTitle),
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: 14,
+                  ),
                 ),
               ),
             ],
@@ -234,424 +326,638 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
-  Widget _buildTopStatsGrid(Map<String, String> stats) {
+  Widget _buildHeader(BuildContext context, String name, String level) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isSmallScreen = screenWidth < 1100;
+    String subTitle;
+    switch (selectedIndex) {
+      case 0:
+        subTitle = "نتمنى لك يوماً دراسياً موفقاً";
+        break;
+      case 1:
+        subTitle = "استكشف موادك الدراسية وتابع تقدمك";
+        break;
+      case 2:
+        subTitle = "تخصيص إعدادات الحساب والتطبيقات";
+        break;
+      case 4:
+        subTitle = "تفاصيل الاختبار والمراجعة النهائية";
+        break;
+      default:
+        subTitle = "مرحباً بك في نظام التصحيح الذكي";
+    }
+    return Container(
+      height: 101,
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg(context),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Flexible(
+            flex: 2,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryTeal(context).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(40),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: isSmallScreen ? 12 : 16,
+                            color: AppColors.textPrimary(context),
+                          ),
+                        ),
+                        Text(
+                          level,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.textSecondary(context),
+                            fontSize: isSmallScreen ? 8 : 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  CircleAvatar(
+                    radius: isSmallScreen ? 18 : 20,
+                    backgroundColor: AppColors.primaryTeal(context),
+                    child: const Icon(
+                      Icons.person,
+                      color: Colors.white,
+                      size: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            flex: 3,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  "مرحباً ${name.split(' ')[0]}!",
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 18 : 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    subTitle,
+                    key: ValueKey(subTitle),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontSize: isSmallScreen ? 12 : 14,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTopStatsGrid(
+    BuildContext context,
+    Map<String, dynamic> stats,
+    bool isMobile,
+    bool isTablet,
+  ) {
+    var children = [
+      _statCard(
+        context,
+        "أعلى درجة",
+        stats["highest_score"]!,
+        Icons.military_tech,
+        AppColors.primaryTeal(context),
+        isTablet,
+      ),
+      _statCard(
+        context,
+        "المعدل العام",
+        stats["gpa"]!,
+        Icons.trending_up,
+        AppColors.primaryTeal(context),
+        isTablet,
+      ),
+      _statCard(
+        context,
+        "الامتحانات",
+        stats["exams_count"]!,
+        Icons.assignment,
+        AppColors.primaryTeal(context),
+        isTablet,
+      ),
+      _statCard(
+        context,
+        "المواد",
+        stats["subjects_count"]!,
+        Icons.book,
+        AppColors.accentYellow(context),
+        isTablet,
+      ),
+    ];
+    double screenWidth = MediaQuery.of(context).size.width;
+    bool isSmallTablet = isTablet && screenWidth < 750;
+    if (isMobile || isSmallTablet) {
+      return SingleChildScrollView(
+        reverse: true,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: [
+            for (int i = 0; i < children.length; i++) ...[
+              Container(
+                width: isSmallTablet
+                    ? 180
+                    : MediaQuery.of(context).size.width * 0.42,
+                margin: EdgeInsetsDirectional.only(
+                  end: i == children.length - 1 ? 0 : 12,
+                ),
+                child: children[i],
+              ),
+            ],
+          ],
+        ),
+      );
+    }
     return Row(
       children: [
-        _statCard(
-          "أعلى درجة",
-          stats["highest_score"]!,
-          Icons.military_tech,
-          AppColors.primaryTeal,
+        for (int i = 0; i < children.length; i++) ...[
+          Expanded(child: children[i]),
+          if (i != children.length - 1) const SizedBox(width: 16),
+        ],
+      ],
+    );
+  }
+
+  Widget _statCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color cardColor,
+    bool isTablet,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(isTablet ? 12 : 17),
+      decoration: BoxDecoration(
+        color: cardColor,
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    title,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isTablet ? 13 : 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
+              Icon(icon, color: Colors.white, size: isTablet ? 16 : 20),
+            ],
+          ),
+          const SizedBox(height: 8),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isTablet ? 18 : 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMainResultsList(
+    BuildContext context,
+    List<dynamic> results, {
+    bool isMobile = false,
+  }) {
+    return Expanded(
+      flex: isMobile ? 0 : 3,
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: AppColors.cardBg(context),
+          borderRadius: BorderRadius.circular(24),
         ),
-        const SizedBox(width: 20),
-        _statCard(
-          "المعدل العام",
-          stats["gpa"]!,
-          Icons.trending_up,
-          AppColors.primaryTeal,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                GestureDetector(
+                  onTap: () => _handleNavigation(1),
+                  child: Text(
+                    "عرض جميع المواد",
+                    style: TextStyle(
+                      color: AppColors.textSecondary(context),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  "النتائج الأخيرة",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 15),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: results.take(3).length,
+              itemBuilder: (context, index) =>
+                  _resultItem(context, results[index], isMobile: isMobile),
+            ),
+          ],
         ),
-        const SizedBox(width: 20),
-        _statCard(
-          "الامتحانات المنشورة",
-          stats["exams_count"]!,
-          Icons.assignment,
-          AppColors.primaryTeal,
+      ),
+    );
+  }
+
+  Widget _resultItem(
+    BuildContext context,
+    Map<String, dynamic> data, {
+    bool isMobile = false,
+  }) {
+    return GestureDetector(
+      onTap: () => setState(() {
+        selectedSubjectName = data["subject"];
+        selectedIndex = 4;
+      }),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 15),
+        padding: const EdgeInsets.all(19),
+        decoration: BoxDecoration(
+          color: AppColors.scaffoldBg(context).withOpacity(0.5),
+          borderRadius: BorderRadius.circular(18),
         ),
-        const SizedBox(width: 20),
-        _statCard(
-          "المواد الدراسية",
-          stats["subjects_count"]!,
-          Icons.book,
-          AppColors.accentYellow,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  data["score"]!,
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+                Text(
+                  data["label"]!,
+                  style: const TextStyle(color: Colors.blue, fontSize: 11),
+                ),
+              ],
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  data["title"]!,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: isMobile ? 13 : 15,
+                    color: AppColors.textPrimary(context),
+                  ),
+                ),
+                Text(
+                  data["subject"]!,
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBadgeCard(
+    BuildContext context,
+    String badge, {
+    bool isSmall = false,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: isSmall ? 12 : 20,
+        vertical: isSmall ? 23 : 20,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg(context),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          CircleAvatar(
+            backgroundColor: AppColors.accentYellow(context),
+            radius: isSmall ? 20 : 30,
+            child: Icon(
+              Icons.star_rounded,
+              color: Colors.white,
+              size: isSmall ? 25 : 35,
+            ),
+          ),
+          SizedBox(height: isSmall ? 5 : 10),
+          Text(
+            "طالب متميز",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: isSmall ? 14 : 16,
+              color: AppColors.textPrimary(context),
+            ),
+          ),
+          Text(
+            "حافظت على معدل %$badge",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.textSecondary(context),
+              fontSize: isSmall ? 12 : 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPerformanceCard(
+    BuildContext context,
+    Map<String, dynamic>? perf, {
+    bool isSmall = false,
+  }) {
+    final String gradedCount = perf?["graded_count"] ?? "0/0";
+    final String successRate = perf?["success_rate"] ?? "0%";
+    double calculateProgress() {
+      try {
+        List<String> parts = gradedCount.split('/');
+        double current = double.parse(parts[0]);
+        double total = double.parse(parts[1]);
+        return (total > 0) ? (current / total) : 0.0;
+      } catch (e) {
+        return 0.0;
+      }
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(isSmall ? 12 : 24),
+      decoration: BoxDecoration(
+        color: AppColors.primaryTeal(context),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              "ملخص الأداء",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isSmall ? 14 : 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          SizedBox(height: isSmall ? 12 : 16),
+          _rowInfoDesign(
+            gradedCount,
+            isSmall ? "المصححة" : "المواد المصححة",
+            isSmall,
+          ),
+          SizedBox(height: isSmall ? 12 : 16),
+          _buildResponsiveProgressBar(calculateProgress(), isSmall),
+          SizedBox(height: isSmall ? 5 : 16),
+          _rowInfoDesign(successRate, "معدل النجاح", isSmall),
+        ],
+      ),
+    );
+  }
+
+  Widget _rowInfoDesign(String value, String title, bool isSmall) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isSmall ? 12 : 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: Text(
+            title,
+            textAlign: TextAlign.right,
+            style: TextStyle(color: Colors.white, fontSize: isSmall ? 9 : 14),
+          ),
         ),
       ],
     );
   }
 
-  Widget _statCard(String title, String value, IconData icon, Color cardColor) {
-    Color iconColor = (cardColor == AppColors.accentYellow)
-        ? AppColors.accentYellow
-        : AppColors.primaryTeal;
-    return Expanded(
-      child: Container(
-        height: 140,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: cardColor,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Flexible(
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.right,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(icon, color: iconColor, size: 25),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMainResultsList(List<dynamic> results) {
-    return Expanded(
-      flex: 3,
-      child: Container(
-        padding: const EdgeInsets.all(30),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            const Text(
-              "النتائج الأخيرة",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textprimary,
-              ),
-            ),
-            const SizedBox(height: 25),
-            ...results
-                .map((res) => _resultItem(res as Map<String, String>))
-                .toList(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _resultItem(Map<String, String> data) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.grey.shade100),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              Text(
-                data["score"]!,
-                style: const TextStyle(
-                  color: AppColors.primaryTeal,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.blue.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  data["label"]!,
-                  style: const TextStyle(color: Colors.blue, fontSize: 12),
-                ),
-              ),
-            ],
+  Widget _buildResponsiveProgressBar(double progress, bool isSmall) {
+    return Stack(
+      children: [
+        Container(
+          height: isSmall ? 6 : 8,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(10),
           ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                data["title"]!,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: AppColors.textprimary,
-                ),
-              ),
-              Text(
-                data["subject"]!,
-                style: const TextStyle(color: AppColors.textseccondary),
-              ),
-              Text(
-                data["date"]!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textseccondary,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLeftSummaryColumn(Map<String, dynamic> perf, String badge) {
-    return Expanded(
-      flex: 1,
-      child: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(25),
+        ),
+        LayoutBuilder(
+          builder: (context, constraints) => Container(
+            height: isSmall ? 6 : 8,
+            width: constraints.maxWidth * progress.clamp(0.0, 1.0),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  backgroundColor: AppColors.accentYellow,
-                  radius: 35,
-                  child: Icon(
-                    Icons.star_rounded,
-                    color: Colors.white,
-                    size: 40,
-                  ),
-                ),
-                const SizedBox(height: 15),
-                const Text(
-                  "طالب متميز",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppColors.textprimary,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  "حافظت على معدل أعلى من $badge% في جميع المواد",
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textseccondary,
-                    fontSize: 13,
-                  ),
-                ),
-              ],
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const SizedBox(height: 25),
-          _buildPerformanceCard(perf),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPerformanceCard(Map<String, dynamic> perf) {
-    return Container(
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF4DB8AC), Color(0xFF3DA89C)],
-        ),
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Text(
-            "ملخص الأداء",
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(height: 20),
-          _rowInfo(perf["graded_count"], "المواد المصححة"),
-          const SizedBox(height: 10),
-          LinearProgressIndicator(
-            value: perf["progress_value"],
-            backgroundColor: Colors.white24,
-            color: Colors.white,
-          ),
-          const SizedBox(height: 20),
-          _rowInfo(perf["success_rate"], "معدل النجاح"),
-          const SizedBox(height: 25),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.primaryTeal,
-              minimumSize: const Size(double.infinity, 55),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-            child: const Text(
-              "عرض التقرير الكامل",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _rowInfo(String val, String title) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          val,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        Text(
-          title,
-          style: const TextStyle(color: Colors.white70, fontSize: 14),
         ),
       ],
     );
   }
 }
 
-// --- CustSidebar و SidebarCurvePainter كما هي في كودك ---
 class CustSidebar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onItemSelected;
-
+  final bool isCompact;
   const CustSidebar({
     super.key,
     required this.selectedIndex,
     required this.onItemSelected,
+    required this.isCompact,
   });
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 280,
+    final bool isMobile = MediaQuery.of(context).size.width < 600;
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      width: isCompact ? 110 : 280,
       height: double.infinity,
-      decoration: const BoxDecoration(
-        color: AppColors.primaryTeal,
-        borderRadius: BorderRadius.only(
+      decoration: BoxDecoration(
+        color: AppColors.primaryTeal(context),
+        borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(55),
           bottomLeft: Radius.circular(55),
         ),
       ),
       child: Column(
         children: [
-          _buildLogoSection(
-            icon: Icons.check_circle_outline,
-            title: "Intelligent\nGrading System",
-          ),
-          _menuItem("لوحة التحكم", Icons.home_rounded, 0),
-          _menuItem("المواد", Icons.library_books, 1),
-          _menuItem("إعدادات", Icons.settings_rounded, 2),
+          _buildLogoSection(isCompact),
+          const SizedBox(height: 20),
+          _menuItem(context, "لوحة التحكم", Icons.home_rounded, 0, isMobile),
+          _menuItem(context, "المواد", Icons.library_books, 1, isMobile),
+          _menuItem(context, "إعدادات", Icons.settings_rounded, 2, isMobile),
           const Spacer(),
         ],
       ),
     );
   }
 
-  Widget _buildLogoSection({required IconData icon, required String title}) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10, bottom: 50),
-      child: Column(
-        children: [
-          Icon(icon, size: 70, color: AppColors.textWhite),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textWhite,
-              fontSize: 16,
-              fontWeight: FontWeight.w300,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _menuItem(String title, IconData icon, int index) {
-    bool isActive = selectedIndex == index;
+  Widget _menuItem(
+    BuildContext context,
+    String title,
+    IconData icon,
+    int index,
+    bool isMobile,
+  ) {
+    bool isActive =
+        (selectedIndex == index) || (index == 1 && selectedIndex == 4);
+    Color activeBg = AppColors.secondaryTeal(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
       child: InkWell(
         onTap: () => onItemSelected(index),
-        hoverColor: Colors.transparent,
         child: Stack(
-          clipBehavior: Clip.none,
           alignment: Alignment.centerLeft,
+          clipBehavior: Clip.none,
           children: [
-            if (isActive)
+            if (isActive && !isMobile)
               Positioned(
                 left: 0,
-                top: -40,
-                bottom: -40,
+                top: -38,
+                bottom: -38,
                 width: 50,
-                child: CustomPaint(
-                  painter: SidebarCurvePainter(const Color(0xFFDEF6F5)),
-                ),
+                child: CustomPaint(painter: SidebarCurvePainter(activeBg)),
               ),
             Container(
               height: 60,
-              margin: EdgeInsets.only(left: isActive ? 0 : 25, right: 20),
+              margin: EdgeInsets.only(
+                left: isMobile ? 12 : (isActive ? 0 : 25),
+                right: isCompact ? 10 : 20,
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFFDEF6F5) : Colors.transparent,
-                borderRadius: BorderRadius.only(
-                  topRight: const Radius.circular(30),
-                  bottomRight: const Radius.circular(30),
-                  topLeft: Radius.circular(isActive ? 0 : 30),
-                  bottomLeft: Radius.circular(isActive ? 0 : 30),
-                ),
+                color: isActive ? activeBg : Colors.transparent,
+                borderRadius: isMobile
+                    ? BorderRadius.circular(30)
+                    : BorderRadius.only(
+                        topRight: const Radius.circular(30),
+                        bottomRight: const Radius.circular(30),
+                        topLeft: Radius.circular(isActive ? 0 : 30),
+                        bottomLeft: Radius.circular(isActive ? 0 : 30),
+                      ),
               ),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: isCompact
+                    ? MainAxisAlignment.center
+                    : MainAxisAlignment.end,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: "Arimo",
-                      color: isActive ? AppColors.primaryTeal : Colors.white,
-                      fontSize: 23,
-                      fontWeight: FontWeight.w900,
+                  if (!isCompact)
+                    Expanded(
+                      child: Text(
+                        title,
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: isActive
+                              ? AppColors.primaryTeal(context)
+                              : Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(width: 15),
-                  Icon(icon, color: AppColors.accentYellow, size: 26),
+                  if (!isCompact) const SizedBox(width: 15),
+                  Icon(icon, color: const Color(0xFFF6AD55), size: 26),
                 ],
               ),
             ),
@@ -660,19 +966,45 @@ class CustSidebar extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildLogoSection(bool isCompact) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 40, bottom: 30),
+      child: Column(
+        children: [
+          Icon(
+            Icons.auto_awesome,
+            size: isCompact ? 40 : 60,
+            color: Colors.white,
+          ),
+          if (!isCompact) ...[
+            const SizedBox(height: 10),
+            const Text(
+              "نظام التصحيح الذكي",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
 }
 
 class SidebarCurvePainter extends CustomPainter {
   final Color bgColor;
   SidebarCurvePainter(this.bgColor);
-
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
       ..color = bgColor
       ..style = PaintingStyle.fill;
     double radius = 35;
-    double topY = 40;
+    double topY = 38;
     double bottomY = topY + 60;
     Path pathTop = Path();
     pathTop.moveTo(0, topY - radius);
