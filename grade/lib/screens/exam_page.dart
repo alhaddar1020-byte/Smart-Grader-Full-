@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../core/colors.dart';
-import 'teacher_dashboard.dart'; 
+import 'teacher_dashboard.dart';
 import 'teacher_matearial.dart';
 import 'grading.dart';
 import 'exam_page2.dart';
@@ -14,85 +14,157 @@ class FinalExamPage extends StatefulWidget {
 
 class _FinalExamPageState extends State<FinalExamPage> {
   int _selectedIndex = 1;
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: AppColors.secondaryTeal,
-        body: Row(
-          children: [
-            CustSidebar(
-              selectedIndex: _selectedIndex,
-              onItemSelected: (index) {
-                if (index == _selectedIndex) return;
-                setState(() => _selectedIndex = index);
-                if (index == 0) Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const DashboardScreen()));
-                if (index == 2) Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Material1()));
-                if (index == 3) Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const GradingPage()));
-              },
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const HeaderWidget(),
-                    const SizedBox(height: 20),
-                    
-                    // ✅ حاوية اللغة المعدلة (نفس تصميم الصفحة الثانية)
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: LanguageSwitcherWidget(),
+      child: LayoutBuilder(builder: (context, constraints) {
+        // تحديدbreakpoints بدقة
+        bool isMobile = constraints.maxWidth < 800;
+        bool isTablet = constraints.maxWidth >= 800 && constraints.maxWidth < 1150;
+
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: AppColors.secondaryTeal(context),
+          // Drawer للموبايل فقط
+          drawer: isMobile
+              ? Drawer(
+                  width: 260,
+                  backgroundColor: AppColors.primaryTeal(context),
+                  child: SafeArea(
+                    child: CustSidebar(
+                      selectedIndex: _selectedIndex,
+                      isCompact: false,
+                      onItemSelected: _handleNavigation,
                     ),
-                    
-                    const SizedBox(height: 10),
-                    
-                    // ورقة الاختبار الرئيسية
-                    const ExamPaperWidget(),
-                    
-                    const SizedBox(height: 20),
-                    
-                    // ✅ زر الصفحة التالية (تم توحيد الحجم مع الصفحة الثانية)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: SizedBox(
-                        width: 150, // الحجم الموحد
-                        height: 40, // الطول الموحد
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => const FinalExamNextPage()),
-                            );
-                          },
-                          icon: const Icon(Icons.arrow_forward, size: 16),
-                          label: const Text("الصفحة التالية", style: TextStyle(fontSize: 12)),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.primaryTeal,
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: const BorderSide(color: Colors.black12),
+                  ),
+                )
+              : null,
+          body: Row(
+            children: [
+              // السايدبار للويب والتابلت
+              if (!isMobile)
+                CustSidebar(
+                  selectedIndex: _selectedIndex,
+                  isCompact: isTablet,
+                  onItemSelected: _handleNavigation,
+                ),
+              Expanded(
+                child: Column(
+                  children: [
+                    if (isMobile) _buildMobileAppBar(),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const HeaderWidget(),
+                            const SizedBox(height: 20),
+                            
+                            // حاوية اللغة (على اليسار)
+                            const Align(
+                              alignment: Alignment.centerLeft,
+                              child: LanguageSwitcherWidget(),
                             ),
-                          ),
+                            
+                            const SizedBox(height: 10),
+                            
+                            // ورقة الاختبار الرئيسية
+                            const ExamPaperWidget(),
+                            
+                            const SizedBox(height: 20),
+                            
+                            // زر الصفحة التالية
+                            _buildNextButton(isMobile),
+                          ],
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
+            ],
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildMobileAppBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)],
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Row(
+          children: [
+            IconButton(
+              icon: Icon(Icons.menu, color: AppColors.primaryTeal(context)),
+              onPressed: () => _scaffoldKey.currentState?.openDrawer(),
             ),
+            const Spacer(),
+            const Text("تنسيق الاختبار", style: TextStyle(fontWeight: FontWeight.bold)),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildNextButton(bool isMobile) {
+    return Align(
+      alignment: isMobile ? Alignment.center : Alignment.centerLeft,
+      child: SizedBox(
+        width: 150,
+        height: 40,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const FinalExamNextPage()),
+            );
+          },
+          icon: const Icon(Icons.arrow_forward, size: 16),
+          label: const Text("الصفحة التالية", style: TextStyle(fontSize: 12)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: AppColors.primaryTeal(context),
+            elevation: 2,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: const BorderSide(color: Colors.black12),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _handleNavigation(int index) {
+    if (index == _selectedIndex) return;
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) Navigator.pop(context);
+
+    Widget? nextPage;
+    if (index == 0) nextPage = const DashboardScreen();
+    if (index == 2) nextPage = const Material1();
+    if (index == 3) nextPage = const GradingPage();
+
+    if (nextPage != null) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => nextPage!),
+        (route) => false,
+      );
+    }
+  }
 }
 
+// --- ورقة الاختبار (التصميم المطلوب) ---
 class ExamPaperWidget extends StatelessWidget {
   const ExamPaperWidget({super.key});
 
@@ -104,13 +176,13 @@ class ExamPaperWidget extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 700),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 30.0), 
+          padding: const EdgeInsets.symmetric(horizontal: 25.0, vertical: 30.0),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05), 
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: 10,
               )
             ],
@@ -125,7 +197,7 @@ class ExamPaperWidget extends StatelessWidget {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.edit_outlined, size: 16, color: AppColors.primaryTeal),
+                      Icon(Icons.edit_outlined, size: 16, color: AppColors.primaryTeal(context)),
                       const SizedBox(width: 5),
                       _collegeHeader(),
                     ],
@@ -138,13 +210,13 @@ class ExamPaperWidget extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _infoGroup([
+                  _infoGroup(context, [
                     "العام الدراسي: 2025/2024",
                     "تاريخ الاختبار: 2025/11/5",
                     "الممتحن: محمد علي مطر",
                     "الوقت المسموح: ساعة واحدة",
                   ]),
-                  _infoGroup([
+                  _infoGroup(context, [
                     "الفصل الدراسي: 1 (شهري)",
                     "المستوى: 4",
                     "القسم: تقنية المعلومات",
@@ -153,7 +225,7 @@ class ExamPaperWidget extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 20),
-              _studentNameRow(),
+              _studentNameRow(context),
               const SizedBox(height: 15),
               _questionsTable(),
             ],
@@ -164,37 +236,37 @@ class ExamPaperWidget extends StatelessWidget {
   }
 
   Widget _circleLogo() => Container(
-    width: 55, height: 55,
-    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey[300]!)),
-    child: const Center(child: Text("شعار", style: TextStyle(fontSize: 9, color: Colors.grey))),
-  );
+        width: 55, height: 55,
+        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.grey[300]!)),
+        child: const Center(child: Text("شعار", style: TextStyle(fontSize: 9, color: Colors.grey))),
+      );
 
   Widget _collegeHeader() => const Column(
-    children: [
-      Text("جامعة حضرموت", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-      Text("كلية الحاسبات وتكنولوجيا المعلومات", style: TextStyle(fontSize: 11)),
-      Text("اختبار شهري", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-    ],
-  );
+        children: [
+          Text("جامعة حضرموت", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+          Text("كلية الحاسبات وتكنولوجيا المعلومات", style: TextStyle(fontSize: 11)),
+          Text("اختبار شهري", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+        ],
+      );
 
-  Widget _infoGroup(List<String> items) {
+  Widget _infoGroup(BuildContext context, List<String> items) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Icon(Icons.edit_outlined, size: 14, color: AppColors.primaryTeal),
+        Icon(Icons.edit_outlined, size: 14, color: AppColors.primaryTeal(context)),
         const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: items.map((item) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Text(item, style: const TextStyle(fontSize: 10, color: Colors.black87)),
-          )).toList(),
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(item, style: const TextStyle(fontSize: 10, color: Colors.black87)),
+              )).toList(),
         ),
       ],
     );
   }
 
-  Widget _studentNameRow() {
+  Widget _studentNameRow(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -205,43 +277,43 @@ class ExamPaperWidget extends StatelessWidget {
         children: [
           const Text("اسم الطالب:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
           const Spacer(),
-          const Icon(Icons.edit_outlined, size: 14, color: AppColors.primaryTeal),
+          Icon(Icons.edit_outlined, size: 14, color: AppColors.primaryTeal(context)),
         ],
       ),
     );
   }
 
   Widget _questionsTable() => Table(
-    columnWidths: const {
-      0: FixedColumnWidth(50),
-      1: FlexColumnWidth(),
-      2: FixedColumnWidth(50),
-    },
-    border: TableBorder.all(color: Colors.grey[300]!, width: 0.8),
-    children: [
-      const TableRow(
-        decoration: BoxDecoration(color: Color(0xFFF9F9F9)),
+        columnWidths: const {
+          0: FixedColumnWidth(50),
+          1: FlexColumnWidth(),
+          2: FixedColumnWidth(50),
+        },
+        border: TableBorder.all(color: Colors.grey[300]!, width: 0.8),
         children: [
-          _Cell(txt: "سؤال", isBold: true),
-          _Cell(txt: "أجب عن جميع الأسئلة التالية", isBold: true),
-          _Cell(txt: "درجة", isBold: true),
+          const TableRow(
+            decoration: BoxDecoration(color: Color(0xFFF9F9F9)),
+            children: [
+              _Cell(txt: "سؤال", isBold: true),
+              _Cell(txt: "أجب عن جميع الأسئلة التالية", isBold: true),
+              _Cell(txt: "درجة", isBold: true),
+            ],
+          ),
+          _questionRow("1", "4"),
+          _questionRow("2", "5"),
         ],
-      ),
-      _questionRow("1", "4"),
-      _questionRow("2", "5"),
-    ],
-  );
+      );
 
   TableRow _questionRow(String q, String mark) => TableRow(
-    children: [
-      _Cell(txt: q, isBold: true),
-      Container(height: 180, color: Colors.white), 
-      _Cell(txt: mark, isBold: true),
-    ],
-  );
+        children: [
+          _Cell(txt: q, isBold: true),
+          Container(height: 180, color: Colors.white),
+          _Cell(txt: mark, isBold: true),
+        ],
+      );
 }
 
-// ✅ حاوية اللغة بنفس تصميم الصفحة السابقة (المحدث)
+// --- محول اللغة ---
 class LanguageSwitcherWidget extends StatelessWidget {
   const LanguageSwitcherWidget({super.key});
 
@@ -282,6 +354,7 @@ class LanguageSwitcherWidget extends StatelessWidget {
   }
 }
 
+// --- الهيدر ---
 class HeaderWidget extends StatelessWidget {
   const HeaderWidget({super.key});
 
@@ -296,18 +369,18 @@ class HeaderWidget extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            "الاختبار",
+          Text(
+            "تنسيق الاختبار",
             style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textprimary),
+                color: AppColors.textPrimary(context)),
           ),
           Row(
             children: [
-              _iconButton(Icons.notifications_none),
+              _iconButton(context, Icons.notifications_none),
               const SizedBox(width: 10),
-              _iconButton(Icons.person_outline),
+              _iconButton(context, Icons.person_outline),
             ],
           )
         ],
@@ -315,14 +388,14 @@ class HeaderWidget extends StatelessWidget {
     );
   }
 
-  static Widget _iconButton(IconData icon) {
+  Widget _iconButton(BuildContext context, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(8),
-      decoration: const BoxDecoration(
-        color: AppColors.secondaryTeal,
+      decoration: BoxDecoration(
+        color: AppColors.secondaryTeal(context),
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, color: AppColors.primaryTeal),
+      child: Icon(icon, color: AppColors.primaryTeal(context)),
     );
   }
 }

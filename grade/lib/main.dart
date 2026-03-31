@@ -1,4 +1,39 @@
+// import 'package:flutter/material.dart';
+// import 'screens/start.dart'; 
+// import 'screens/student_dashboard.dart';
+// import 'screens/teacher_dashboard.dart';
+// import 'screens/teacher_matearial.dart';
+// import 'screens/student_matearial.dart';
+// import 'screens/grading.dart';
+// import 'screens/material_detail.dart';
+// import 'widgets/slider.dart';
+// import 'screens/exam_page.dart';
+// import 'screens/exam_page2.dart';
+// import 'core/theme_provider.dart'; // تأكدي من المسار
+
+// void main() {
+//   runApp(const GradeAI());
+// }
+
+// class GradeAI extends StatelessWidget {
+//   const GradeAI({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       debugShowCheckedModeBanner: false,
+//       theme: ThemeData(fontFamily: 'Arimo'),
+//       home:  StudentDashboardScreen(),
+
+//       title: 'Grade AI',
+//     );
+//   }
+// }
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // أضيفي هذا السطر
+import 'package:shared_preferences/shared_preferences.dart'; // أضيفي هذا السطر
+
+// المستوردات الخاصة بكِ
 import 'screens/start.dart'; 
 import 'screens/student_dashboard.dart';
 import 'screens/teacher_dashboard.dart';
@@ -7,33 +42,25 @@ import 'screens/student_matearial.dart';
 import 'screens/grading.dart';
 import 'screens/material_detail.dart';
 import 'widgets/slider.dart';
-import 'screens/student_exim.dart';
-import '../core/colors.dart';
-import 'package:provider/provider.dart';
-import 'core/theme_provider.dart'; // تأكدي من المسار الصحيح للملف الذي أنشأتيه
-import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/exam_page.dart';
+import 'screens/exam_page2.dart';
+import 'core/theme_provider.dart'; 
 
 void main() async {
-  // 1. التأكد من تهيئة أدوات Flutter قبل تشغيل أي كود برمجي
+  // 1. تأكيد تهيئة Flutter قبل استدعاء SharedPreferences
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. قراءة الحالة المحفوظة قبل تشغيل التطبيق
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  bool isDark =
-      prefs.getBool('theme_mode') ?? false; // إذا لم يجد شيئاً يفترض أنه فاتح
+  // 2. قراءة حالة الثيم المحفوظة من الجهاز
+  final prefs = await SharedPreferences.getInstance();
+  final isDark = prefs.getBool('theme_mode') ?? false;
 
   runApp(
+    // 3. تغليف التطبيق بالـ Provider وتمرير القيمة الأولية
     ChangeNotifierProvider(
-      // 3. نمرر القيمة التي قرأناها للـ Provider عند إنشائه
-      create: (context) => ThemeProvider(isDark),
+      create: (_) => ThemeProvider(isDark),
       child: const GradeAI(),
     ),
   );
-
-import 'screens/exam_page.dart';
-import 'screens/exam_page2.dart';
-void main() {
-  runApp(const GradeAI());
 }
 
 class GradeAI extends StatelessWidget {
@@ -41,24 +68,27 @@ class GradeAI extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = context.watch<ThemeProvider>();
+    // 4. استدعاء الـ Provider لمعرفة حالة الثيم الحالية (فاتح/داكن)
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-
       title: 'Grade AI',
+      
+      // 5. ربط الثيم بالـ Provider
       themeMode: themeProvider.themeMode,
       theme: ThemeData(
-        brightness: Brightness.light,
         fontFamily: 'Arimo',
-        scaffoldBackgroundColor: const Color(0xFFF3F4F6),
+        brightness: Brightness.light, // الثيم الفاتح
+        useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        brightness: Brightness.dark,
         fontFamily: 'Arimo',
-        scaffoldBackgroundColor: const Color(0xFF121212),
+        brightness: Brightness.dark, // الثيم الداكن
+        useMaterial3: true,
       ),
-      home: const StudentDashboardScreen(),
+      
+      home: DashboardScreen(),
     );
   }
 }

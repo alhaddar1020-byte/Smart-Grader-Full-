@@ -992,13 +992,13 @@
 //                       style: TextStyle(
 //                         fontWeight: FontWeight.bold,
 //                         fontSize: 16,
-//                         color: AppColors.textPrimary(context),
+//                         color: AppColors.textPrimary(context)(context),
 //                       ),
 //                     ),
 //                     Text(
 //                       level,
 //                       style: TextStyle(
-//                         color: AppColors.textSecondary(context),
+//                         color: AppColors.textSecondary(context),(context),
 //                         fontSize: 12,
 //                       ),
 //                     ),
@@ -1026,7 +1026,7 @@
 //                 style: TextStyle(
 //                   fontSize: 22,
 //                   fontWeight: FontWeight.bold,
-//                   color: AppColors.textPrimary(context),
+//                   color: AppColors.textPrimary(context)(context),
 //                 ),
 //               ),
 //               AnimatedSwitcher(
@@ -1035,7 +1035,7 @@
 //                   subTitle,
 //                   key: ValueKey<String>(subTitle),
 //                   style: TextStyle(
-//                     color: AppColors.textSecondary(context),
+//                     color: AppColors.textSecondary(context),(context),
 //                     fontSize: 14,
 //                   ),
 //                 ),
@@ -1158,7 +1158,7 @@
 //                   child: Text(
 //                     "عرض جميع المواد",
 //                     style: TextStyle(
-//                       color: AppColors.textSecondary(context),
+//                       color: AppColors.textSecondary(context),(context),
 //                       fontWeight: FontWeight.bold,
 //                     ),
 //                   ),
@@ -1168,7 +1168,7 @@
 //                   style: TextStyle(
 //                     fontSize: 20,
 //                     fontWeight: FontWeight.bold,
-//                     color: AppColors.textPrimary(context),
+//                     color: AppColors.textPrimary(context)(context),
 //                   ),
 //                 ),
 //               ],
@@ -1221,7 +1221,7 @@
 //                 Text(
 //                   data["score"]!,
 //                   style: TextStyle(
-//                     color: AppColors.textPrimary(context),
+//                     color: AppColors.textPrimary(context)(context),
 //                     fontWeight: FontWeight.bold,
 //                     fontSize: 22,
 //                   ),
@@ -1241,12 +1241,12 @@
 //                   style: TextStyle(
 //                     fontWeight: FontWeight.bold,
 //                     fontSize: 16,
-//                     color: AppColors.textPrimary(context),
+//                     color: AppColors.textPrimary(context)(context),
 //                   ),
 //                 ),
 //                 Text(
 //                   data["subject"]!,
-//                   style: TextStyle(color: AppColors.textSecondary(context)),
+//                   style: TextStyle(color: AppColors.textSecondary(context),(context)),
 //                 ),
 //               ],
 //             ),
@@ -1290,14 +1290,14 @@
 //                   style: TextStyle(
 //                     fontWeight: FontWeight.bold,
 //                     fontSize: 16,
-//                     color: AppColors.textPrimary(context),
+//                     color: AppColors.textPrimary(context)(context),
 //                   ),
 //                 ),
 //                 Text(
 //                   "حافظت على معدل $badge%",
 //                   textAlign: TextAlign.center,
 //                   style: TextStyle(
-//                     color: AppColors.textSecondary(context),
+//                     color: AppColors.textSecondary(context),(context),
 //                     fontSize: 12,
 //                   ),
 //                 ),
