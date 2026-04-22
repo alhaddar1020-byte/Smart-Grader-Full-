@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'student_detiles.dart';
 import '../core/colors.dart';
+import '../generated/l10n.dart';
+import 'student_detiles.dart';
 
 class SubjectsScreen extends StatefulWidget {
   final String subjectName;
@@ -31,10 +32,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
   }
 
   // بيانات تجريبية
-  String topGrade = "92.0%";
-  String averageGrade = "86.0%";
-  String totalExams = "13";
-  String totalSubjects = "6";
+  final String topGrade = "92.0%";
+  final String averageGrade = "86.0%";
+  final String totalExams = "13";
+  final String totalSubjects = "6";
 
   void onSubjectTap(String name) {
     if (selectedSubjectName == name) {
@@ -51,125 +52,112 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         bool isMobile = constraints.maxWidth < 600;
+        double horizontalPadding = isMobile ? 14.0 : 30.0;
 
-        // القاعدة الصارمة للفراغات: 16 للجوال و 30 للتابلت والويب
-        double dynamicPadding = isMobile ? 16.0 : 30.0;
+        if (selectedSubjectName != null) {
+          return SubjectDetailsScreen(
+            subjectName: selectedSubjectName!,
+            onBack: () => setState(() => selectedSubjectName = null),
+            onSubjectTap: onSubjectTap,
+          );
+        }
 
-        return Directionality(
-          textDirection: TextDirection.rtl,
-          child: Scaffold(
-            backgroundColor: AppColors.secondaryTeal(context),
-            body: selectedSubjectName != null
-                ? SubjectDetailsScreen(
-                    subjectName: selectedSubjectName!,
-                    onBack: () => setState(() => selectedSubjectName = null),
-                    onSubjectTap: onSubjectTap,
-                  )
-                : SingleChildScrollView(
-                    // نطبق الفراغ الموحد على الـ Padding الجانبي للـ ScrollView بالكامل
-                    padding: EdgeInsets.symmetric(
-                      horizontal: dynamicPadding,
-                      vertical: 32,
-                    ),
-                    child: Column(
-                      children: [
-                        // 1. الإحصائيات (تتبع نفس المحاذاة)
-                        _buildTopStatsGrid(isMobile),
-
-                        const SizedBox(height: 48),
-
-                        // 2. مفتاح تبديل الفصول (يتبع نفس المحاذاة)
-                        _buildTermSwitcher(),
-
-                        const SizedBox(height: 32),
-
-                        // 3. عرض المواد (يتبع نفس المحاذاة)
-                        _buildFluidSubjectsLayout(),
-                      ],
-                    ),
-                  ),
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          body: SingleChildScrollView(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: 32,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildTopStatsGrid(context, isMobile),
+                const SizedBox(height: 40),
+                _buildTermSwitcher(context),
+                const SizedBox(height: 32),
+                _buildFluidSubjectsLayout(context),
+              ],
+            ),
           ),
         );
       },
     );
   }
 
-  // الإحصائيات مع دعم التمرير
-  Widget _buildTopStatsGrid(bool isMobile) {
+  Widget _buildTopStatsGrid(BuildContext context, bool isMobile) {
     double width = MediaQuery.of(context).size.width;
     bool isTablet = width >= 600 && width < 1100;
 
     var stats = [
-      _statCard(
+      // تم تعديل المسميات لتطابق ملف الـ ARB الخاص بكِ بدقة
+      _statTopCard(
         context,
-        "أعلى معدل",
+        S.of(context).statHighScore,
         topGrade,
         Icons.trending_up,
-        AppColors.primaryTeal(context),
         isTablet,
       ),
-      _statCard(
+      _statTopCard(
         context,
-        "المعدل العام",
+        S.of(context).statAverage,
         averageGrade,
         Icons.analytics,
-        AppColors.primaryTeal(context),
         isTablet,
       ),
-      _statCard(
+      _statTopCard(
         context,
-        "إجمالي الامتحانات",
+        S.of(context).statExams,
         totalExams,
         Icons.description,
-        AppColors.primaryTeal(context),
         isTablet,
       ),
-      _statCard(
+      _statTopCard(
         context,
-        "إجمالي المواد",
+        S.of(context).statMaterials,
         totalSubjects,
         Icons.book,
-        AppColors.accentYellow(context),
         isTablet,
       ),
     ];
 
     if (isMobile) {
       return SingleChildScrollView(
-        reverse: false,
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
-          children: [
-            for (int i = 0; i < stats.length; i++)
-              Container(
-                width: MediaQuery.of(context).size.width * 0.33,
-                margin: EdgeInsetsDirectional.only(
-                  end: i == stats.length - 1 ? 0 : 12,
+          children: stats
+              .map(
+                (card) => Container(
+                  width: width * 0.35,
+                  margin: const EdgeInsetsDirectional.only(end: 12),
+                  child: card,
                 ),
-                child: stats[i],
-              ),
-          ],
+              )
+              .toList(),
         ),
       );
     }
 
     return Row(
-      children: [
-        for (int i = 0; i < stats.length; i++) ...[
-          Expanded(child: stats[i]),
-          if (i != stats.length - 1) const SizedBox(width: 16),
-        ],
-      ],
+      children: stats
+          .map(
+            (card) => Expanded(
+              child: Padding(
+                padding: const EdgeInsetsDirectional.only(end: 16),
+                child: card,
+              ),
+            ),
+          )
+          .toList(),
     );
   }
 
-  Widget _statCard(
+  Widget _statTopCard(
     BuildContext context,
     String title,
     String value,
     IconData icon,
-    Color cardColor,
     bool isTablet,
   ) {
     return Container(
@@ -177,13 +165,20 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Icon(
                 icon,
@@ -194,7 +189,7 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               Expanded(
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerRight,
+                  alignment: AlignmentDirectional.centerStart,
                   child: Text(
                     title,
                     style: TextStyle(
@@ -224,36 +219,58 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     );
   }
 
-  Widget _buildFluidSubjectsLayout() {
+  Widget _buildTermSwitcher(BuildContext context) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _termButton(S.of(context).termFirst, 1),
+            _termButton(S.of(context).termSecond, 2),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _termButton(String title, int index) {
+    bool isSelected = selectedTerm == index;
+    return GestureDetector(
+      onTap: () => setState(() {
+        selectedTerm = index;
+        selectedSubjectName = null;
+      }),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryTeal(context)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.white : Colors.grey,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFluidSubjectsLayout(BuildContext context) {
     final subjects = _getSubjectsByTerm();
     return LayoutBuilder(
       builder: (context, box) {
-        double width = box.maxWidth;
-        int crossAxisCount;
-
-        if (width > 900) {
-          crossAxisCount = 4;
-        } else if (width > 650) {
-          crossAxisCount = 3;
-        } else if (width > 400) {
-          crossAxisCount = 2;
-        } else {
-          crossAxisCount = 1;
-        }
-
-        if (crossAxisCount == 1) {
-          return Column(
-            children: subjects
-                .map(
-                  (s) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: _buildOldStyleSubjectCard(s),
-                  ),
-                )
-                .toList(),
-          );
-        }
-
+        int crossAxisCount = box.maxWidth > 900
+            ? 4
+            : (box.maxWidth > 650 ? 2 : 1);
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -344,10 +361,20 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             const Divider(height: 20, thickness: 0.8),
             Row(
               children: [
-                Expanded(child: _buildOldStatBox("الدرجة", subject["grade"])),
-                const SizedBox(width: 8),
+                // تم استخدام gradeLabel من ملفك
                 Expanded(
-                  child: _buildOldStatBox("الامتحانات", subject["exams"]),
+                  child: _buildOldStatBox(
+                    S.of(context).gradeLabel,
+                    subject["grade"],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                // تم استخدام examsLabel من ملفك
+                Expanded(
+                  child: _buildOldStatBox(
+                    S.of(context).examsLabel,
+                    subject["exams"],
+                  ),
                 ),
               ],
             ),
@@ -362,9 +389,10 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "آخر امتحان",
-                    style: TextStyle(fontSize: 11, color: Colors.grey),
+                  // تم استخدام lastExam من ملفك
+                  Text(
+                    S.of(context).lastExam,
+                    style: const TextStyle(fontSize: 11, color: Colors.grey),
                   ),
                   Text(
                     subject["lastExam"],
@@ -386,12 +414,17 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 148, 147, 147).withOpacity(0.1),
+        color: Colors.grey.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         children: [
-          Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+          FittedBox(
+            child: Text(
+              label,
+              style: const TextStyle(fontSize: 10, color: Colors.grey),
+            ),
+          ),
           Text(
             value,
             style: TextStyle(
@@ -401,49 +434,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTermSwitcher() {
-    return Center(
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _termButton("الفصل الأول", 1),
-            _termButton("الفصل الثاني", 2),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _termButton(String title, int index) {
-    bool isSelected = selectedTerm == index;
-    return GestureDetector(
-      onTap: () => setState(() {
-        selectedTerm = index;
-        selectedSubjectName = null;
-      }),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.cardBg(context) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Text(
-          title,
-          style: TextStyle(
-            color: isSelected ? AppColors.primaryTeal(context) : Colors.grey,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-        ),
       ),
     );
   }
@@ -479,13 +469,6 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
               "exams": "2",
               "lastExam": "2026-02-18",
             },
-            {
-              "name": "اللغة الإنجليزية",
-              "teacher": "أ. سامي فهد",
-              "grade": "82%",
-              "exams": "3",
-              "lastExam": "2026-03-01",
-            },
           ]
         : [
             {
@@ -498,5 +481,3 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
           ];
   }
 }
-
-// اسمع خلاص بغير ابغا في شاشه الجوال كل شي يكون فيه فراغ من الحواف 16 لازم كككل شييييي وفي التابلت والويب كل شي يكون 30 لازم كل العناصر تبدا من بعد 30 فراغ وتنتهي قبل 30 فراغ حتى لما اصغره واكبره بين التابلت والويب ابغا كل العناصر نفس المحاداه وحتى الاحصائيات بس  بس بشرط مهم جدددددداااا باقي الاكواد ابغاها نفسها لا تغير شييي ابدا وخلي كل شي شغال بنفس الاحجام والتغيرات وكل شي بس خذ الكود حقي عدل حق الفراغات واعطيني الكود كامل بدون ماتلمس اي شي ثاني ترا يويلك لو لصقته وطلع يختلف ولو بملي واحد عن حقي فاهم
