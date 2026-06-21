@@ -170,36 +170,43 @@ async def send_new_user_otp(request: OtpRequest):
             detail="حدث خطأ أثناء حفظ بيانات التحقق."
         )
 
-    # 3. إرسال الإيميل
+    # 3. إرسال الإيميل عبر SendGrid API
+    sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+    sender_email = os.environ.get("OTP_EMAIL")
+    
+    payload = {
+        "personalizations": [{"to": [{"email": request.email}]}],
+        "from": {"email": sender_email, "name": "Intelligent Grading System"},
+        "subject": "رمز التحقق",
+        "content": [{"type": "text/plain", "value": f"رمز التحقق الخاص بك هو: {otp_code}"}]
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {sendgrid_key}",
+        "Content-Type": "application/json"
+    }
+    
     try:
-        message = MessageSchema(
-            subject="رمز التحقق", 
-            recipients=[request.email], 
-            body=f"رمز التحقق الخاص بك هو: {otp_code}", 
-            subtype="plain"
-        )
-        fm = FastMail(conf)
-        print("--- جاري إرسال الإيميل الآن ---") 
-        await fm.send_message(message)
-        print("--- تم الإرسال بنجاح ---") 
-        
-    except (httpx.ConnectError, httpcore.ConnectError) as e:
-        print("\n🔴 NETWORK ERROR IN FASTMAIL:", repr(e), "\n") 
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="فشل الاتصال بخادم البريد الإلكتروني. يرجى التحقق من اتصال الإنترنت أو المحاولة لاحقاً."
-        )
+        async with httpx.AsyncClient() as client:
+            print("--- جاري إرسال إيميل المستخدم الجديد عبر SendGrid API ---")
+            response = await client.post("https://api.sendgrid.com/v3/mail/send", json=payload, headers=headers)
+            
+            if response.status_code not in (200, 202):
+                print(f"🔴 خطأ من SendGrid: {response.text}")
+                raise Exception("فشل إرسال البريد من السيرفر المزود")
+                
+            print("--- تم الإرسال بنجاح! ---")
+            
     except Exception as e:
-        print("\n🔴 ERROR IN FASTMAIL DETAILED:", repr(e), "\n") 
+        print("\n🔴 ERROR IN SENDGRID:", repr(e), "\n") 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"خطأ في إرسال البريد: {str(e)}"
+            detail="خطأ في إرسال البريد الإلكتروني السحابي."
         )
-    
+        
     return {"status": "success", "message": "تم إرسال الرمز بنجاح"}
-
-
 # 👇 الدالة الخاصة بنسيت كلمة المرور 👇
+
 @router.post("/send-forgot-password-otp")
 async def send_forgot_password_otp(request: OtpRequest):
     # 1. البحث عن المستخدم
@@ -212,7 +219,6 @@ async def send_forgot_password_otp(request: OtpRequest):
             detail="error_email_not_found"
         )
 
-    # 👈 الفرق هنا: لو الباسوورد null، يعني الحساب جديد وما ينفع يسوي استعادة
     if user.get("password") is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, 
@@ -238,34 +244,41 @@ async def send_forgot_password_otp(request: OtpRequest):
             detail="حدث خطأ أثناء حفظ بيانات التحقق."
         )
 
-    # 3. إرسال الإيميل
+    # 3. إرسال الإيميل عبر SendGrid API
+    sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+    sender_email = os.environ.get("OTP_EMAIL")
+    
+    payload = {
+        "personalizations": [{"to": [{"email": request.email}]}],
+        "from": {"email": sender_email, "name": "Intelligent Grading System"},
+        "subject": "استعادة كلمة المرور",
+        "content": [{"type": "text/plain", "value": f"رمز التحقق الخاص باستعادة كلمة المرور هو: {otp_code}"}]
+    }
+    
+    headers = {
+        "Authorization": f"Bearer {sendgrid_key}",
+        "Content-Type": "application/json"
+    }
+    
     try:
-        message = MessageSchema(
-            subject="استعادة كلمة المرور", 
-            recipients=[request.email], 
-            body=f"رمز التحقق الخاص باستعادة كلمة المرور هو: {otp_code}", 
-            subtype="plain"
-        )
-        fm = FastMail(conf)
-        print("--- جاري إرسال إيميل الاستعادة الآن ---") 
-        await fm.send_message(message)
-        print("--- تم الإرسال بنجاح ---") 
-        
-    except (httpx.ConnectError, httpcore.ConnectError) as e:
-        print("\n🔴 NETWORK ERROR IN FASTMAIL:", repr(e), "\n") 
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="فشل الاتصال بخادم البريد الإلكتروني. يرجى التحقق من اتصال الإنترنت أو المحاولة لاحقاً."
-        )
+        async with httpx.AsyncClient() as client:
+            print("--- جاري إرسال إيميل الاستعادة عبر SendGrid API ---")
+            response = await client.post("https://api.sendgrid.com/v3/mail/send", json=payload, headers=headers)
+            
+            if response.status_code not in (200, 202):
+                print(f"🔴 خطأ من SendGrid: {response.text}")
+                raise Exception("فشل إرسال البريد من السيرفر المزود")
+                
+            print("--- تم الإرسال بنجاح! ---")
+            
     except Exception as e:
-        print("\n🔴 ERROR IN FASTMAIL DETAILED:", repr(e), "\n") 
+        print("\n🔴 ERROR IN SENDGRID:", repr(e), "\n") 
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"خطأ في إرسال البريد: {str(e)}"
+            detail="خطأ في إرسال البريد الإلكتروني السحابي."
         )
-    
+        
     return {"status": "success", "message": "تم إرسال رمز الاستعادة بنجاح"}
-
 
 @router.post("/verify-otp")
 def verify_otp(request: VerifyOtpRequest):
