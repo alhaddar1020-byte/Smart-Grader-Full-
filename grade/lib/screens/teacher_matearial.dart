@@ -678,7 +678,9 @@ class _SubjectsGridState extends State<SubjectsGrid> {
   Future<void> _fetchLevels() async {
     // final response = await http.get(Uri.parse('http://127.0.0.1:8000/teacher-materials/levels'));
     final response = await http.get(
-      Uri.parse('http://127.0.0.1:8000/teacher-materials/academic-levels'),
+      Uri.parse(
+        'https://smart-grader-full.onrender.com/teacher-materials/academic-levels',
+      ),
     );
     if (response.statusCode == 200) {
       setState(() {
@@ -768,7 +770,7 @@ class _SubjectsGridState extends State<SubjectsGrid> {
                     ElevatedButton(
                       onPressed: () async {
                         final url =
-                            'http://127.0.0.1:8000/teacher-materials/add-course/1';
+                            'https://smart-grader-full.onrender.com/teacher-materials/add-course/1';
 
                         final response = await http.post(
                           Uri.parse(url),

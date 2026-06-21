@@ -1592,7 +1592,7 @@ class _ExamReportActionsState extends State<ExamReportActions> {
     try {
       String langCode = Localizations.localeOf(context).languageCode;
       final String apiUrl =
-          'http://127.0.0.1:8000/api/download-exam-report/${widget.studentId}/${widget.examId}?lang=$langCode';
+          'https://smart-grader-full.onrender.com/api/download-exam-report/${widget.studentId}/${widget.examId}?lang=$langCode';
       final Uri url = Uri.parse(apiUrl);
 
       if (isPrint) {
@@ -1681,7 +1681,7 @@ class ExamReportPreviewScreen extends StatelessWidget {
         ? 'dark'
         : 'light';
     final url = Uri.parse(
-      'http://127.0.0.1:8000/api/download-exam-report/$studentId/$examId?lang=$langCode&theme=$themeMode',
+      'https://smart-grader-full.onrender.com/api/download-exam-report/$studentId/$examId?lang=$langCode&theme=$themeMode',
     );
 
     final response = await http.get(url);

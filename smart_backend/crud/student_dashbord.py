@@ -1980,7 +1980,7 @@ def get_exam_details_data(student_id: int, exam_title: str, db: Session = Depend
     """)
     images_records = db.execute(images_query, {"sheet_id": sheet_id}).mappings().fetchall()
     
-    base_url = "http://127.0.0.1:8000/" 
+    base_url = "https://smart-grader-full.onrender.com/" 
     paper_images = []
     
     for row in images_records:

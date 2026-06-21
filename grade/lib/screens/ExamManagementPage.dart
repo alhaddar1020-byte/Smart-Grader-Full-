@@ -2121,7 +2121,7 @@ class _ExamManagementPageState extends State<ExamManagementPage>
       try {
         // 🚨 تنبيه: غيري الرابط للرابط حق السيرفر حقك!
         var url = Uri.parse(
-          'http://127.0.0.1:8000/api/exams/check-answers/$examId',
+          'https://smart-grader-full.onrender.com/api/exams/check-answers/$examId',
         );
         var response = await http.get(url);
         var data = jsonDecode(response.body);
