@@ -342,7 +342,7 @@ def verify_and_set_password(request: SetPasswordRequest):
         )
 
     # 2. تحديث كلمة المرور 
-    hashed_password = get_password_hash(request.new_password.strip())    update_user = supabase.table("users") \
+         hashed_password = get_password_hash(request.new_password.strip())    update_user = supabase.table("users") \
         .update({"password": hashed_password}) \
         .eq("email", request.email) \
         .execute()
