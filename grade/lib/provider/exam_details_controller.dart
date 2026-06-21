@@ -96,11 +96,11 @@ class ExamDetailsController extends ChangeNotifier {
 
   Future<void> fetchExamDetails(
     int studentId,
-    String examTitle, {
+    int examId, {
     BuildContext? context,
   }) async {
-    if (examTitle.trim().isEmpty) {
-      debugPrint("تم إيقاف الطلب: اسم الاختبار فارغ!");
+    if (examId <= 0) {
+      debugPrint("تم إيقاف الطلب: رقم الاختبار غير صالح!");
       isLoading = false;
       notifyListeners();
       return;
@@ -110,12 +110,12 @@ class ExamDetailsController extends ChangeNotifier {
       isLoading = true;
       notifyListeners();
 
-      String encodedTitle = Uri.encodeComponent(examTitle);
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
+      // 🌟 الحل هنا: أضفنا /views/ للرابط عشان يتطابق مع الباك إند حقك!
       final String url =
-          '${AppConfig.baseUrl}/views/exam-details/$studentId/$encodedTitle';
+          '${AppConfig.baseUrl}/views/exam-details/$studentId/$examId';
 
       final response = await http.get(
         Uri.parse(url),

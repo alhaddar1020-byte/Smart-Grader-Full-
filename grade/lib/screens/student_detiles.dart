@@ -616,7 +616,7 @@ import '../provider/student_dashboard_controller.dart';
 class SubjectDetailsScreen extends StatefulWidget {
   final String subjectName;
   final VoidCallback onBack;
-  final Function(String subjectName, String examTitle) onExamTap;
+  final Function(String subjectName, String examTitle, int examId) onExamTap;
 
   const SubjectDetailsScreen({
     super.key,
@@ -954,6 +954,9 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
                       widget.onExamTap(
                         widget.subjectName,
                         exam["title"]?.toString() ?? "",
+                        exam["id"] is int
+                            ? exam["id"]
+                            : int.tryParse(exam["id"]?.toString() ?? '0') ?? 0,
                       );
                     },
                     child: Container(

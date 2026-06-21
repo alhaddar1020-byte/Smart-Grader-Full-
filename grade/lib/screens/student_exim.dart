@@ -1086,6 +1086,7 @@ import 'package:printing/printing.dart';
 class StudentExamScreen extends StatefulWidget {
   final String subjectName;
   final String examTitle;
+  final int examId; // 👈 التعديل: إضافة المتغير الجديد هنا
   final VoidCallback onBack;
   final Function(int) onItemSelected;
 
@@ -1093,6 +1094,7 @@ class StudentExamScreen extends StatefulWidget {
     super.key,
     required this.subjectName,
     required this.examTitle,
+    required this.examId, // 👈 وهنا
     required this.onBack,
     required this.onItemSelected,
   });
@@ -1115,8 +1117,8 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
       int realStudentId = dashController.currentStudentId;
       examController.fetchExamDetails(
         realStudentId,
-        widget.examTitle,
-        context: context,
+        widget
+            .examId, // 👈 التعديل: تمرير رقم الاختبار بدلاً من اسمه        context: context,
       );
     });
   }
@@ -1513,8 +1515,13 @@ class _FinalScoreCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
+          // داخل كلاس _FinalScoreCard، ابحثي عن هذا السطر واستبدليه:
           Text(
-            S.of(context).examOutOf(stats["total"] ?? "100"),
+            S
+                .of(context)
+                .examOutOf(
+                  stats["total_marks"]?.toString() ?? "100",
+                ), // 👈 التعديل هنا: total_marks بدلاً من total
             style: const TextStyle(color: Colors.white, fontSize: 10),
           ),
           const SizedBox(height: 15),

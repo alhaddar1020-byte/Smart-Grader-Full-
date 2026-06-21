@@ -1108,6 +1108,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   String? selectedSubjectName;
   String selectedSubject = "";
   String? selectedExamTitle;
+  int? selectedExamId; // 👈 🚨 تأكدي مليون بالمية إن هذا السطر موجود هنا!
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -1314,6 +1315,70 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     );
   }
 
+  // Widget _buildBody(
+  //   bool isMobile,
+  //   bool isTablet,
+  //   bool isWeb,
+  //   bool isArabic,
+  //   bool shouldStatsScroll,
+  //   double contentPadding,
+  //   StudentDashboardController controller,
+  // ) {
+  //   switch (selectedIndex) {
+  //     case 0:
+  //       return SingleChildScrollView(
+  //         padding: const EdgeInsets.symmetric(vertical: 16),
+  //         child: _buildDashboardHome(
+  //           isMobile,
+  //           isTablet,
+  //           isArabic,
+  //           shouldStatsScroll,
+  //           contentPadding,
+  //           controller,
+  //         ),
+  //       );
+
+  //     case 1:
+  //       return SubjectsScreen(
+  //         subjectName: "",
+  //         onBack: () => setState(() => selectedIndex = 0),
+  //         onSubjectTap: (name) => setState(() {
+  //           selectedSubjectName = name;
+  //           selectedExamTitle = null;
+  //           selectedIndex = 4;
+  //         }),
+  //       );
+
+  //     case 4:
+  //       return SubjectDetailsScreen(
+  //         subjectName: selectedSubjectName ?? "",
+  //         onBack: () => setState(() => selectedIndex = 1),
+  //         onExamTap: (subject, exam) => setState(() {
+  //           selectedSubjectName = subject;
+  //           selectedExamTitle = exam;
+  //           selectedIndex = 5;
+  //         }),
+  //       );
+
+  //     case 5:
+  //       if (selectedExamTitle == null || selectedExamTitle!.isEmpty) {
+  //         return const Center(child: Text("خطأ: لم يتم اختيار اختبار"));
+  //       }
+  //       return StudentExamScreen(
+  //         subjectName: selectedSubjectName ?? "",
+  //         examTitle: selectedExamTitle!,
+  //         onBack: () => setState(() => selectedIndex = 4),
+  //         onItemSelected: _handleNavigation,
+  //       );
+
+  //     case 2:
+  //       return const SettingsScreen();
+
+  //     default:
+  //       return Center(child: Text(S.of(context).pageNotFound));
+  //   }
+  // }
+
   Widget _buildBody(
     bool isMobile,
     bool isTablet,
@@ -1344,6 +1409,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           onSubjectTap: (name) => setState(() {
             selectedSubjectName = name;
             selectedExamTitle = null;
+            selectedExamId = null;
             selectedIndex = 4;
           }),
         );
@@ -1352,20 +1418,26 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         return SubjectDetailsScreen(
           subjectName: selectedSubjectName ?? "",
           onBack: () => setState(() => selectedIndex = 1),
-          onExamTap: (subject, exam) => setState(() {
+          // ✅ حل الخطأ الأول: أضفنا examId هنا ليستقبل الـ 3 قيم
+          onExamTap: (subject, examTitle, examId) => setState(() {
             selectedSubjectName = subject;
-            selectedExamTitle = exam;
+            selectedExamTitle = examTitle;
+            selectedExamId = examId;
             selectedIndex = 5;
           }),
         );
 
       case 5:
-        if (selectedExamTitle == null || selectedExamTitle!.isEmpty) {
+        if (selectedExamTitle == null ||
+            selectedExamTitle!.isEmpty ||
+            selectedExamId == null) {
           return const Center(child: Text("خطأ: لم يتم اختيار اختبار"));
         }
         return StudentExamScreen(
           subjectName: selectedSubjectName ?? "",
           examTitle: selectedExamTitle!,
+          // ✅ حل الخطأ الثاني: أرسلنا الـ examId للشاشة لكي تختفي رسالة النقص
+          examId: selectedExamId!,
           onBack: () => setState(() => selectedIndex = 4),
           onItemSelected: _handleNavigation,
         );
@@ -1723,15 +1795,30 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _resultItem(Map data, StudentDashboardController controller) {
-    String examId = data["id"]?.toString() ?? "";
-    bool isNew = examId.isNotEmpty && !controller.viewedExams.contains(examId);
+    // 1. سحبنا الآي دي بأمان تام عشان ما يعطينا 0
+    String examIdStr = data["id"]?.toString() ?? "0";
+    int safeExamId = int.tryParse(examIdStr) ?? 0;
+
+    bool isNew =
+        examIdStr.isNotEmpty && !controller.viewedExams.contains(examIdStr);
 
     return InkWell(
       onTap: () {
-        controller.markExamAsViewed(examId);
+        if (safeExamId <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('خطأ: رقم الاختبار مفقود من السيرفر!'),
+            ),
+          );
+          return;
+        }
+
+        controller.markExamAsViewed(examIdStr);
         setState(() {
-          selectedSubjectName = data["subject"];
-          selectedIndex = 4;
+          selectedSubjectName = data['subject'];
+          selectedExamTitle = data['title'];
+          selectedExamId = safeExamId; // 👈 تمرير الآي دي السليم 100%
+          selectedIndex = 5;
         });
       },
       borderRadius: BorderRadius.circular(18),
@@ -1745,38 +1832,50 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                if (isNew) ...[
-                  Container(
-                    width: 10,
-                    height: 10,
-                    decoration: const BoxDecoration(
-                      color: Colors.blue,
-                      shape: BoxShape.circle,
+            // 🌟 الحل الجذري لمشكلة الـ Overflow (توسيع المساحة)
+            Expanded(
+              child: Row(
+                children: [
+                  if (isNew) ...[
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: const BoxDecoration(
+                        color: Colors.blue,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                  ],
+                  // 🌟 إجبار النصوص على احترام المساحة
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          data["title"] ?? "",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.ellipsis, // يقص النص الطويل
+                        ),
+                        Text(
+                          data["subject"] ?? "",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                          overflow: TextOverflow.ellipsis, // يقص النص الطويل
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 12),
                 ],
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      data["title"] ?? "",
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      data["subject"] ?? "",
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ],
+              ),
             ),
+            const SizedBox(width: 10), // فاصل صغير لحماية الدرجة
             Column(
               children: [
                 Text(
-                  data["total_earned_mark"] ?? "",
+                  data["total_earned_mark"]?.toString() ?? "",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
