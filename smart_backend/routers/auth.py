@@ -63,12 +63,88 @@ class SetPasswordRequest(BaseModel):
 
 
 
+# @router.post("/login")
+# def login(request: LoginRequest, db: Session = Depends(get_db)):
+#     # 1. التحقق من الإيميل وكلمة المرور
+#     user_query = supabase.table("users") \
+#         .select("user_id", "email", "password", "language_code") \
+#         .eq("email", request.email) \
+#         .maybe_single() \
+#         .execute()
+        
+#     user_data = (user_query.data if user_query else None)
+    
+#     if not user_data:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED, 
+#             detail="error_invalid_credentials"
+#         )
+        
+#     user_id = user_data["user_id"]
+#     db_password = user_data.get("password")
+    
+#     # Check password match (supports both hashed and plaintext for backward compatibility)
+#     is_valid = False
+#     if db_password:
+#         if verify_password(request.password.strip(), db_password):
+#             is_valid = True
+#         elif request.password == db_password:
+#             is_valid = True
+            
+#     if not is_valid:
+#         # تسجيل فشل الدخول
+#         db.add(ActivityLog(user_id=user_id, action_type="LOGIN_FAILED", action_details=f"محاولة تسجيل دخول فاشلة للإيميل: {request.email}"))
+#         db.commit()
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED, 
+#             detail="error_invalid_credentials"
+#         )
+    
+#     # 2. التحقق من الصلاحية (Role)
+#     role_query = supabase.table("user_roles").select("role_id").eq("user_id", user_id).maybe_single().execute()
+#     role_data = (role_query.data if role_query else None)
+    
+#     if not role_data:
+#         db.add(ActivityLog(user_id=user_id, action_type="LOGIN_FAILED", action_details=f"لا توجد صلاحية للمستخدم: {request.email}"))
+#         db.commit()
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED, 
+#             detail="error_no_role"
+#         )
+
+#     # 3. ⭐️ السحر هنا: إنشاء التوكن الحقيقي المشفر ⭐️
+#     access_token = create_access_token(data={"sub": str(user_id)})
+    
+#     # تسجيل نجاح الدخول
+#     db.add(ActivityLog(user_id=user_id, action_type="LOGIN_SUCCESS", action_details=f"تسجيل دخول ناجح"))
+#     db.commit()
+
+#     # 4. إرجاع الرد النهائي الذي ينتظره فلاتر
+#     return {
+#         "status": "success", 
+#         "user_id": user_id, 
+#         "role_id": int(role_data["role_id"]),
+#         "access_token": access_token, # 👈 إرسال التوكن لكي تحفظيه في SharedPreferences
+#         "token_type": "bearer",
+#         "language_code": user_data.get("language_code", "ar")
+#     }
+
+# # ==========================================
+# # مسارات رموز التحقق (OTP)
+# # ==========================================
+
+
+
 @router.post("/login")
 def login(request: LoginRequest, db: Session = Depends(get_db)):
+    # تنظيف المدخلات من أخطاء كيبورد الجوال
+    clean_email = request.email.strip().lower()
+    clean_password = request.password.strip()
+
     # 1. التحقق من الإيميل وكلمة المرور
     user_query = supabase.table("users") \
         .select("user_id", "email", "password", "language_code") \
-        .eq("email", request.email) \
+        .eq("email", clean_email) \
         .maybe_single() \
         .execute()
         
@@ -83,17 +159,15 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     user_id = user_data["user_id"]
     db_password = user_data.get("password")
     
-    # Check password match (supports both hashed and plaintext for backward compatibility)
     is_valid = False
     if db_password:
-        if verify_password(request.password.strip(), db_password):
+        if verify_password(clean_password, db_password):
             is_valid = True
-        elif request.password == db_password:
+        elif clean_password == db_password:
             is_valid = True
             
     if not is_valid:
-        # تسجيل فشل الدخول
-        db.add(ActivityLog(user_id=user_id, action_type="LOGIN_FAILED", action_details=f"محاولة تسجيل دخول فاشلة للإيميل: {request.email}"))
+        db.add(ActivityLog(user_id=user_id, action_type="LOGIN_FAILED", action_details=f"محاولة تسجيل دخول فاشلة للإيميل: {clean_email}"))
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
@@ -105,34 +179,30 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     role_data = (role_query.data if role_query else None)
     
     if not role_data:
-        db.add(ActivityLog(user_id=user_id, action_type="LOGIN_FAILED", action_details=f"لا توجد صلاحية للمستخدم: {request.email}"))
+        db.add(ActivityLog(user_id=user_id, action_type="LOGIN_FAILED", action_details=f"لا توجد صلاحية للمستخدم: {clean_email}"))
         db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail="error_no_role"
         )
 
-    # 3. ⭐️ السحر هنا: إنشاء التوكن الحقيقي المشفر ⭐️
+    # 3. إنشاء التوكن
     access_token = create_access_token(data={"sub": str(user_id)})
     
-    # تسجيل نجاح الدخول
     db.add(ActivityLog(user_id=user_id, action_type="LOGIN_SUCCESS", action_details=f"تسجيل دخول ناجح"))
     db.commit()
 
-    # 4. إرجاع الرد النهائي الذي ينتظره فلاتر
     return {
         "status": "success", 
         "user_id": user_id, 
         "role_id": int(role_data["role_id"]),
-        "access_token": access_token, # 👈 إرسال التوكن لكي تحفظيه في SharedPreferences
+        "access_token": access_token, 
         "token_type": "bearer",
         "language_code": user_data.get("language_code", "ar")
     }
 
-# ==========================================
-# مسارات رموز التحقق (OTP)
-# ==========================================
 
+    
 @router.post("/send-new-user-otp")
 async def send_new_user_otp(request: OtpRequest):
     # 1. البحث عن المستخدم
@@ -312,56 +382,111 @@ def verify_otp(request: VerifyOtpRequest):
     return {"status": "success", "message": "الرمز صحيح"}
 
 
+# @router.post("/verify-and-set-password")
+# def verify_and_set_password(request: SetPasswordRequest):
+#     # 1. التأكد من صلاحية الرمز
+#     try:
+#         otp_query = supabase.table("verification_codes") \
+#             .select("*") \
+#             .eq("email", request.email) \
+#             .eq("otp_code", request.otp_code) \
+#             .eq("is_used", False) \
+#             .maybe_single() \
+#             .execute()
+#     except (httpx.ConnectError, httpcore.ConnectError):
+#         raise HTTPException(
+#             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+#             detail="error_connection_failed"
+#         )
+
+#     if not (otp_query.data if otp_query else None):
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="error_invalid_otp"
+#         )
+
+#     expiry_time = datetime.fromisoformat((otp_query.data if otp_query else None)["expiry_time"].replace("Z", ""))
+#     if expiry_time < datetime.now():
+#         raise HTTPException(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             detail="error_expired_otp"
+#         )
+
+#     # 2. تحديث كلمة المرور 
+#     hashed_password = get_password_hash(request.new_password.strip())
+#     update_user = supabase.table("users") \
+#         .update({"password": hashed_password}) \
+#         .eq("email", request.email) \
+#         .execute()
+
+#     if not (update_user.data if update_user else None):
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="error_update_password_failed"
+#         )
+
+#     # 3. إغلاق الرمز
+#     supabase.table("verification_codes") \
+#         .update({"is_used": True}) \
+#         .eq("email", request.email) \
+#         .execute()
+
+#     # 👇 التعديل هنا: جلب بيانات المستخدم والصلاحية بعد تفعيل الحساب 👇
+#     user_id = (otp_query.data if otp_query else None)["user_id"]
+#     role_query = supabase.table("user_roles").select("role_id").eq("user_id", user_id).maybe_single().execute()
+#     role_data = (role_query.data if role_query else None)
+    
+#     role_id = int(role_data["role_id"]) if role_data and role_data.get("role_id") is not None else None
+
+#     return {
+#         "status": "success", 
+#         "message": "تم تفعيل حسابك بنجاح!",
+#         "user_id": user_id,
+#         "role_id": role_id
+#     }
+
+
 @router.post("/verify-and-set-password")
 def verify_and_set_password(request: SetPasswordRequest):
+    # تنظيف الإيميل والباسورد
+    clean_email = request.email.strip().lower()
+    clean_password = request.new_password.strip()
+
     # 1. التأكد من صلاحية الرمز
     try:
         otp_query = supabase.table("verification_codes") \
             .select("*") \
-            .eq("email", request.email) \
-            .eq("otp_code", request.otp_code) \
+            .eq("email", clean_email) \
+            .eq("otp_code", request.otp_code.strip()) \
             .eq("is_used", False) \
             .maybe_single() \
             .execute()
     except (httpx.ConnectError, httpcore.ConnectError):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="error_connection_failed"
-        )
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="error_connection_failed")
 
     if not (otp_query.data if otp_query else None):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error_invalid_otp"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="error_invalid_otp")
 
     expiry_time = datetime.fromisoformat((otp_query.data if otp_query else None)["expiry_time"].replace("Z", ""))
     if expiry_time < datetime.now():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="error_expired_otp"
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="error_expired_otp")
 
     # 2. تحديث كلمة المرور 
-    hashed_password = get_password_hash(request.new_password.strip())
+    hashed_password = get_password_hash(clean_password)
     update_user = supabase.table("users") \
         .update({"password": hashed_password}) \
-        .eq("email", request.email) \
+        .eq("email", clean_email) \
         .execute()
 
     if not (update_user.data if update_user else None):
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="error_update_password_failed"
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="error_update_password_failed")
 
     # 3. إغلاق الرمز
     supabase.table("verification_codes") \
         .update({"is_used": True}) \
-        .eq("email", request.email) \
+        .eq("email", clean_email) \
         .execute()
 
-    # 👇 التعديل هنا: جلب بيانات المستخدم والصلاحية بعد تفعيل الحساب 👇
     user_id = (otp_query.data if otp_query else None)["user_id"]
     role_query = supabase.table("user_roles").select("role_id").eq("user_id", user_id).maybe_single().execute()
     role_data = (role_query.data if role_query else None)
