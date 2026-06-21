@@ -1496,42 +1496,8 @@
 #         "paper_images": paper_images
 #     }
 
-from sqlalchemy.orm import Session
-from sqlalchemy import text
-from fastapi.encoders import jsonable_encoder
-from datetime import date
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from db.database import get_db 
-from models.users import User 
-from pydantic import BaseModel, EmailStr
-from deep_translator import GoogleTranslator
 
-router = APIRouter(prefix="/views", tags=["Student Views Features"])
 
-# ── الدوال المساعدة السحرية ──────────────────────────────────────────
-
-def get_text(lang: str, ar: str, en: str) -> str:
-    """🌟 دالة ذكية لإرجاع النص باللغة المناسبة"""
-    return en if lang == 'en' else ar
-
-def translate_live(text_data: str, lang: str) -> str:
-    """🌟 دالة الترجمة الحية للنصوص المتغيرة"""
-    if not text_data:
-        return ""
-    if lang == 'en':
-        try:
-            return GoogleTranslator(source='ar', target='en').translate(text_data)
-        except Exception:
-            return text_data
-    return text_data
-
-def resolve_student_id(db: Session, student_id: int) -> int:
-    """🌟 الدالة المنقذة: تترجم الـ user_id إلى student_id تلقائياً"""
-    real = db.execute(
-        text("SELECT student_id FROM student WHERE user_id = :id OR student_id = :id LIMIT 1"),
-        {"id": student_id}
-    ).scalar()
-    return real if real else student_id
 
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. دالة الداشبورد الرئيسية (مع حل الانفجار الديكارتي للحسابات)
@@ -1868,7 +1834,45 @@ def resolve_student_id(db: Session, student_id: int) -> int:
 
 
 
-    @router.get("/student-dashboard/{student_id}")
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+from fastapi.encoders import jsonable_encoder
+from datetime import date
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
+from db.database import get_db 
+from models.users import User 
+from pydantic import BaseModel, EmailStr
+from deep_translator import GoogleTranslator
+
+router = APIRouter(prefix="/views", tags=["Student Views Features"])
+
+# ── الدوال المساعدة السحرية ──────────────────────────────────────────
+
+def get_text(lang: str, ar: str, en: str) -> str:
+    """🌟 دالة ذكية لإرجاع النص باللغة المناسبة"""
+    return en if lang == 'en' else ar
+
+def translate_live(text_data: str, lang: str) -> str:
+    """🌟 دالة الترجمة الحية للنصوص المتغيرة"""
+    if not text_data:
+        return ""
+    if lang == 'en':
+        try:
+            return GoogleTranslator(source='ar', target='en').translate(text_data)
+        except Exception:
+            return text_data
+    return text_data
+
+def resolve_student_id(db: Session, student_id: int) -> int:
+    """🌟 الدالة المنقذة: تترجم الـ user_id إلى student_id تلقائياً"""
+    real = db.execute(
+        text("SELECT student_id FROM student WHERE user_id = :id OR student_id = :id LIMIT 1"),
+        {"id": student_id}
+    ).scalar()
+    return real if real else student_id
+
+
+@router.get("/student-dashboard/{student_id}")
 def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
     student_id = resolve_student_id(db, student_id)
     
