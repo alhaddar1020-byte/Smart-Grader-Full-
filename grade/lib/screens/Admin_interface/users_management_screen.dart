@@ -1,23 +1,12 @@
+import 'admin_settings_screen.dart';
+import '../../generated/l10n.dart';
 import 'package:flutter/material.dart';
-import '../../core/colors.dart'; // تأكدي من مسار ملف الألوان
-import 'add_user_screen.dart';
-import 'package:grade/generated/l10n.dart'; // استدعاء القاموس
+import 'package:provider/provider.dart';
+import '../../core/colors.dart'; 
+import 'add_user_screen.dart'; // تأكدي أن اسم الاستيراد صحيح لديكِ (add_users_screen.dart)
+import 'package:grade/generated/l10n.dart'; 
+import 'users_management_provider.dart'; 
 
-// ===========================================================================
-// 1. نموذج البيانات
-// ===========================================================================
-class UserModel {
-  String id;
-  String name;
-  String role;   // يخزن كـ 'STUDENT', 'TEACHER', 'ADMIN'
-  String status; // يخزن كـ 'ACTIVE', 'INACTIVE'
-
-  UserModel({required this.id, required this.name, required this.role, required this.status});
-}
-
-// ===========================================================================
-// 2. شاشة إدارة المستخدمين
-// ===========================================================================
 class UsersManagementScreen extends StatefulWidget {
   const UsersManagementScreen({super.key});
 
@@ -26,23 +15,16 @@ class UsersManagementScreen extends StatefulWidget {
 }
 
 class _UsersManagementScreenState extends State<UsersManagementScreen> {
-  // استخدام مفاتيح إنجليزية ثابتة للفلترة لكي لا تنكسر عند تغيير لغة النظام
-  String selectedFilter = 'ALL'; 
-  String searchQuery = ''; 
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<UsersManagementProvider>().fetchUsers();
+    });
+  }
 
-  // بيانات وهمية (استخدمنا مفاتيح إنجليزية للرول والحالة)
-  final List<UserModel> dummyUsers = [
-    UserModel(id: '1001', name: 'أحمد محمد عبدالله', role: 'STUDENT', status: 'ACTIVE'),
-    UserModel(id: '1002', name: 'سارة خالد القحطاني', role: 'STUDENT', status: 'ACTIVE'),
-    UserModel(id: '1003', name: 'م. فهد العتيبي', role: 'TEACHER', status: 'INACTIVE'),
-    UserModel(id: '1004', name: 'نورة سعد الدوسري', role: 'STUDENT', status: 'ACTIVE'),
-    UserModel(id: '1005', name: 'د. عبدالله السالم', role: 'ADMIN', status: 'ACTIVE'),
-    UserModel(id: '1006', name: 'خالد عبدالعزيز', role: 'TEACHER', status: 'ACTIVE'),
-    UserModel(id: '1007', name: 'ريم الدوسري', role: 'STUDENT', status: 'ACTIVE'),
-  ];
-
-  // دوال مساعدة لترجمة القيم في الواجهة
-  String _getRoleName(String roleKey) {
+  String _getRoleName(String roleKey, BuildContext context) {
     switch (roleKey) {
       case 'ALL': return S.of(context).all;
       case 'ADMIN': return S.of(context).role_admin;
@@ -52,49 +34,46 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     }
   }
 
-  String _getStatusName(String statusKey) {
+  String _getStatusName(String statusKey, BuildContext context) {
     return statusKey == 'ACTIVE' ? S.of(context).status_active : S.of(context).status_inactive;
   }
 
-  List<UserModel> get filteredUsers {
-    return dummyUsers.where((user) {
-      final matchesRole = selectedFilter == 'ALL' || user.role == selectedFilter;
-      final matchesSearch = user.name.toLowerCase().contains(searchQuery.toLowerCase().trim()) || 
-                            user.id.contains(searchQuery.trim());
-      return matchesRole && matchesSearch;
-    }).toList();
-  }
-
-  void _deleteUser(UserModel user) {
+  void _deleteUserDialog(UserModel user, UsersManagementProvider provider) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog( // تمت إزالة Directionality ليتأقلم مع النظام
-        backgroundColor: AppColors.textWhite(context),
+      builder: (ctx) => AlertDialog(
+        backgroundColor: AppColors.cardBg(context), // 👈 توافق مع الهوية الجديدة
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: Text(S.of(context).delete_confirmation, style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-        content: Text('${S.of(context).delete_user_warning}\n\n"${user.name}"', style: TextStyle(color: AppColors.textPrimary(context))),
+        content: Text('${S.of(context).delete_user_warning}\n\n"${user.name.isNotEmpty ? user.name : S.of(context).no_name}"', style: TextStyle(color: AppColors.textPrimary(context))),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx), 
             child: Text(S.of(context).cancel, style: TextStyle(color: AppColors.textSecondary(context), fontWeight: FontWeight.bold))
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-            onPressed: () {
-              setState(() {
-                dummyUsers.remove(user);
-              });
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).delete_success), backgroundColor: Colors.green));
-            }, 
-            child: Text(S.of(context).yes_delete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
-          )
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                String? errorKey = await provider.deleteUser(user.id);
+                
+                if (mounted) {
+                  if (errorKey == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).delete_success), backgroundColor: Colors.green));
+                  } else {
+                    String translatedError = errorKey == 'error_user_not_found' ? S.of(context).no_users_found : S.of(context).delete_failure;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(translatedError), backgroundColor: Colors.red));
+                  }
+                }
+              }, 
+              child: Text(S.of(context).yes_delete, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold))
+            )
         ],
       ),
     );
   }
 
-  void _showEditDialog(UserModel user) {
+  void _showEditDialog(UserModel user, UsersManagementProvider provider) {
     final nameCtrl = TextEditingController(text: user.name);
     final idCtrl = TextEditingController(text: user.id);
     String editRole = user.role;
@@ -103,8 +82,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     showDialog(
       context: context,
       builder: (ctx) {
-        return AlertDialog( // تمت إزالة Directionality هنا أيضاً
-          backgroundColor: AppColors.textWhite(context),
+        return AlertDialog(
+          backgroundColor: AppColors.cardBg(context), // 👈 توافق مع الهوية
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: Text(S.of(context).edit_user, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.primaryTeal(context))),
           content: StatefulBuilder(
@@ -127,8 +106,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                         child: DropdownButton<String>(
                           value: editRole,
                           isExpanded: true,
-                          dropdownColor: AppColors.textWhite(context),
-                          items: ['ADMIN', 'TEACHER', 'STUDENT'].map((r) => DropdownMenuItem(value: r, child: Text(_getRoleName(r), style: TextStyle(color: AppColors.textPrimary(context))))).toList(),
+                          dropdownColor: AppColors.cardBg(context),
+                          items: ['ADMIN', 'TEACHER', 'STUDENT'].map((r) => DropdownMenuItem(value: r, child: Text(_getRoleName(r, context), style: TextStyle(color: AppColors.textPrimary(context))))).toList(),
                           onChanged: (val) => setDialogState(() => editRole = val!),
                         ),
                       ),
@@ -143,8 +122,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                         child: DropdownButton<String>(
                           value: editStatus,
                           isExpanded: true,
-                          dropdownColor: AppColors.textWhite(context),
-                          items: ['ACTIVE', 'INACTIVE'].map((s) => DropdownMenuItem(value: s, child: Text(_getStatusName(s), style: TextStyle(color: AppColors.textPrimary(context))))).toList(),
+                          dropdownColor: AppColors.cardBg(context),
+                          items: ['ACTIVE', 'INACTIVE'].map((s) => DropdownMenuItem(value: s, child: Text(_getStatusName(s, context), style: TextStyle(color: AppColors.textPrimary(context))))).toList(),
                           onChanged: (val) => setDialogState(() => editStatus = val!),
                         ),
                       ),
@@ -161,15 +140,18 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: AppColors.primaryTeal(context), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
-              onPressed: () {
-                setState(() {
-                  user.name = nameCtrl.text;
-                  user.id = idCtrl.text;
-                  user.role = editRole;
-                  user.status = editStatus;
-                });
+              onPressed: () async {
                 Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).edit_success), backgroundColor: Colors.green));
+                String? errorKey = await provider.updateUser(user.id, idCtrl.text, nameCtrl.text, editRole, editStatus);
+                
+                if (mounted) {
+                  if (errorKey == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).edit_success), backgroundColor: Colors.green));
+                  } else {
+                    String translatedError = errorKey == 'error_user_not_found' ? S.of(context).no_users_found : S.of(context).edit_failure;
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(translatedError), backgroundColor: Colors.red));
+                  }
+                }
               },
               child: Text(S.of(context).save_changes, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
             ),
@@ -206,28 +188,36 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     bool isMobile = width < 600;
     bool isTablet = width >= 600 && width < 1100;
 
-    // تمت إزالة Directionality الثابتة
-    return Scaffold(
-      backgroundColor: Colors.transparent, 
-      body: Padding(
-        padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
-        child: Column(
-          children: [
-            _buildHeader(isMobile),
-            const SizedBox(height: 24),
-            _buildTopCards(isMobile, isTablet),
-            const SizedBox(height: 24),
-            Expanded(child: _buildMainTableCard(isMobile, isTablet)),
-          ],
-        ),
-      ),
+    return Consumer<UsersManagementProvider>(
+      builder: (context, provider, child) {
+        
+        if (provider.isLoading) {
+          return Scaffold(backgroundColor: AppColors.secondaryTeal(context), body: Center(child: CircularProgressIndicator(color: AppColors.primaryTeal(context))));
+        }
+
+        return Scaffold(
+          backgroundColor: AppColors.secondaryTeal(context), 
+          body: Padding(
+            padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
+            child: Column(
+              children: [
+                _buildHeader(isMobile),
+                const SizedBox(height: 24),
+                _buildTopCards(isMobile, isTablet, provider),
+                const SizedBox(height: 24),
+                Expanded(child: _buildMainTableCard(isMobile, isTablet, provider)),
+              ],
+            ),
+          ),
+        );
+      }
     );
   }
 
   Widget _buildHeader(bool isMobile) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-      decoration: BoxDecoration(color: AppColors.textWhite(context), borderRadius: BorderRadius.circular(16)),
+      decoration: BoxDecoration(color: AppColors.cardBg(context), borderRadius: BorderRadius.circular(16)), // 👈 اللون الصحيح
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -241,15 +231,16 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           Row(
             children: [
               InkWell(
-                onTap: () {},
+                onTap: () { context.read<UsersManagementProvider>().fetchUsers(); }, 
                 borderRadius: BorderRadius.circular(20),
-                child: CircleAvatar(backgroundColor: AppColors.scaffoldBg(context), child: Icon(Icons.notifications_none, color: AppColors.primaryTeal(context))),
+                child: CircleAvatar(backgroundColor: AppColors.secondaryTeal(context), child: Icon(Icons.refresh, color: AppColors.primaryTeal(context))),
               ),
-              const SizedBox(width: 16),
+              // 👈 تم حذف أيقونة الإشعارات من هنا
+              const SizedBox(width: 8),
               InkWell(
-                onTap: () {},
-                borderRadius: BorderRadius.circular(20),
-                child: CircleAvatar(backgroundColor: AppColors.scaffoldBg(context), child: Icon(Icons.person_outline, color: AppColors.primaryTeal(context))),
+                onTap: () { Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminSettingsScreen(isFullScreen: true))); },
+                borderRadius: BorderRadius.circular(50),
+                child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: AppColors.secondaryTeal(context), shape: BoxShape.circle), child: Icon(Icons.person_outline, color: AppColors.primaryTeal(context))),
               ),
             ],
           ),
@@ -258,33 +249,33 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     );
   }
 
-  Widget _buildTopCards(bool isMobile, bool isTablet) {
+  Widget _buildTopCards(bool isMobile, bool isTablet, UsersManagementProvider provider) {
     if (isMobile || isTablet) {
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
-            SizedBox(width: 250, child: _buildSingleCard(S.of(context).total_users, '1,250', Icons.people, AppColors.primaryTeal(context))),
+            SizedBox(width: 250, child: _buildSingleCard(S.of(context).total_users, provider.totalUsers, Icons.people, AppColors.primaryTeal(context))),
             const SizedBox(width: 16),
-            SizedBox(width: 250, child: _buildSingleCard(S.of(context).total_students, '950', Icons.school, AppColors.accentYellow(context))),
+            SizedBox(width: 250, child: _buildSingleCard(S.of(context).total_students, provider.totalStudents, Icons.school, AppColors.accentYellow(context))),
             const SizedBox(width: 16),
-            SizedBox(width: 250, child: _buildSingleCard(S.of(context).total_teachers, '85', Icons.co_present, const Color(0xFF8B5CF6))),
+            SizedBox(width: 250, child: _buildSingleCard(S.of(context).total_teachers, provider.totalTeachers, Icons.co_present, const Color(0xFF8B5CF6))),
             const SizedBox(width: 16),
-            SizedBox(width: 250, child: _buildSingleCard(S.of(context).active_users_card, '1,120', Icons.check_circle_outline, const Color(0xFF10B981))), 
+            SizedBox(width: 250, child: _buildSingleCard(S.of(context).active_users_card, provider.activeUsers, Icons.check_circle_outline, const Color(0xFF10B981))), 
           ],
         ),
       );
     }
     return Row(
       children: [
-        Expanded(child: _buildSingleCard(S.of(context).total_users, '1,250', Icons.people, AppColors.primaryTeal(context))),
+        Expanded(child: _buildSingleCard(S.of(context).total_users, provider.totalUsers, Icons.people, AppColors.primaryTeal(context))),
         const SizedBox(width: 16),
-        Expanded(child: _buildSingleCard(S.of(context).total_students, '950', Icons.school, AppColors.accentYellow(context))), 
+        Expanded(child: _buildSingleCard(S.of(context).total_students, provider.totalStudents, Icons.school, AppColors.accentYellow(context))), 
         const SizedBox(width: 16),
-        Expanded(child: _buildSingleCard(S.of(context).total_teachers, '85', Icons.co_present, const Color(0xFF8B5CF6))),
+        Expanded(child: _buildSingleCard(S.of(context).total_teachers, provider.totalTeachers, Icons.co_present, const Color(0xFF8B5CF6))),
         const SizedBox(width: 16),
-        Expanded(child: _buildSingleCard(S.of(context).active_users_card, '1,120', Icons.check_circle_outline, const Color(0xFF10B981))), 
+        Expanded(child: _buildSingleCard(S.of(context).active_users_card, provider.activeUsers, Icons.check_circle_outline, const Color(0xFF10B981))), 
       ],
     );
   }
@@ -293,7 +284,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.textWhite(context),
+        color: AppColors.cardBg(context), // 👈 توافق مع الداش بورد
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.textSecondary(context).withOpacity(0.1)),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
@@ -323,12 +314,12 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     );
   }
 
-  Widget _buildMainTableCard(bool isMobile, bool isTablet) {
+  Widget _buildMainTableCard(bool isMobile, bool isTablet, UsersManagementProvider provider) {
     return Container(
       width: double.infinity,
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: AppColors.textWhite(context),
+        color: AppColors.cardBg(context), // 👈 الهوية الموحدة
         shape: RoundedRectangleBorder(
           side: BorderSide(width: 1, color: AppColors.textSecondary(context).withOpacity(0.1)),
           borderRadius: BorderRadius.circular(16),
@@ -337,7 +328,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildTableToolbar(isMobile, isTablet),
+          _buildTableToolbar(isMobile, isTablet, provider),
           Divider(height: 1, color: AppColors.textSecondary(context).withOpacity(0.1)),
           Expanded(
             child: LayoutBuilder(
@@ -353,13 +344,13 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                       _buildTableHeader(needsScroll),
                       Divider(height: 1, color: AppColors.textSecondary(context).withOpacity(0.1)),
                       Expanded(
-                        child: filteredUsers.isEmpty 
+                        child: provider.filteredUsers.isEmpty 
                           ? Center(child: Text(S.of(context).no_users_found, style: TextStyle(color: AppColors.textSecondary(context))))
                           : ListView.separated(
-                              itemCount: filteredUsers.length,
+                              itemCount: provider.filteredUsers.length,
                               separatorBuilder: (context, index) => Divider(height: 1, color: AppColors.textSecondary(context).withOpacity(0.1)),
                               itemBuilder: (context, index) {
-                                return _buildTableRow(filteredUsers[index], needsScroll);
+                                return _buildTableRow(provider.filteredUsers[index], needsScroll, provider);
                               },
                           ),
                       ),
@@ -378,7 +369,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     );
   }
 
-  Widget _buildTableToolbar(bool isMobile, bool isTablet) {
+  Widget _buildTableToolbar(bool isMobile, bool isTablet, UsersManagementProvider provider) {
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: Wrap(
@@ -393,22 +384,43 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               Text(S.of(context).users_list, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary(context))),
               const SizedBox(width: 24),
               Container(
-                width: isMobile ? 150 : 250, 
+                width: isMobile ? 130 : 220, 
                 height: 40,
                 decoration: BoxDecoration(color: AppColors.scaffoldBg(context), borderRadius: BorderRadius.circular(8)),
                 child: TextField(
                   style: TextStyle(color: AppColors.textPrimary(context)),
-                  onChanged: (val) {
-                    setState(() {
-                      searchQuery = val;
-                    });
-                  },
+                  onChanged: (val) => provider.updateSearchQuery(val),
                   decoration: InputDecoration(
                     hintText: S.of(context).search_hint,
                     hintStyle: TextStyle(fontSize: 13, color: AppColors.textSecondary(context)),
                     prefixIcon: Icon(Icons.search, color: AppColors.textSecondary(context), size: 20),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // 👈⭐️ زر الفلترة الجديد للترم النشط ⭐️👉
+              FilterChip(
+                label: Text(
+                  S.of(context).active_semester_only, // لا تنسي إضافة هذا المفتاح لملف الترجمة
+                  style: TextStyle(
+                    color: provider.showActiveOnly ? Colors.white : AppColors.textSecondary(context),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+                selected: provider.showActiveOnly,
+                onSelected: (bool value) {
+                  provider.toggleActiveFilter(value);
+                },
+                backgroundColor: AppColors.secondaryTeal(context),
+                selectedColor: AppColors.primaryTeal(context),
+                checkmarkColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: provider.showActiveOnly ? Colors.transparent : AppColors.textSecondary(context).withOpacity(0.2),
                   ),
                 ),
               ),
@@ -419,18 +431,14 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
             runSpacing: 12,
             children: [
               PopupMenuButton<String>(
-                onSelected: (String result) {
-                  setState(() {
-                    selectedFilter = result; 
-                  });
-                },
+                onSelected: (String result) => provider.updateFilter(result),
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(value: 'ALL', child: Text(S.of(context).all, style: TextStyle(color: AppColors.textPrimary(context)))),
                   PopupMenuItem<String>(value: 'ADMIN', child: Text(S.of(context).role_admin, style: TextStyle(color: AppColors.textPrimary(context)))),
                   PopupMenuItem<String>(value: 'TEACHER', child: Text(S.of(context).role_teacher, style: TextStyle(color: AppColors.textPrimary(context)))),
                   PopupMenuItem<String>(value: 'STUDENT', child: Text(S.of(context).role_student, style: TextStyle(color: AppColors.textPrimary(context)))),
                 ],
-                color: AppColors.textWhite(context),
+                color: AppColors.cardBg(context),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(border: Border.all(color: AppColors.textSecondary(context).withOpacity(0.2)), borderRadius: BorderRadius.circular(8)),
@@ -439,14 +447,18 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                     children: [
                       Icon(Icons.filter_list, color: AppColors.textSecondary(context), size: 18),
                       const SizedBox(width: 8),
-                      Text('${S.of(context).filter_prefix} ${_getRoleName(selectedFilter)}', style: TextStyle(color: AppColors.textSecondary(context), fontWeight: FontWeight.bold)),
+                      Text('${S.of(context).filter_prefix} ${_getRoleName(provider.selectedFilter, context)}', style: TextStyle(color: AppColors.textSecondary(context), fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ),
               ),
               ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const AddUsersScreen()));
+                onPressed: () async {
+                  // تأكدي من استيراد AddUsersScreen في أعلى الملف
+                  await Navigator.push(context, MaterialPageRoute(builder: (context) => const AddUsersScreen()));
+                  if (context.mounted) {
+                    context.read<UsersManagementProvider>().fetchUsers();
+                  }
                 },
                 icon: const Icon(Icons.add, color: Colors.white, size: 18),
                 label: Text(S.of(context).add_user_btn, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -484,10 +496,10 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
     return Text(text, textAlign: align, style: TextStyle(color: AppColors.textSecondary(context), fontWeight: FontWeight.bold, fontSize: 13));
   }
 
-  Widget _buildTableRow(UserModel user, bool needsScroll) {
+  Widget _buildTableRow(UserModel user, bool needsScroll, UsersManagementProvider provider) {
     return InkWell(
       onTap: () {}, 
-      hoverColor: AppColors.scaffoldBg(context), 
+      hoverColor: AppColors.scaffoldBg(context).withOpacity(0.5), 
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
@@ -502,10 +514,12 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
                   CircleAvatar(
                     radius: 16,
                     backgroundColor: AppColors.secondaryTeal(context),
-                    child: Text(user.name.substring(0, 1), style: TextStyle(color: AppColors.primaryTeal(context), fontWeight: FontWeight.bold, fontSize: 12)),
+                    child: user.name.isNotEmpty 
+                        ? Text(user.name.substring(0, 1), style: TextStyle(color: AppColors.primaryTeal(context), fontWeight: FontWeight.bold, fontSize: 12))
+                        : Icon(Icons.person, size: 16, color: AppColors.primaryTeal(context)),
                   ),
                   const SizedBox(width: 12),
-                  Expanded(child: Text(user.name, style: TextStyle(color: AppColors.textPrimary(context), fontWeight: FontWeight.w500, fontSize: 14), overflow: TextOverflow.ellipsis)),
+                  Expanded(child: Text(user.name.isNotEmpty ? user.name : S.of(context).no_name, style: TextStyle(color: AppColors.textPrimary(context), fontWeight: FontWeight.w500, fontSize: 14), overflow: TextOverflow.ellipsis)),
                 ],
               ),
               flex: 2, width: 250, needsScroll: needsScroll
@@ -516,8 +530,8 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(icon: Icon(Icons.edit_outlined, color: AppColors.primaryTeal(context), size: 20), onPressed: () => _showEditDialog(user)),
-                  IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20), onPressed: () => _deleteUser(user)),
+                  IconButton(icon: Icon(Icons.edit_outlined, color: AppColors.primaryTeal(context), size: 20), onPressed: () => _showEditDialog(user, provider)),
+                  IconButton(icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20), onPressed: () => _deleteUserDialog(user, provider)),
                 ],
               ),
               flex: 1, width: 150, needsScroll: needsScroll
@@ -538,12 +552,11 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
 
   Widget _buildRoleBadge(String role) {
     return Align(
-      // تم التعديل إلى centerStart لكي تظهر الشارات بشكل صحيح باللغتين
       alignment: AlignmentDirectional.centerStart,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(color: AppColors.secondaryTeal(context), borderRadius: BorderRadius.circular(6)),
-        child: Text(_getRoleName(role), style: TextStyle(color: AppColors.primaryTeal(context), fontSize: 12, fontWeight: FontWeight.bold)),
+        child: Text(_getRoleName(role, context), style: TextStyle(color: AppColors.primaryTeal(context), fontSize: 12, fontWeight: FontWeight.bold)),
       ),
     );
   }
@@ -551,7 +564,6 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
   Widget _buildStatusBadge(String status) {
     bool isActive = status == 'ACTIVE';
     return Align(
-      // تم التعديل إلى centerStart 
       alignment: AlignmentDirectional.centerStart,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -559,7 +571,7 @@ class _UsersManagementScreenState extends State<UsersManagementScreen> {
           color: isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1), 
           borderRadius: BorderRadius.circular(6)
         ),
-        child: Text(_getStatusName(status), style: TextStyle(color: isActive ? Colors.green : Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
+        child: Text(_getStatusName(status, context), style: TextStyle(color: isActive ? Colors.green : Colors.red, fontSize: 12, fontWeight: FontWeight.bold)),
       ),
     );
   }

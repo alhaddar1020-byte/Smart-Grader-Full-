@@ -1,11 +1,17 @@
-
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../core/colors.dart';
 import 'package:provider/provider.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:grade/provider/student_dashboard_controller.dart';
+
+import '../core/colors.dart';
 import '../core/theme_provider.dart';
 import '../core/locale_provider.dart';
 import '../generated/l10n.dart';
+import '../provider/settings_controller.dart';
+import 'homepage.dart'; // تأكدي من مسار شاشة SmartCorrectorUI
+import '../provider/subject_screen_controller.dart'; // مسار ملف البروفايدر الذي أنشأناه بالأعلى
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,288 +21,23 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _obscureOld = true;
-  bool _obscureNew = true;
-  bool _obscureConfirm = true;
-
-  String userName = "احمد محمد السعيد";
-  String userEmail = "Rogaya@gradesys.edu";
-  String phoneNumber = "4567 123 50 966+";
-  String educationLevel = "الصف الثاني ثانوي- علمي";
-  String lastPasswordChange = "منذ 3 أشهر";
-
-  double _strengthValue = 0.0;
-  String _strengthText = "ضعيفة جداً";
-  Color _strengthColor = Colors.red;
-
   final TextEditingController _oldPasswordController = TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _otpController = TextEditingController();
 
-  void _showSnackBar(String msg, Color color) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: color));
-  }
-
-  void _checkPasswordStrength(String password) {
-    double strength = 0;
-    if (password.isNotEmpty) {
-      if (password.length >= 8) strength += 0.3;
-      if (password.contains(RegExp(r'[A-Z]'))) strength += 0.2;
-      if (password.contains(RegExp(r'[0-9]'))) strength += 0.2;
-    }
-    setState(() {
-      _strengthValue = strength;
-      if (strength <= 0.3) {
-        _strengthText = S.of(context).settingsStrengthWeak;
-        _strengthColor = Colors.red;
-      } else if (strength <= 0.6) {
-        _strengthText = S.of(context).settingsStrengthMedium;
-        _strengthColor = Colors.orange;
-      } else {
-        _strengthText = S.of(context).settingsStrengthStrong;
-        _strengthColor = Colors.green;
-      }
-    });
-  }
-
-  Future<void> _updateProfileApi() async {
-    setState(() {
-      userName = _nameController.text;
-      userEmail = _emailController.text;
-      phoneNumber = _phoneController.text;
-    });
-    Navigator.pop(context);
-    _showSnackBar(S.of(context).settingsSuccess, Colors.green);
-  }
-
-  Future<void> _changePasswordApi() async {
-    if (_newPasswordController.text != _confirmPasswordController.text) {
-      _showSnackBar(S.of(context).settingsMatchError, Colors.red);
-      return;
-    }
-    Navigator.pop(context);
-    _showSnackBar(S.of(context).settingsSuccess, Colors.green);
-    setState(() => lastPasswordChange = "الآن");
-  }
-
-  void _showEditProfileDialog() {
-    _nameController.text = userName;
-    _emailController.text = userEmail;
-    _phoneController.text = phoneNumber;
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: "Dismiss",
-      barrierColor: const Color(0xFF101828).withOpacity(0.3),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, anim1, anim2) {
-        return LayoutBuilder(
-          builder: (context, dialogConstraints) {
-            double dialogWidth = dialogConstraints.maxWidth < 600
-                ? dialogConstraints.maxWidth * 0.9
-                : 480;
-            return BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: Align(
-                alignment: Alignment.center,
-                child: Material(
-                  color: Colors.transparent,
-                  child: Container(
-                    width: dialogWidth,
-                    padding: const EdgeInsets.all(30),
-                    decoration: BoxDecoration(
-                      color: AppColors.cardBg(context),
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            S.of(context).settingsEditProfile,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textPrimary(context),
-                            ),
-                          ),
-                          const SizedBox(height: 25),
-                          _buildDialogInputField(
-                            label: S.of(context).settingsFullName,
-                            controller: _nameController,
-                            icon: Icons.person_outline,
-                          ),
-                          const SizedBox(height: 15),
-                          _buildDialogInputField(
-                            label: S.of(context).settingsEmail,
-                            controller: _emailController,
-                            icon: Icons.alternate_email,
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          const SizedBox(height: 15),
-                          _buildDialogInputField(
-                            label: S.of(context).settingsPhone,
-                            controller: _phoneController,
-                            icon: Icons.phone_android_outlined,
-                          ),
-                          const SizedBox(height: 30),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _buildActionBtn(
-                                  S.of(context).settingsCancel,
-                                  const Color(0xFFF7FAFC),
-                                  const Color(0xFF718096),
-                                  () => Navigator.pop(context),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _buildActionBtn(
-                                  S.of(context).settingsSave,
-                                  AppColors.primaryTeal(context),
-                                  Colors.white,
-                                  _updateProfileApi,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showPasswordDialog() {
-    _oldPasswordController.clear();
-    _newPasswordController.clear();
-    _confirmPasswordController.clear();
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: "Dismiss",
-      barrierColor: const Color(0xFF101828).withOpacity(0.3),
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, anim1, anim2) {
-        return LayoutBuilder(
-          builder: (context, dialogConstraints) {
-            double dialogWidth = dialogConstraints.maxWidth < 600
-                ? dialogConstraints.maxWidth * 0.9
-                : 480;
-            return BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: Align(
-                alignment: Alignment.center,
-                child: Material(
-                  color: Colors.transparent,
-                  child: StatefulBuilder(
-                    builder: (context, setDialogState) {
-                      return Container(
-                        width: dialogWidth,
-                        padding: const EdgeInsets.all(30),
-                        decoration: BoxDecoration(
-                          color: AppColors.cardBg(context),
-                          borderRadius: BorderRadius.circular(30),
-                        ),
-                        child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                S.of(context).settingsChangePassword,
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary(context),
-                                ),
-                              ),
-                              const SizedBox(height: 25),
-                              _buildDialogInputField(
-                                label: S.of(context).settingsCurrentPassword,
-                                controller: _oldPasswordController,
-                                isObscured: _obscureOld,
-                                icon: Icons.lock_outline,
-                                onToggle: () => setDialogState(
-                                  () => _obscureOld = !_obscureOld,
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              _buildDialogInputField(
-                                label: S.of(context).settingsNewPassword,
-                                controller: _newPasswordController,
-                                isObscured: _obscureNew,
-                                icon: Icons.lock_outline,
-                                showStrength: true,
-                                onToggle: () => setDialogState(
-                                  () => _obscureNew = !_obscureNew,
-                                ),
-                                onChanged: (val) => setDialogState(
-                                  () => _checkPasswordStrength(val),
-                                ),
-                              ),
-                              const SizedBox(height: 15),
-                              _buildDialogInputField(
-                                label: S.of(context).settingsConfirmPassword,
-                                controller: _confirmPasswordController,
-                                isObscured: _obscureConfirm,
-                                icon: Icons.lock_outline,
-                                onToggle: () => setDialogState(
-                                  () => _obscureConfirm = !_obscureConfirm,
-                                ),
-                              ),
-                              const SizedBox(height: 30),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: _buildActionBtn(
-                                      S.of(context).settingsCancel,
-                                      const Color(0xFFF7FAFC),
-                                      const Color(0xFF718096),
-                                      () => Navigator.pop(context),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: _buildActionBtn(
-                                      S.of(context).settingsUpdate,
-                                      AppColors.primaryTeal(context),
-                                      Colors.white,
-                                      _changePasswordApi,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
+  bool _obscureOld = true;
+  bool _obscureNew = true;
+  bool _obscureConfirm = true;
 
   @override
   Widget build(BuildContext context) {
+    // 🌟 السطر الوحيد الذي يربط الشاشة بالكنترولر في Provider
+    final ctrl = context.watch<SettingsController>();
+
     return Scaffold(
       backgroundColor: AppColors.secondaryTeal(context),
       body: LayoutBuilder(
@@ -311,7 +52,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 vertical: isMobile ? 15 : 30,
               ),
               child: SingleChildScrollView(
-                child: isMobile ? _buildMobileLayout() : _buildWebLayout(),
+                child: isMobile
+                    ? _buildMobileLayout(ctrl)
+                    : _buildWebLayout(ctrl),
               ),
             ),
           );
@@ -320,7 +63,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildWebLayout() {
+  // ==========================================
+  // التنسيقات (Layouts)
+  // ==========================================
+
+  Widget _buildWebLayout(SettingsController ctrl) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -328,9 +75,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           flex: 2,
           child: Column(
             children: [
-              _buildProfileCard(false),
+              _buildProfileCard(false, ctrl),
               const SizedBox(height: 20),
-              _buildSecurityCard(),
+              _buildSecurityCard(ctrl),
             ],
           ),
         ),
@@ -339,7 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           flex: 1,
           child: Column(
             children: [
-              _buildDisplayPreferencesCard(false),
+              _buildDisplayPreferencesCard(false, ctrl),
               const SizedBox(height: 20),
               _buildDangerZoneCard(),
             ],
@@ -349,21 +96,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildMobileLayout() {
+  Widget _buildMobileLayout(SettingsController ctrl) {
     return Column(
       children: [
-        _buildProfileCard(true),
+        _buildProfileCard(true, ctrl),
         const SizedBox(height: 20),
-        _buildSecurityCard(),
+        _buildSecurityCard(ctrl),
         const SizedBox(height: 20),
-        _buildDisplayPreferencesCard(true),
+        _buildDisplayPreferencesCard(true, ctrl),
         const SizedBox(height: 20),
         _buildDangerZoneCard(),
       ],
     );
   }
 
-  Widget _buildProfileCard(bool isMobile) {
+  // ==========================================
+  // كرت الملف الشخصي
+  // ==========================================
+  Widget _buildProfileCard(bool isMobile, SettingsController ctrl) {
     return Container(
       padding: const EdgeInsets.all(25),
       decoration: _cardDecoration(),
@@ -379,91 +129,591 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 25),
-          isMobile
-              ? Column(
-                  children: [
-                    _buildDynamicField(
-                      S.of(context).settingsFullName,
-                      userName,
-                      Icons.person_outline,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildDynamicField(
-                      S.of(context).settingsPhone,
-                      phoneNumber,
-                      Icons.phone_outlined,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildDynamicField(
-                      S.of(context).settingsEmail,
-                      userEmail,
-                      Icons.email_outlined,
-                    ),
-                    const SizedBox(height: 15),
-                    _buildDynamicField(
-                      S.of(context).settingsLevel,
-                      educationLevel,
-                      Icons.school_outlined,
-                    ),
-                  ],
-                )
-              : Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildDynamicField(
-                            S.of(context).settingsFullName,
-                            userName,
-                            Icons.person_outline,
+
+          if (ctrl.isLoadingProfile)
+            const Center(child: CircularProgressIndicator())
+          else
+            isMobile
+                ? Column(
+                    children: [
+                      _buildDynamicField(
+                        S.of(context).settingsFullName,
+                        ctrl.userName,
+                        Icons.person_outline,
+                        showEdit: false,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildDynamicField(
+                        S.of(context).settingsEmail,
+                        ctrl.userEmail,
+                        Icons.email_outlined,
+                        showEdit: true,
+                        onEdit: _showEmailChangeDialog,
+                      ),
+                      const SizedBox(height: 15),
+                      _buildDynamicField(
+                        S.of(context).settingsLevel,
+                        ctrl.levelAndDepartment,
+                        Icons.school_outlined,
+                      ),
+                    ],
+                  )
+                : Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDynamicField(
+                              S.of(context).settingsFullName,
+                              ctrl.userName,
+                              Icons.person_outline,
+                              showEdit: false,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 30),
-                        Expanded(
-                          child: _buildDynamicField(
-                            S.of(context).settingsPhone,
-                            phoneNumber,
-                            Icons.phone_outlined,
+                        ],
+                      ),
+                      const SizedBox(height: 25),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildDynamicField(
+                              S.of(context).settingsEmail,
+                              ctrl.userEmail,
+                              Icons.email_outlined,
+                              showEdit: true,
+                              onEdit: _showEmailChangeDialog,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 25),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildDynamicField(
-                            S.of(context).settingsEmail,
-                            userEmail,
-                            Icons.email_outlined,
+                          const SizedBox(width: 30),
+                          Expanded(
+                            child: _buildDynamicField(
+                              S.of(context).settingsLevel,
+                              ctrl.levelAndDepartment,
+                              Icons.school_outlined,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 30),
-                        Expanded(
-                          child: _buildDynamicField(
-                            S.of(context).settingsLevel,
-                            educationLevel,
-                            Icons.school_outlined,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-          const SizedBox(height: 25),
-          Align(
-            alignment: Alignment.center,
-            child: InkWell(
-              onTap: _showEditProfileDialog,
-              child: _buildEditButton(),
-            ),
-          ),
+                        ],
+                      ),
+                    ],
+                  ),
         ],
       ),
     );
   }
 
-  Widget _buildSecurityCard() {
+  Widget _buildDynamicField(
+    String label,
+    String value,
+    IconData icon, {
+    bool showEdit = false,
+    VoidCallback? onEdit,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+            color: AppColors.textPrimary(context),
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          height: 50,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            color: AppColors.scaffoldBg(context),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 18, color: AppColors.textSecondary(context)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  value.isEmpty ? "..." : value,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textPrimary(context),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              if (showEdit)
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit_note,
+                    size: 22,
+                    color: Colors.orange,
+                  ),
+                  onPressed: onEdit,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ==========================================
+  // الدوال والحوارات (Dialogs)
+  // ==========================================
+
+  void _showEmailChangeDialog() {
+    _emailController.clear();
+    _otpController.clear();
+
+    bool isOtpStep = false;
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final ctrl = context
+                .read<
+                  SettingsController
+                >(); // 🌟 استدعاء الكنترولر بأمان داخل الديالوج
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                isOtpStep
+                    ? S.of(context).settingsIdentityVerification
+                    : S.of(context).settingsChangeEmail,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (!isOtpStep) ...[
+                    Text(
+                      S.of(context).settingsOtpSentToCurrentEmail,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDialogInputField(
+                      label: S.of(context).settingsNewEmail,
+                      controller: _emailController,
+                      icon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                  ],
+                  if (isOtpStep) ...[
+                    Text(
+                      S.of(context).settingsEnterOtpSent,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      ctrl.userEmail,
+                      style: const TextStyle(
+                        color: Colors.teal,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDialogInputField(
+                      label: S.of(context).settingsOtpCode,
+                      controller: _otpController,
+                      icon: Icons.security,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          Navigator.pop(dialogContext);
+                        },
+                  child: Text(S.of(context).settingsCancel),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (!isOtpStep) {
+                            if (_emailController.text.isEmpty ||
+                                !_emailController.text.contains('@')) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsEnterValidEmail,
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() {
+                              isLoading = true;
+                            });
+                            bool success = await ctrl.sendEmailChangeOtp(
+                              newEmail: _emailController.text,
+                              context: context,
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (success) {
+                              setState(() {
+                                isOtpStep = true;
+                              });
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsOtpSentSuccess,
+                                  ),
+                                ),
+                              );
+                            }
+                          } else {
+                            if (_otpController.text.length != 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsEnter6DigitOtp,
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() {
+                              isLoading = true;
+                            });
+                            bool success = await ctrl.verifyEmailOtp(
+                              otpCode: _otpController.text,
+                              newEmail: _emailController.text,
+                              context: context,
+                            );
+                            setState(() {
+                              isLoading = false;
+                            });
+                            if (success) {
+                              Navigator.pop(dialogContext);
+                              await Future.delayed(
+                                const Duration(milliseconds: 300),
+                              );
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsEmailUpdated,
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsOtpIncorrect,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
+                          }
+                        },
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          isOtpStep
+                              ? S.of(context).settingsConfirm
+                              : S.of(context).settingsSendCode,
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showPasswordDialog() {
+    _oldPasswordController.clear();
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+
+    _showCustomDialog(
+      title: S.of(context).settingsChangePassword,
+      content: StatefulBuilder(
+        builder: (context, setDialogState) {
+          final ctrl = context.read<SettingsController>();
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildDialogInputField(
+                label: S.of(context).settingsCurrentPassword,
+                controller: _oldPasswordController,
+                isObscured: _obscureOld,
+                icon: Icons.lock_outline,
+                onToggle: () =>
+                    setDialogState(() => _obscureOld = !_obscureOld),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _showForgotPasswordFlow();
+                  },
+                  child: Text(
+                    S.of(context).settingsForgotPassword,
+                    style: const TextStyle(fontSize: 12, color: Colors.blue),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 15),
+              _buildDialogInputField(
+                label: S.of(context).settingsNewPassword,
+                controller: _newPasswordController,
+                isObscured: _obscureNew,
+                icon: Icons.lock_outline,
+                showStrength: true,
+                onToggle: () =>
+                    setDialogState(() => _obscureNew = !_obscureNew),
+                onChanged: (val) {
+                  ctrl.checkPasswordStrength(val, context: context);
+                  setDialogState(() {});
+                },
+              ),
+              const SizedBox(height: 15),
+              _buildDialogInputField(
+                label: S.of(context).settingsConfirmPassword,
+                controller: _confirmPasswordController,
+                isObscured: _obscureConfirm,
+                icon: Icons.lock_outline,
+                onToggle: () =>
+                    setDialogState(() => _obscureConfirm = !_obscureConfirm),
+              ),
+            ],
+          );
+        },
+      ),
+      onConfirm: () {
+        final oldPass = _oldPasswordController.text;
+        final newPass = _newPasswordController.text;
+        final confirmPass = _confirmPasswordController.text;
+
+        if (oldPass.isEmpty || newPass.isEmpty || confirmPass.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(S.of(context).settingsFillAllFields),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+        if (newPass != confirmPass) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(S.of(context).settingsPasswordNotMatch),
+              backgroundColor: Colors.red,
+            ),
+          );
+          return;
+        }
+
+        context.read<SettingsController>().changePassword(
+          oldPassword: oldPass,
+          newPassword: newPass,
+          confirmPassword: confirmPass,
+          context: context,
+        );
+      },
+    );
+  }
+
+  void _showForgotPasswordFlow() {
+    _otpController.clear();
+    _newPasswordController.clear();
+    _confirmPasswordController.clear();
+
+    int step = 1;
+    bool isLoading = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final ctrl = context.read<SettingsController>();
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                step == 1
+                    ? S.of(context).forgot_pw_title
+                    : step == 2
+                    ? S.of(context).settingsIdentityVerification
+                    : S.of(context).settingsChangePassword,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (step == 1) ...[
+                    Text(
+                      S.of(context).settingsOtpSentToCurrentEmail,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      ctrl.userEmail,
+                      style: const TextStyle(
+                        color: Colors.teal,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textDirection: TextDirection.ltr,
+                    ),
+                  ],
+                  if (step == 2) ...[
+                    Text(
+                      S.of(context).settingsEnterOtpSent,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDialogInputField(
+                      label: S.of(context).settingsOtpCode,
+                      controller: _otpController,
+                      icon: Icons.security,
+                      keyboardType: TextInputType.number,
+                    ),
+                  ],
+                  if (step == 3) ...[
+                    _buildDialogInputField(
+                      label: S.of(context).settingsNewPassword,
+                      controller: _newPasswordController,
+                      isObscured: _obscureNew,
+                      icon: Icons.lock_outline,
+                      showStrength: true,
+                      onToggle: () =>
+                          setState(() => _obscureNew = !_obscureNew),
+                      onChanged: (val) {
+                        ctrl.checkPasswordStrength(val, context: context);
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 15),
+                    _buildDialogInputField(
+                      label: S.of(context).settingsConfirmPassword,
+                      controller: _confirmPasswordController,
+                      isObscured: _obscureConfirm,
+                      icon: Icons.lock_outline,
+                      onToggle: () =>
+                          setState(() => _obscureConfirm = !_obscureConfirm),
+                    ),
+                  ],
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: isLoading
+                      ? null
+                      : () => Navigator.pop(dialogContext),
+                  child: Text(S.of(context).settingsCancel),
+                ),
+                ElevatedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          if (step == 1) {
+                            setState(() => isLoading = true);
+                            bool sent = await ctrl.sendForgotPasswordOtp(
+                              context: context,
+                            );
+                            setState(() => isLoading = false);
+                            if (sent) setState(() => step = 2);
+                          } else if (step == 2) {
+                            if (_otpController.text.length != 6) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsEnter6DigitOtp,
+                                  ),
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() => isLoading = true);
+                            bool verified = await ctrl.verifyForgotPasswordOtp(
+                              _otpController.text,
+                              context: context,
+                            );
+                            setState(() => isLoading = false);
+                            if (verified) setState(() => step = 3);
+                          } else if (step == 3) {
+                            if (_newPasswordController.text !=
+                                _confirmPasswordController.text) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    S.of(context).settingsPasswordNotMatch,
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                              return;
+                            }
+                            setState(() => isLoading = true);
+                            bool success = await ctrl.resetPasswordWithOtp(
+                              _otpController.text,
+                              _newPasswordController.text,
+                              context: context,
+                            );
+                            setState(() => isLoading = false);
+                            if (success) {
+                              Navigator.pop(dialogContext);
+                            }
+                          }
+                        },
+                  child: isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          step == 1
+                              ? S.of(context).settingsSendCode
+                              : step == 2
+                              ? S.of(context).settingsConfirm
+                              : S.of(context).settingsUpdate,
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSecurityCard(SettingsController ctrl) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: _cardDecoration(),
@@ -481,7 +731,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 15),
           _buildActionRow(
             S.of(context).settingsManagePassword,
-            S.of(context).settingsLastChange(lastPasswordChange),
+            S.of(context).settingsLastChange(ctrl.lastPasswordChange),
             Icons.lock_outline,
             actionLabel: S.of(context).settingsChangePassword,
             onTap: _showPasswordDialog,
@@ -491,10 +741,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDisplayPreferencesCard(bool isMobile) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final localeProvider = Provider.of<LocaleProvider>(context);
-
+  Widget _buildDisplayPreferencesCard(bool isMobile, SettingsController ctrl) {
+    final themeProvider = context.watch<ThemeProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
     return Container(
       constraints: BoxConstraints(minHeight: isMobile ? 0 : 250),
       padding: const EdgeInsets.all(20),
@@ -533,7 +782,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               Switch(
                 value: themeProvider.isDarkMode,
-                onChanged: (v) => themeProvider.toggleTheme(v),
+                onChanged: (v) {
+                  themeProvider.toggleTheme(v, ctrl.currentStudentId);
+                },
                 activeColor: AppColors.primaryTeal(context),
               ),
             ],
@@ -547,7 +798,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           const SizedBox(height: 8),
-          _buildLanguageSelector(localeProvider),
+          _buildLanguageSelector(localeProvider, ctrl),
         ],
       ),
     );
@@ -571,7 +822,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               color: Colors.red,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 20),
           Text(
             S.of(context).settingsDangerDesc,
             style: TextStyle(
@@ -579,19 +830,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
               fontSize: 13,
             ),
           ),
-          const SizedBox(height: 50),
+          const SizedBox(height: 20),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () => _showDeactivateDialog(context),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               minimumSize: const Size(double.infinity, 42),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: Text(
               S.of(context).settingsDeactivate,
-              style: const TextStyle(color: Colors.white),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showCustomDialog({
+    required String title,
+    required Widget content,
+    required VoidCallback onConfirm,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          title: Text(
+            title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: SingleChildScrollView(child: content),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(S.of(context).settingsCancel),
+            ),
+            ElevatedButton(
+              onPressed: onConfirm,
+              child: Text(S.of(context).settingsUpdate),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -607,6 +898,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     TextInputType keyboardType = TextInputType.text,
   }) {
     bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final ctrl = context.read<SettingsController>();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -620,7 +912,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           obscureText: isObscured,
           onChanged: onChanged,
           keyboardType: keyboardType,
-          style: TextStyle(color: AppColors.textPrimary(context)),
           decoration: InputDecoration(
             filled: true,
             fillColor: isDarkMode
@@ -645,140 +936,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (showStrength) ...[
           const SizedBox(height: 12),
           Text(
-            S.of(context).settingsStrengthLabel(_strengthText),
+            ctrl.passwordStrengthText,
             style: TextStyle(
-              color: _strengthColor,
+              color: ctrl.passwordStrengthColor ?? Colors.red,
               fontSize: 11,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 5),
           LinearProgressIndicator(
-            value: _strengthValue,
+            value: ctrl.passwordStrength,
             backgroundColor: const Color(0xFFE2E8F0),
-            color: _strengthColor,
+            color: ctrl.passwordStrengthColor ?? Colors.red,
             minHeight: 6,
           ),
         ],
       ],
     );
   }
-
-  Widget _buildActionBtn(
-    String text,
-    Color bg,
-    Color txtColor,
-    VoidCallback onTap,
-  ) {
-    return ElevatedButton(
-      onPressed: onTap,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bg,
-        elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-        minimumSize: const Size(0, 48),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(color: txtColor, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
-
-  Widget _buildDynamicField(String label, String value, IconData icon) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
-            color: AppColors.textPrimary(context),
-          ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.scaffoldBg(context),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Row(
-            children: [
-              Icon(icon, size: 18, color: AppColors.textSecondary(context)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textPrimary(context),
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  BoxDecoration _cardDecoration() => BoxDecoration(
-    color: AppColors.cardBg(context),
-    borderRadius: BorderRadius.circular(20),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.04),
-        blurRadius: 10,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  );
-
-  Widget _buildEditButton() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 8),
-    decoration: BoxDecoration(
-      color: AppColors.primaryTeal(context),
-      borderRadius: BorderRadius.circular(10),
-    ),
-    child: Text(
-      S.of(context).settingsEditProfile,
-      style: const TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
-        fontSize: 13,
-      ),
-    ),
-  );
-
-  Widget _buildLanguageSelector(LocaleProvider localeProvider) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
-    decoration: BoxDecoration(
-      color: AppColors.scaffoldBg(context),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: localeProvider.locale.languageCode,
-        isExpanded: true,
-        items: const [
-          DropdownMenuItem(
-            value: 'ar',
-            child: Text("العربية", style: TextStyle(fontSize: 13)),
-          ),
-          DropdownMenuItem(
-            value: 'en',
-            child: Text("English", style: TextStyle(fontSize: 13)),
-          ),
-        ],
-        onChanged: (String? newValue) {
-          if (newValue != null) localeProvider.updateLanguage(newValue);
-        },
-      ),
-    ),
-  );
 
   Widget _buildActionRow(
     String title,
@@ -832,4 +1007,118 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     ),
   );
+
+  BoxDecoration _cardDecoration() => BoxDecoration(
+    color: AppColors.cardBg(context),
+    borderRadius: BorderRadius.circular(20),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.04),
+        blurRadius: 10,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  );
+
+  Widget _buildLanguageSelector(
+    LocaleProvider lp,
+    SettingsController ctrl,
+  ) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    decoration: BoxDecoration(
+      color: AppColors.scaffoldBg(context),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: DropdownButtonHideUnderline(
+      child: DropdownButton<String>(
+        value: lp.locale.languageCode,
+        isExpanded: true,
+        items: const [
+          DropdownMenuItem(value: 'ar', child: Text("العربية")),
+          DropdownMenuItem(value: 'en', child: Text("English")),
+        ],
+        onChanged: (v) async {
+          if (v != null) {
+            await lp.updateLanguage(v, ctrl.currentStudentId);
+            ctrl.updateLanguageLocally(v);
+
+            if (context.mounted) {
+              context.read<StudentDashboardController>().fetchDashboardData(
+                ctrl.currentStudentId,
+                isSilent: true,
+              );
+            }
+            if (context.mounted) {
+              // تأكدي من اسم الكلاس، إذا سميتيه SubjectScreenProvider استخدميه بدال القديم
+              context.read<SubjectScreenController>().fetchSubjectsData(
+                ctrl.currentStudentId,
+                context, // 👈 التعديل هنا: أضفنا الكونتكست كمتغير ثاني
+              );
+            }
+          }
+        },
+      ),
+    ),
+  );
+
+  void _showDeactivateDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Text(
+            S.of(context).settingsWarning,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.red,
+            ),
+          ),
+          content: Text(S.of(context).logoutConfirmationDesc),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: Text(
+                S.of(context).settingsCancel,
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                Navigator.of(ctx).pop();
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.clear();
+
+                // الانتقال بدون GetX
+                if (context.mounted) {
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SmartCorrectorUI(),
+                    ),
+                    (route) => false,
+                  );
+                }
+              },
+              child: Text(
+                S.of(context).confirmLogout,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

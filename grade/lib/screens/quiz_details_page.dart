@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:ui';
+import 'package:provider/provider.dart';
 import '../core/colors.dart'; 
 import '../generated/l10n.dart'; 
 import 'teacher_dashboard.dart';
@@ -9,24 +9,43 @@ import 'exam_page.dart' hide HeaderWidget;
 import 'review_exam_screen.dart';
 import 'teacer_setting.dart';
 import 'ExamManagementPage.dart';
-class QuizDetailsPage extends StatefulWidget {
-  const QuizDetailsPage({super.key});
+import 'quiz_details_provider.dart'; // استدعاء البروفايدر الجديد
+
+class QuizDetailsPage extends StatelessWidget {
+  // المتغيرات القادمة من شاشة إنشاء الاختبار
+  final Map<String, dynamic>? generatedData;
+  final int? folderId;
+  final String? examTitle;
+  final String? examDate;
+
+  const QuizDetailsPage({
+    super.key,
+    this.generatedData,
+    this.folderId,
+    this.examTitle,
+    this.examDate,
+  });
 
   @override
-  State<QuizDetailsPage> createState() => _QuizDetailsPageState();
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => QuizDetailsProvider()..initData(generatedData, folderId, examTitle, examDate),
+      child: const _QuizDetailsBody(),
+    );
+  }
 }
 
-class _QuizDetailsPageState extends State<QuizDetailsPage> {
-  final int _selectedIndex = 1; // إدارة الامتحانات
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  
-  final int totalQuestions = 10;
-  final double totalGrade = 100.0;
-  final double aiAccuracy = 98.5;
-  final List<String> aiKeywords = ['تعلم آلي', 'AI', 'ذكاء', 'خوارزميات', 'برمجة', 'تطبيقات'];
-  bool isEditingMode = false; 
+class _QuizDetailsBody extends StatefulWidget {
+  const _QuizDetailsBody();
 
-  // ✅ دالة التنقل الموحدة
+  @override
+  State<_QuizDetailsBody> createState() => _QuizDetailsBodyState();
+}
+
+class _QuizDetailsBodyState extends State<_QuizDetailsBody> {
+  final int _selectedIndex = 1; 
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   void _handleNavigation(int index) {
     if (index == _selectedIndex) return;
     if (_scaffoldKey.currentState?.isDrawerOpen ?? false) Navigator.pop(context);
@@ -48,12 +67,13 @@ class _QuizDetailsPageState extends State<QuizDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<QuizDetailsProvider>();
     double width = MediaQuery.of(context).size.width;
     bool isMobile = width < 950;
 
     return Scaffold(
       key: _scaffoldKey,
-      backgroundColor: AppColors.scaffoldBg(context), 
+      backgroundColor: AppColors.secondaryTeal(context), 
       drawer: isMobile ? Drawer(width: 260, child: SafeArea(child: CustSidebar(selectedIndex: _selectedIndex, onItemSelected: _handleNavigation))) : null,
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,7 +90,7 @@ class _QuizDetailsPageState extends State<QuizDetailsPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     decoration: BoxDecoration(
-                      color: AppColors.textWhite(context),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))],
                     ),
@@ -90,18 +110,18 @@ class _QuizDetailsPageState extends State<QuizDetailsPage> {
                         ? SingleChildScrollView(
                             child: Column(
                               children: [
-                                _buildRightColumn(isMobile: true), 
+                                _buildRightColumn(isMobile: true, provider: provider), 
                                 const SizedBox(height: 24),
-                                _buildLeftColumn(isMobile: true), 
+                                _buildLeftColumn(isMobile: true, provider: provider), 
                               ],
                             ),
                           )
                         : Row(
                             crossAxisAlignment: CrossAxisAlignment.start, 
                             children: [
-                              Expanded(flex: 7, child: _buildRightColumn(isMobile: false)), 
+                              Expanded(flex: 7, child: _buildRightColumn(isMobile: false, provider: provider)), 
                               const SizedBox(width: 24), 
-                              Expanded(flex: 3, child: _buildLeftColumn(isMobile: false))
+                              Expanded(flex: 3, child: _buildLeftColumn(isMobile: false, provider: provider))
                             ],
                           ),
                   ),
@@ -114,57 +134,59 @@ class _QuizDetailsPageState extends State<QuizDetailsPage> {
     );
   }
 
-  Widget _buildRightColumn({required bool isMobile}) {
-    return ListView(
+  Widget _buildRightColumn({required bool isMobile, required QuizDetailsProvider provider}) {
+    if (provider.questions.isEmpty) {
+      return const Center(child: Text("لا توجد أسئلة لعرضها", style: TextStyle(fontSize: 16)));
+    }
+
+    return ListView.separated(
       shrinkWrap: true, 
       physics: isMobile ? const NeverScrollableScrollPhysics() : const BouncingScrollPhysics(),
-      children: [
-        DynamicQuestionCard(
-          questionNumber: '1', 
-          aiGeneratedQuestionText: 'أي من التالي يعتبر مثالاً على عملية البناء الضوئي؟', 
-          aiModelAnswer: 'البناء الضوئي هو عملية تقوم بها النباتات لتحويل طاقة الشمس إلى طاقة كيميائية...', 
-          isEditing: isEditingMode
-        ),
-        const SizedBox(height: 24),
-        DynamicQuestionCard(
-          questionNumber: '2', 
-          aiGeneratedQuestionText: 'ما هي المركبات العضوية التي تعتبر المصدر الرئيسي للطاقة في جسم الإنسان؟', 
-          aiModelAnswer: 'الكربوهيدرات هي المصدر الرئيسي للطاقة في جسم الإنسان، حيث تتحول إلى جلوكوز يغذي الخلايا...', 
-          isEditing: isEditingMode
-        ),
-      ],
+      itemCount: provider.questions.length,
+      separatorBuilder: (context, index) => const SizedBox(height: 24),
+      itemBuilder: (context, index) {
+        final q = provider.questions[index];
+        return DynamicQuestionCard(
+          questionNumber: '${index + 1}', 
+          aiGeneratedQuestionText: q['question_text'] ?? '', 
+          aiModelAnswer: q['model_answer'] ?? '', 
+          isEditing: provider.isEditingMode,
+          onQuestionChanged: (val) => provider.updateQuestionText(index, val),
+          onAnswerChanged: (val) => provider.updateModelAnswer(index, val),
+        );
+      },
     );
   }
 
-  Widget _buildLeftColumn({required bool isMobile}) {
+  Widget _buildLeftColumn({required bool isMobile, required QuizDetailsProvider provider}) {
     Widget content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _buildTestDetailsCard(), 
+        _buildTestDetailsCard(provider), 
         const SizedBox(height: 16), 
-        _buildKeywordsCard(), 
+        _buildKeywordsCard(provider), 
         const SizedBox(height: 24), 
-        _buildActionButtons(), 
+        _buildActionButtons(provider), 
         const SizedBox(height: 24)
       ],
     );
     return isMobile ? content : SingleChildScrollView(physics: const BouncingScrollPhysics(), child: content);
   }
 
-  Widget _buildTestDetailsCard() {
+  Widget _buildTestDetailsCard(QuizDetailsProvider provider) {
     return Container(
       padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(color: AppColors.textWhite(context), borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))]),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Center(child: Text(S.of(context).exam_details, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textPrimary(context)))),
           const SizedBox(height: 24),
-          _buildStatRow(icon: Icons.list_alt, iconColor: AppColors.accentYellow(context), title: S.of(context).total_questions, value: '$totalQuestions'), 
+          _buildStatRow(icon: Icons.list_alt, iconColor: AppColors.accentYellow(context), title: S.of(context).total_questions, value: '${provider.totalQuestions}'), 
           Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Divider(color: AppColors.textSecondary(context).withValues(alpha: 0.1), thickness: 1)),
-          _buildStatRow(icon: Icons.military_tech_outlined, iconColor: AppColors.primaryTeal(context), title: S.of(context).total_grade, value: '$totalGrade'), 
+          _buildStatRow(icon: Icons.military_tech_outlined, iconColor: AppColors.primaryTeal(context), title: S.of(context).total_grade, value: '${provider.totalGrade}'), 
           Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Divider(color: AppColors.textSecondary(context).withValues(alpha: 0.1), thickness: 1)),
-          _buildStatRow(icon: Icons.auto_awesome, iconColor: const Color(0xFF3FA9A7), title: S.of(context).ai_accuracy, value: '%$aiAccuracy'), 
+          _buildStatRow(icon: Icons.auto_awesome, iconColor: const Color(0xFF3FA9A7), title: S.of(context).ai_accuracy, value: '%${provider.aiAccuracy}'), 
         ],
       ),
     );
@@ -180,7 +202,9 @@ class _QuizDetailsPageState extends State<QuizDetailsPage> {
     );
   }
 
-  Widget _buildKeywordsCard() {
+  Widget _buildKeywordsCard(QuizDetailsProvider provider) {
+    if (provider.aiKeywords.isEmpty) return const SizedBox();
+    
     return Container(
       padding: const EdgeInsets.all(24), width: double.infinity,
       decoration: BoxDecoration(color: AppColors.primaryTeal(context), borderRadius: BorderRadius.circular(16), boxShadow: [BoxShadow(color: AppColors.primaryTeal(context).withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))]),
@@ -191,29 +215,44 @@ class _QuizDetailsPageState extends State<QuizDetailsPage> {
           const SizedBox(height: 16),
           Wrap(
             spacing: 8, runSpacing: 8, alignment: WrapAlignment.center,
-            children: aiKeywords.map((kw) => Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: AppColors.accentYellow(context).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.accentYellow(context).withValues(alpha: 0.3))), child: Text(kw, style: TextStyle(color: AppColors.accentYellow(context), fontWeight: FontWeight.w600, fontSize: 13)))).toList(),
+            children: provider.aiKeywords.map((kw) => Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: AppColors.accentYellow(context).withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.accentYellow(context).withValues(alpha: 0.3))), child: Text(kw, style: TextStyle(color: AppColors.accentYellow(context), fontWeight: FontWeight.w600, fontSize: 13)))).toList(),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildActionButtons() {
+  Widget _buildActionButtons(QuizDetailsProvider provider) {
     return Column(
       children: [
         Container(
           width: double.infinity, height: 54,
           decoration: BoxDecoration(gradient: LinearGradient(colors: [AppColors.primaryTeal(context), const Color(0xFF3FA9A7)]), borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: AppColors.primaryTeal(context).withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))]),
-          child: Material(color: Colors.transparent, child: InkWell(borderRadius: BorderRadius.circular(14), onTap: () {}, child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [Text(S.of(context).approve_exam, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)), const SizedBox(width: 8), const Icon(Icons.check_circle_outline, color: Colors.white, size: 22)]))),
+          child: Material(
+            color: Colors.transparent, 
+            child: InkWell(
+              borderRadius: BorderRadius.circular(14), 
+              onTap: provider.isSaving ? null : () => provider.saveExamToDatabase(context), 
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                if (provider.isSaving) 
+                  const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                else ...[
+                  Text(S.of(context).approve_exam, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)), 
+                  const SizedBox(width: 8), 
+                  const Icon(Icons.check_circle_outline, color: Colors.white, size: 22)
+                ]
+              ])
+            )
+          ),
         ),
         const SizedBox(height: 12),
         SizedBox(
           width: double.infinity, height: 54,
           child: OutlinedButton.icon(
-            onPressed: () { setState(() { isEditingMode = !isEditingMode; }); },
-            icon: Icon(isEditingMode ? Icons.close : Icons.edit, color: isEditingMode ? Colors.red : AppColors.primaryTeal(context)),
-            label: Text(isEditingMode ? S.of(context).cancel_edit : S.of(context).edit_exam, style: TextStyle(color: isEditingMode ? Colors.red : AppColors.primaryTeal(context), fontSize: 16, fontWeight: FontWeight.bold)),
-            style: OutlinedButton.styleFrom(side: BorderSide(color: isEditingMode ? Colors.red : AppColors.primaryTeal(context), width: 1.5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+            onPressed: provider.toggleEditingMode,
+            icon: Icon(provider.isEditingMode ? Icons.close : Icons.edit, color: provider.isEditingMode ? Colors.red : AppColors.primaryTeal(context)),
+            label: Text(provider.isEditingMode ? S.of(context).cancel_edit : S.of(context).edit_exam, style: TextStyle(color: provider.isEditingMode ? Colors.red : AppColors.primaryTeal(context), fontSize: 16, fontWeight: FontWeight.bold)),
+            style: OutlinedButton.styleFrom(side: BorderSide(color: provider.isEditingMode ? Colors.red : AppColors.primaryTeal(context), width: 1.5), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
           ),
         ),
       ],
@@ -226,8 +265,18 @@ class DynamicQuestionCard extends StatefulWidget {
   final String aiGeneratedQuestionText; 
   final String aiModelAnswer;   
   final bool isEditing; 
+  final ValueChanged<String> onQuestionChanged;
+  final ValueChanged<String> onAnswerChanged;
 
-  const DynamicQuestionCard({super.key, required this.questionNumber, required this.aiGeneratedQuestionText, required this.aiModelAnswer, required this.isEditing});
+  const DynamicQuestionCard({
+    super.key, 
+    required this.questionNumber, 
+    required this.aiGeneratedQuestionText, 
+    required this.aiModelAnswer, 
+    required this.isEditing,
+    required this.onQuestionChanged,
+    required this.onAnswerChanged,
+  });
 
   @override
   State<DynamicQuestionCard> createState() => _DynamicQuestionCardState();
@@ -249,7 +298,7 @@ class _DynamicQuestionCardState extends State<DynamicQuestionCard> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.textWhite(context), 
+        color: Colors.white, 
         borderRadius: BorderRadius.circular(16), 
         border: Border.all(color: widget.isEditing ? AppColors.accentYellow(context).withValues(alpha: 0.5) : Colors.transparent, width: 2), 
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 4))]
@@ -272,7 +321,10 @@ class _DynamicQuestionCardState extends State<DynamicQuestionCard> {
 
   Widget _buildQuestionTextField() {
     return TextFormField(
-      controller: _questionTextController, maxLines: null, readOnly: !widget.isEditing,
+      controller: _questionTextController, 
+      maxLines: null, 
+      readOnly: !widget.isEditing,
+      onChanged: widget.onQuestionChanged, // تحديث البروفايدر عند الكتابة
       style: TextStyle(fontSize: 16, color: AppColors.textPrimary(context), fontWeight: FontWeight.bold, height: 1.5),
       decoration: InputDecoration(
         filled: true, fillColor: widget.isEditing ? AppColors.accentYellow(context).withValues(alpha: 0.05) : AppColors.scaffoldBg(context),
@@ -288,7 +340,10 @@ class _DynamicQuestionCardState extends State<DynamicQuestionCard> {
         Row(children: [Icon(Icons.check_circle_outline, color: AppColors.primaryTeal(context), size: 22), const SizedBox(width: 8), Text(S.of(context).model_answer, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold))]),
         const SizedBox(height: 16),
         TextField(
-          controller: _modelAnswerController, maxLines: null, readOnly: !widget.isEditing,
+          controller: _modelAnswerController, 
+          maxLines: null, 
+          readOnly: !widget.isEditing,
+          onChanged: widget.onAnswerChanged, // تحديث البروفايدر عند الكتابة
           style: TextStyle(fontSize: 14, color: AppColors.textSecondary(context), height: 1.6),
           decoration: InputDecoration(filled: true, fillColor: widget.isEditing ? AppColors.accentYellow(context).withValues(alpha: 0.05) : AppColors.scaffoldBg(context), border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none)),
         ),

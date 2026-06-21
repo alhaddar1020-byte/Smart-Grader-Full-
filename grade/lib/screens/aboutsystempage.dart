@@ -20,7 +20,11 @@ class AboutSystemScreen extends StatelessWidget {
             start: 30, // سيبدأ من اليمين في العربي واليسار في الإنجليزي
             child: IconButton(
               // Icons.adaptive.arrow_back يعكس نفسه تلقائياً حسب اللغة
-              icon: Icon(Icons.adaptive.arrow_back, color: AppColors.primaryTeal(context), size: 22),
+              icon: Icon(
+                Icons.adaptive.arrow_back,
+                color: AppColors.primaryTeal(context),
+                size: 22,
+              ),
               onPressed: () => Navigator.pop(context),
             ),
           ),
@@ -31,36 +35,66 @@ class AboutSystemScreen extends StatelessWidget {
                 children: [
                   Text(
                     S.of(context).about_title, // العنوان مترجم
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF28308C),
+                      color: AppColors.textPrimary(context),
                       fontFamily: 'Arimo',
                       letterSpacing: 1.2,
                     ),
                   ),
                   const SizedBox(height: 15),
                   Container(
-                    width: 40, 
-                    height: 2, 
+                    width: 40,
+                    height: 2,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryTeal(context), 
-                      borderRadius: BorderRadius.circular(10)
-                    )
+                      color: AppColors.primaryTeal(context),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                   const SizedBox(height: 50),
-                  
+
                   Wrap(
                     spacing: 20,
                     runSpacing: 20,
                     alignment: WrapAlignment.center,
                     children: [
-                      _buildElegantCard(context, S.of(context).feat_accuracy_title, S.of(context).feat_accuracy_desc, Icons.verified_outlined),
-                      _buildElegantCard(context, S.of(context).feat_speed_title, S.of(context).feat_speed_desc, Icons.bolt_outlined),
-                      _buildElegantCard(context, S.of(context).feat_reports_title, S.of(context).feat_reports_desc, Icons.bar_chart_outlined),
-                      _buildElegantCard(context, S.of(context).feat_collab_title, S.of(context).feat_collab_desc, Icons.group_outlined),
-                      _buildElegantCard(context, S.of(context).feat_fairness_title, S.of(context).feat_fairness_desc, Icons.auto_awesome_outlined),
-                      _buildElegantCard(context, S.of(context).feat_integrations_title, S.of(context).feat_integrations_desc, Icons.auto_graph_outlined),
+                      _buildElegantCard(
+                        context,
+                        S.of(context).feat_accuracy_title,
+                        S.of(context).feat_accuracy_desc,
+                        Icons.verified_outlined,
+                      ),
+                      _buildElegantCard(
+                        context,
+                        S.of(context).feat_speed_title,
+                        S.of(context).feat_speed_desc,
+                        Icons.bolt_outlined,
+                      ),
+                      _buildElegantCard(
+                        context,
+                        S.of(context).feat_reports_title,
+                        S.of(context).feat_reports_desc,
+                        Icons.bar_chart_outlined,
+                      ),
+                      _buildElegantCard(
+                        context,
+                        S.of(context).feat_collab_title,
+                        S.of(context).feat_collab_desc,
+                        Icons.group_outlined,
+                      ),
+                      _buildElegantCard(
+                        context,
+                        S.of(context).feat_fairness_title,
+                        S.of(context).feat_fairness_desc,
+                        Icons.auto_awesome_outlined,
+                      ),
+                      _buildElegantCard(
+                        context,
+                        S.of(context).feat_integrations_title,
+                        S.of(context).feat_integrations_desc,
+                        Icons.auto_graph_outlined,
+                      ),
                     ],
                   ),
                   const SizedBox(height: 50),
@@ -73,12 +107,18 @@ class AboutSystemScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildElegantCard(BuildContext context, String title, String desc, IconData icon) {
+  Widget _buildElegantCard(
+    BuildContext context,
+    String title,
+    String desc,
+    IconData icon,
+  ) {
     return Container(
       width: 200,
+      height: 230, // 🟢 تم توحيد الارتفاع لجميع المربعات
       padding: const EdgeInsets.all(25),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: AppColors.primaryTeal(context).withValues(alpha: 0.15),
@@ -100,10 +140,10 @@ class AboutSystemScreen extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF28308C),
+              color: AppColors.textPrimary(context),
               fontFamily: 'Arimo',
             ),
           ),
@@ -113,7 +153,7 @@ class AboutSystemScreen extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 12,
-              color: Colors.grey[500],
+              color: AppColors.textSecondary(context),
               fontFamily: 'Arimo',
               height: 1.4,
             ),

@@ -1,319 +1,187 @@
-
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart'; // أضيفي هذا السطر
-// import 'package:shared_preferences/shared_preferences.dart'; // أضيفي هذا السطر
-
-// // المستوردات الخاصة بكِ
-// import 'screens/start.dart'; 
-// import 'screens/student_dashboard.dart';
-// import 'screens/teacher_dashboard.dart';
-// import 'screens/teacher_matearial.dart';
-// import 'screens/student_matearial.dart';
-// import 'screens/grading.dart';
-// import 'screens/material_detail.dart';
-// import 'widgets/slider.dart';
-// import 'screens/exam_page.dart';
-// import 'screens/exam_page2.dart';
-// import 'core/theme_provider.dart'; 
-
-// void main() async {
-//   // 1. تأكيد تهيئة Flutter قبل استدعاء SharedPreferences
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // 2. قراءة حالة الثيم المحفوظة من الجهاز
-//   final prefs = await SharedPreferences.getInstance();
-//   final isDark = prefs.getBool('theme_mode') ?? false;
-
-//   runApp(
-//     // 3. تغليف التطبيق بالـ Provider وتمرير القيمة الأولية
-//     ChangeNotifierProvider(
-//       create: (_) => ThemeProvider(isDark),
-//       child: const GradeAI(),
-//     ),
-//   );
-// }
-
-// class GradeAI extends StatelessWidget {
-//   const GradeAI({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // 4. استدعاء الـ Provider لمعرفة حالة الثيم الحالية (فاتح/داكن)
-//     final themeProvider = Provider.of<ThemeProvider>(context);
-
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       title: 'Grade AI',
-      
-//       // 5. ربط الثيم بالـ Provider
-//       themeMode: themeProvider.themeMode,
-//       theme: ThemeData(
-//         fontFamily: 'Arimo',
-//         brightness: Brightness.light, // الثيم الفاتح
-//         useMaterial3: true,
-//       ),
-//       darkTheme: ThemeData(
-//         fontFamily: 'Arimo',
-//         brightness: Brightness.dark, // الثيم الداكن
-//         useMaterial3: true,
-//       ),
-      
-//       home: DashboardScreen(),
-//     );
-//   }
-// }
-// import 'package:flutter/material.dart';
-// import 'package:provider/provider.dart'; // أضيفي هذا السطر
-// import 'package:shared_preferences/shared_preferences.dart'; // أضيفي هذا السطر
-
-// // --- استدعاءات نظام الترجمة ---
-// import 'package:flutter_localizations/flutter_localizations.dart'; 
-// import 'generated/l10n.dart'; 
-// // -----------------------------
-
-// // المستوردات الخاصة بكِ
-// import 'screens/start.dart'; 
-// import 'screens/student_dashboard.dart';
-// import 'screens/teacher_dashboard.dart';
-// import 'screens/teacher_matearial.dart';
-// import 'screens/student_matearial.dart';
-// import 'screens/grading.dart';
-// import 'screens/material_detail.dart';
-// import 'widgets/slider.dart';
-// import 'screens/exam_page.dart';
-// import 'screens/exam_page2.dart';
-// import 'core/theme_provider.dart'; 
-
-// void main() async {
-//   // 1. تأكيد تهيئة Flutter قبل استدعاء SharedPreferences
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   // 2. قراءة حالة الثيم المحفوظة من الجهاز
-//   final prefs = await SharedPreferences.getInstance();
-//   final isDark = prefs.getBool('theme_mode') ?? false;
-
-//   runApp(
-//     // 3. تغليف التطبيق بالـ Provider وتمرير القيمة الأولية
-//     ChangeNotifierProvider(
-//       create: (_) => ThemeProvider(isDark),
-//       child: const GradeAI(),
-//     ),
-//   );
-// }
-
-// class GradeAI extends StatelessWidget {
-//   const GradeAI({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     // 4. استدعاء الـ Provider لمعرفة حالة الثيم الحالية (فاتح/داكن)
-//     final themeProvider = Provider.of<ThemeProvider>(context);
-
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       title: 'Grade AI',
-
-//       // --- إعدادات الترجمة ---
-//       localizationsDelegates: const [
-//         S.delegate,
-//         GlobalMaterialLocalizations.delegate,
-//         GlobalWidgetsLocalizations.delegate,
-//         GlobalCupertinoLocalizations.delegate,
-//       ],
-//       supportedLocales: S.delegate.supportedLocales,
-//       locale: const Locale('en'), // لفرض اللغة العربية كافتراضية
-//       // -----------------------
-      
-//       // 5. ربط الثيم بالـ Provider
-//       themeMode: themeProvider.themeMode,
-//       theme: ThemeData(
-//         fontFamily: 'Arimo',
-//         brightness: Brightness.light, // الثيم الفاتح
-//         useMaterial3: true,
-//       ),
-//       darkTheme: ThemeData(
-//         fontFamily: 'Arimo',
-//         brightness: Brightness.dark, // الثيم الداكن
-//         useMaterial3: true,
-//       ),
-      
-//       home: const StudentDashboardScreen(),
-//     );
-//   }
-// }
-// import 'package:flutter/material.dart';
-// import 'package:flutter_localizations/flutter_localizations.dart';
-// import 'package:provider/provider.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
-
-// // الاستيرادات الخاصة بمشروعك
-// import 'screens/student_dashboard.dart';
-// import '../core/colors.dart';
-// import 'core/theme_provider.dart';
-// import 'core/locale_provider.dart';
-// import 'generated/l10n.dart'; // كلاس S المولد تلقائياً
-
-// void main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-
-//   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-//   bool isDark = prefs.getBool('theme_mode') ?? false;
-//   String savedLang = prefs.getString('language_code') ?? 'ar';
-
-//   runApp(
-//     MultiProvider(
-//       providers: [
-//         ChangeNotifierProvider(create: (context) => ThemeProvider(isDark)),
-//         ChangeNotifierProvider(
-//           create: (context) => LocaleProvider()..setInitialLocale(savedLang),
-//         ),
-//       ],
-//       child: const GradeAI(),
-//     ),
-//   );
-// }
-
-// class GradeAI extends StatelessWidget {
-//   const GradeAI({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final themeProvider = context.watch<ThemeProvider>();
-//     final localeProvider = context.watch<LocaleProvider>();
-
-//     return MaterialApp(
-//       debugShowCheckedModeBanner: false,
-//       title: 'Grade AI',
-//       themeMode: themeProvider.themeMode,
-
-//       // إعدادات الثيم الفاتح
-//       theme: ThemeData(
-//         brightness: Brightness.light,
-//         fontFamily: 'Arimo',
-//         scaffoldBackgroundColor: const Color(0xFFF3F4F6),
-//       ),
-
-//       // إعدادات الثيم المظلم
-//       darkTheme: ThemeData(
-//         brightness: Brightness.dark,
-//         fontFamily: 'Arimo',
-//         scaffoldBackgroundColor: const Color(0xFF121212),
-//       ),
-
-//       // --- إعدادات اللغة والترجمة المحترفة ---
-//       locale: localeProvider.locale, // اللغة الحالية من البروفايدر
-
-//       localizationsDelegates: const [
-//         S.delegate, // إخبار فلاتر باستخدام الكلاس S للترجمة
-//         GlobalMaterialLocalizations.delegate,
-//         GlobalWidgetsLocalizations.delegate,
-//         GlobalCupertinoLocalizations.delegate,
-//       ],
-
-//       // جلب اللغات المدعومة مباشرة من ملفات الـ ARB التي أنشأتها الإضافة
-//       supportedLocales: S.delegate.supportedLocales,
-
-//       // الـ Builder للتحكم باتجاه الشاشة (RTL/LTR)
-//       builder: (context, child) {
-//         return Directionality(
-//           textDirection: localeProvider.locale.languageCode == 'ar'
-//               ? TextDirection.rtl
-//               : TextDirection.ltr,
-//           child: child!,
-//         );
-//       },
-
-//       home: const StudentDashboardScreen(),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-import 'screens/teacher_dashboard.dart';
+import 'package:grade/core/app_config.dart';
+
+// --- استدعاءات نظام الترجمة (Localization) ---
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'generated/l10n.dart';
+
+// --- استدعاءات الـ Providers والملفات الأساسية ---
+import 'core/theme_provider.dart';
+import 'core/locale_provider.dart';
+import 'core/main_layout.dart';
+import 'provider/student_dashboard_controller.dart';
+
+// --- استدعاءات شاشات الإدارة ومزودي البيانات (Admin Providers) ---
+import 'screens/Admin_interface/admin_dashboard_provider.dart';
+import 'screens/Admin_interface/admin_settings_provider.dart';
+import 'screens/Admin_interface/users_management_provider.dart';
+import 'screens/Admin_interface/add_users_provider.dart';
+import 'screens/Admin_interface/dashboard_report_provider.dart';
+import 'screens/Admin_interface/system_logs_provider.dart';
+import 'screens/Admin_interface/backup_provider.dart';
+
+// --- استدعاءات الشاشات (Screens) ---
+import 'screens/homepage.dart'; // تأكدي أن هذا يحتوي على SmartCorrectorUI أو شاشة تسجيل الدخول
 import 'screens/student_dashboard.dart';
-import 'screens/homepage.dart';
-import 'screens/loginpage.dart';// --- استدعاءات نظام الترجمة (Localization) ---
-import 'screens/create_electronic_exam.dart';
-// import 'screens/exammanagepage.dart';
+import 'screens/teacher_dashboard.dart';
 import 'screens/create_ai_exam_screen.dart';
 import 'screens/quiz_details_page.dart';
 import 'screens/review_exam_screen.dart';
+import 'screens/exam_page.dart';
+import 'screens/exam_page2.dart';
+import 'screens/ExamManagementPage.dart';
 import 'screens/Admin_interface/admin_dashboard_screen.dart';
 import 'screens/Admin_interface/users_management_screen.dart';
 import 'screens/Admin_interface/add_user_screen.dart';
 import 'screens/Admin_interface/dashboard_report_screen.dart';
 import 'screens/Admin_interface/system_logs_screen.dart';
-import 'screens/Admin_interface/BackupScreen.dart';
+import 'screens/Admin_interface/backup_screen.dart';
 
-// --- استدعاءات الـ Providers والملفات الخاصة بك ---
-import 'core/theme_provider.dart'; 
-import 'core/locale_provider.dart'; 
-import 'package:flutter_localizations/flutter_localizations.dart'; 
-import 'generated/l10n.dart'; 
-import '/core/main_layout.dart'; 
-import '/core/teacher_main_layout.dart';
+// 🌟 تعريفات مزودي بيانات الطالب (Student Controllers)
+import 'package:grade/provider/settings_controller.dart';
+import 'package:grade/provider/student_dashboard_controller.dart';
+import 'package:grade/provider/subject_screen_controller.dart';
+import 'package:grade/provider/subject_details_controller.dart';
+import 'package:grade/provider/exam_details_controller.dart';
+
+// ==========================================
+// 1. دالة جلب الإعدادات الحية من السيرفر
+// ==========================================
+Future<Map<String, dynamic>> loadSettings(
+  int userId,
+  String cachedLang,
+  bool cachedIsDark,
+) async {
+  try {
+    final url = Uri.parse('${AppConfig.baseUrl}/settings/profile/$userId');
+    final res = await http.get(url).timeout(const Duration(seconds: 3));
+
+    if (res.statusCode == 200) {
+      final decodedData = jsonDecode(utf8.decode(res.bodyBytes));
+      if (decodedData is List && decodedData.isNotEmpty) {
+        return decodedData[0] as Map<String, dynamic>;
+      } else if (decodedData is Map<String, dynamic>) {
+        return decodedData;
+      }
+    }
+  } catch (e) {
+    debugPrint("⚠️ السيرفر مطفأ أو معلق، سيتم استخدام الكاش المحلي: $e");
+  }
+  return {"language_code": cachedLang, "is_dark_mode": cachedIsDark};
+}
+
+// ==========================================
+// 2. الدالة الرئيسية (Main)
+// ==========================================
 void main() async {
-  // 1. تأكيد تهيئة محرك Flutter قبل التعامل مع الذاكرة
   WidgetsFlutterBinding.ensureInitialized();
-
-  // 2. قراءة القيم المحفوظة من ذاكرة الجهاز (SharedPreferences)
   final prefs = await SharedPreferences.getInstance();
-  
-  // قراءة الثيم (افتراضي فاتح false) واللغة (افتراضي عربي ar)
-  final bool isDark = prefs.getBool('theme_mode') ?? false;
-  final String savedLang = prefs.getString('language_code') ?? 'ar';
+
+  // قراءة القيم المحفوظة من الذاكرة
+  bool isDark = prefs.getBool('theme_mode') ?? false;
+  String lang = prefs.getString('language_code') ?? 'ar';
+
+  // التحقق من حالة تسجيل الدخول وصلاحية المستخدم
+  final bool isLoggedIn =
+      prefs.containsKey('user_id') || prefs.containsKey('student_id');
+  final int userId = prefs.getInt('user_id') ?? prefs.getInt('student_id') ?? 1;
+  final int? roleId = prefs.getInt('role_id');
+
+  // المزامنة الحية مع السيرفر وتحديث القيم
+  if (isLoggedIn) {
+    final serverSettings = await loadSettings(userId, lang, isDark);
+    lang = serverSettings['language_code'] ?? lang;
+    isDark = serverSettings['is_dark_mode'] ?? isDark;
+
+    await prefs.setBool('theme_mode', isDark);
+    await prefs.setString('language_code', lang);
+  }
+
+  // تهيئة الكنترولر الخاص بالطالب
+  final dashboardController = Get.put(StudentDashboardController());
+  if (isLoggedIn) {
+    dashboardController.initController(userId);
+  }
+
+  // التوجيه الذكي: تحديد شاشة البداية تلقائياً
+  Widget startingScreen;
+  if (!isLoggedIn) {
+    startingScreen = const SmartCorrectorUI(); // شاشة البداية / تسجيل الدخول
+  } else if (roleId == 1) {
+    startingScreen = const MainLayout(); // واجهة الإدارة
+  } else if (roleId == 2) {
+    startingScreen = const DashboardScreen(); // واجهة المعلم
+  } else {
+    startingScreen = const StudentDashboardScreen(); // واجهة الطالب
+  }
 
   runApp(
-    // 3. دمج الـ Providers لتوفير الحالة للتطبيق بالكامل
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider(isDark)),
         ChangeNotifierProvider(
-          create: (context) => ThemeProvider(isDark),
+          create: (_) => LocaleProvider()..setInitialLocale(lang),
         ),
-        ChangeNotifierProvider(
-          create: (context) => LocaleProvider()..setInitialLocale(savedLang),
-        ),
+
+        // ==========================================
+        // مزودي بيانات الإدارة (Admin Providers)
+        // ==========================================
+        ChangeNotifierProvider(create: (_) => AdminDashboardProvider()),
+        ChangeNotifierProvider(create: (_) => AdminSettingsProvider()),
+        ChangeNotifierProvider(create: (_) => UsersManagementProvider()),
+        ChangeNotifierProvider(create: (_) => AddUsersProvider()),
+        ChangeNotifierProvider(create: (_) => DashboardReportProvider()),
+        ChangeNotifierProvider(create: (_) => SystemLogsProvider()),
+        ChangeNotifierProvider(create: (_) => BackupProvider()),
+
+        // ==========================================
+        // 🌟 مزودي بيانات الطالب (Student Providers) 🌟
+        // ==========================================
+        ChangeNotifierProvider(create: (_) => SettingsController()),
+        ChangeNotifierProvider(create: (_) => StudentDashboardController()),
+        ChangeNotifierProvider(create: (_) => SubjectScreenController()),
+        ChangeNotifierProvider(create: (_) => SubjectDetailsController()),
+        ChangeNotifierProvider(create: (_) => ExamDetailsController()),
       ],
-      child: const GradeAI(),
+      // ... تكملة الكود (child: MyApp(...))
+      child: GradeAI(initialScreen: startingScreen),
     ),
   );
 }
 
+// ==========================================
+// 3. بناء واجهة التطبيق (MaterialApp)
+// ==========================================
 class GradeAI extends StatelessWidget {
-  const GradeAI({super.key});
+  final Widget initialScreen;
+  const GradeAI({super.key, required this.initialScreen});
 
   @override
   Widget build(BuildContext context) {
-    // 4. مراقبة التغيرات في اللغة والثيم عبر البروفايدر
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final localeProvider = Provider.of<LocaleProvider>(context);
+    final themeProvider = context.watch<ThemeProvider>();
+    final localeProvider = context.watch<LocaleProvider>();
 
     return MaterialApp(
+      navigatorKey: Get.key,
       debugShowCheckedModeBanner: false,
       title: 'Grade AI',
 
-      // --- 5. إعدادات اللغة (Locale) ---
-      // ربط اللغة الحالية بالبروفايدر يضمن تغيير الاتجاه (RTL/LTR) تلقائياً
       locale: localeProvider.locale,
-
+      supportedLocales: S.delegate.supportedLocales,
       localizationsDelegates: const [
-        S.delegate, // كلاس الترجمة المولد تلقائياً
+        S.delegate,
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      
-      // جلب اللغات المدعومة من ملفات الـ ARB
-      supportedLocales: S.delegate.supportedLocales,
 
-      // --- 6. إعدادات الثيم (Theme) ---
       themeMode: themeProvider.themeMode,
-      
-      // الثيم الفاتح
       theme: ThemeData(
         brightness: Brightness.light,
         fontFamily: 'Arimo',
@@ -321,8 +189,6 @@ class GradeAI extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFFF3F4F6),
         primarySwatch: Colors.teal,
       ),
-
-      // الثيم الداكن
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         fontFamily: 'Arimo',
@@ -331,13 +197,15 @@ class GradeAI extends StatelessWidget {
         primarySwatch: Colors.teal,
       ),
 
-      // الشاشة الافتتاحية
-      // home: SmartCorrectorUI(),
-      // home:  MainLayout(),
-      // home:  DashboardScreen(),
-      home:StudentDashboardScreen(),
-      // home:TeacherMainLayout(),
-      
+      home: initialScreen,
     );
   }
 }
+
+  // FinalExamPage
+  // StudentDashboardScreen
+  // DashboardScreen
+  // cd grading_system/intelligent-grading
+//       home: initialScreen,
+// aryjth953@gmail.com
+

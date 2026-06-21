@@ -183,11 +183,12 @@ class CustSidebar extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 40),
-          Icon(Icons.check_circle_outline, size: isCompact ? 40 : 60, color: Colors.white),
-          if (!isCompact) ...[
-            const SizedBox(height: 10),
-            Text(S.of(context).intelligent_grading_system, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-          ],
+          Image.asset(
+            'assets/emaige/logo.PNG',
+            height: isCompact ? 70 : 110,
+            width: isCompact ? 70 : 110,
+            fit: BoxFit.contain,
+          ),
           const SizedBox(height: 40),
           _menuItem(context, S.of(context).dashboard_title, Icons.dashboard_rounded, 0),
           _menuItem(context, S.of(context).exam_management, Icons.assignment_rounded, 1),

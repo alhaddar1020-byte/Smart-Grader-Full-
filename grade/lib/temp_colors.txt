@@ -1,0 +1,12 @@
+create_electronic_exam.dart:
+  BG: {'AppColors.primaryTeal(context)', 'AppColors.secondaryTeal(context)', 'isError\n            ? Colors.red.shade700\n            : AppColors.primaryTeal(context)', 'color'}
+  Header: {'Colors.red)'}
+review_exam_screen.dart:
+  BG: {'AppColors.primaryTeal(context)', 'AppColors.secondaryTeal(context)', 'Colors.white'}
+  Header: {'Colors.white'}
+create_ai_exam_screen.dart:
+  BG: {'AppColors.primaryTeal(context)', 'AppColors.secondaryTeal(context)'}
+  Header: {'AppColors.primaryTeal(context))'}
+exam_page.dart:
+  BG: {'AppColors.primaryTeal(context)', 'AppColors.secondaryTeal(context)', 'Colors.white'}
+  Header: {'Colors.white'}

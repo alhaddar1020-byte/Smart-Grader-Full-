@@ -1,0 +1,254 @@
+[
+    {
+        "file": "add_users_provider.dart",
+        "text": "مكتمل"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "صيغة البريد الإلكتروني غير صحيحة"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "الرجاء اختيار ملف أولاً"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "لم يتم اختيار ملف"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "رقم الجوال قصير جداً"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "البريد الإلكتروني مسجل مسبقاً"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "تأكد من عناوين الأعمدة في ملف الإكسيل"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "لا توجد عمليات مسجلة"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "تمت إضافة $count مستخدم بنجاح"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "خطأ في الاتصال بالخادم"
+    },
+    {
+        "file": "add_user_screen.dart",
+        "text": "تمت إضافة المستخدم بنجاح"
+    },
+    {
+        "file": "admin_settings_screen.dart",
+        "text": "العربية"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "ص"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "الآن"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "جاري تحميل النسخة: $backupDate"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "فشل الحذف"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "فشل إنشاء النسخة"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "كامل"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "تم استعادة النظام من نسخة احتياطية"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "خطأ: $e"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "جاري إنشاء نسخة احتياطية..."
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "خطأ في التحميل: $e"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "غير محدد"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "نسخ احتياطي ناجح"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "غير متاح"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "فشل الاستعادة"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "تمت الاستعادة بنجاح!"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "جاري استعادة النظام..."
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "م"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "مكتمل"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "تم التحميل بنجاح!"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "تم الحذف بنجاح"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "فشل جلب البيانات: ${response.statusCode}"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "فشل التحميل"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "خطأ في الاتصال بالخادم"
+    },
+    {
+        "file": "backup_provider.dart",
+        "text": "تم إنشاء نسخة احتياطية كاملة للنظام"
+    },
+    {
+        "file": "backup_screen.dart",
+        "text": "لا توجد سجلات"
+    },
+    {
+        "file": "backup_screen.dart",
+        "text": "جاري النسخ..."
+    },
+    {
+        "file": "backup_screen.dart",
+        "text": "لا توجد نسخ احتياطية"
+    },
+    {
+        "file": "dashboard_report_provider.dart",
+        "text": "فشل جلب البيانات"
+    },
+    {
+        "file": "dashboard_report_provider.dart",
+        "text": "حدث خطأ: $e"
+    },
+    {
+        "file": "dashboard_report_provider.dart",
+        "text": "جاري بناء ملف الـ PDF..."
+    },
+    {
+        "file": "dashboard_report_provider.dart",
+        "text": "فشل التصدير: ${response.statusCode}"
+    },
+    {
+        "file": "dashboard_report_provider.dart",
+        "text": "خطأ في الاتصال: $e"
+    },
+    {
+        "file": "dashboard_report_provider.dart",
+        "text": "تم تحميل التقرير بنجاح!"
+    },
+    {
+        "file": "dashboard_report_screen.dart",
+        "text": "جاري التصدير..."
+    },
+    {
+        "file": "dashboard_report_screen.dart",
+        "text": "لا توجد بيانات"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "مجهول"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "خطأ: $e"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "معلم"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "فشل جلب البيانات"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "حدث خطأ: $e"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "غير محدد"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "طالب"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "تم تحميل السجل بنجاح!"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "خطأ في جلب الإحصائيات: $e"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "فشل التصدير"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "خطأ في الاتصال بالخادم"
+    },
+    {
+        "file": "system_logs_provider.dart",
+        "text": "إدارة"
+    },
+    {
+        "file": "system_logs_screen.dart",
+        "text": "طالب"
+    },
+    {
+        "file": "system_logs_screen.dart",
+        "text": "معلم"
+    },
+    {
+        "file": "system_logs_screen.dart",
+        "text": "جاري التصدير..."
+    },
+    {
+        "file": "system_logs_screen.dart",
+        "text": "إدارة"
+    }
+]

@@ -79,7 +79,7 @@ class CustSidebar extends StatelessWidget {
   // ===========================================================================
   Widget _menuItem(BuildContext context, String title, IconData icon, int index, bool isRtl) {
     bool isActive = selectedIndex == index; 
-    Color activeBgColor = AppColors.scaffoldBg(context); 
+    Color activeBgColor = AppColors.secondaryTeal(context); 
     double radius = 30.0; // حجم المنحنى
 
     return Padding(

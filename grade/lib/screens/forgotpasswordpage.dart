@@ -1,6 +1,11 @@
+import 'package:grade/core/app_config.dart';
 import 'package:flutter/material.dart';
+import 'dart:convert'; // تمت الإضافة للتعامل مع JSON
+import 'package:http/http.dart' as http; // تمت الإضافة للاتصال بالباك إند
 import '../core/colors.dart';
-import '../generated/l10n.dart'; // استيراد ملف الترجمة
+import '../generated/l10n.dart'; 
+import '../core/helpers/auth_helper.dart';
+import 'OTP Verification.dart'; // تأكدي من المسار
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -12,6 +17,79 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  Future<void> _handleResetPassword() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final email = _emailController.text.trim();
+
+      // 👈 الربط مع الدالة الجديدة في FastAPI
+      final url = Uri.parse('${AppConfig.baseUrl}/auth/send-forgot-password-otp');
+
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        // في حال النجاح
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(S.of(context).link_sent_success),
+              backgroundColor: AppColors.primaryTeal(context),
+            ),
+          );
+          
+          // الانتقال لشاشة التحقق وتمرير الإيميل
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtpVerificationScreen(email: email),
+            ),
+          );
+          
+          _emailController.clear();
+        }
+      } else {
+        // التقاط رسائل الخطأ من الباك إند
+        final responseData = jsonDecode(response.body);
+        final errorDetail = responseData['detail'] ?? "error_connection_failed";
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(AuthHelper.translateError(errorDetail, context)), backgroundColor: Colors.redAccent),
+          );
+        }
+      }
+    } catch (error) {
+      // أخطاء الاتصال بالإنترنت أو توقف السيرفر
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(S.of(context).server_connection_error), backgroundColor: Colors.redAccent),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +97,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       backgroundColor: AppColors.secondaryTeal(context),
       body: Stack(
         children: [
-          // سهم العودة: استخدام PositionedDirectional مع start يضمن مكانه الصحيح في اللغتين
           PositionedDirectional(
             top: 50,
             start: 20, 
@@ -30,27 +107,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
               ),
               child: IconButton(
-                // Icons.adaptive.arrow_back يعكس نفسه تلقائياً (يمين في العربي، يسار في الإنجليزي)
                 icon: Icon(Icons.adaptive.arrow_back, color: AppColors.primaryTeal(context), size: 20),
                 onPressed: () => Navigator.pop(context),
               ),
             ),
           ),
-          Center(
+          SafeArea(
+        child: Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Container(
                 width: 420,
                 padding: const EdgeInsets.all(40),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: AppColors.cardBg(context),
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 25,
-                      offset: const Offset(0, 10),
-                    ),
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 25, offset: const Offset(0, 10)),
                   ],
                 ),
                 child: Form(
@@ -58,7 +131,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // أيقونة القفل المحدثة بـ withValues
                       Container(
                         padding: const EdgeInsets.all(15),
                         decoration: BoxDecoration(
@@ -69,68 +141,45 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                       const SizedBox(height: 25),
                       Text(
-                        S.of(context).forgot_pw_title, // العنوان مترجم
-                        style: TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary(context),
-                        ),
+                        S.of(context).forgot_pw_title,
+                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary(context)),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        S.of(context).forgot_pw_subtitle, // النص الفرعي مترجم
+                        S.of(context).forgot_pw_subtitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: Colors.grey[600], fontSize: 14, height: 1.5),
+                        style: TextStyle(color: AppColors.textSecondary(context), fontSize: 14, height: 1.5),
                       ),
                       const SizedBox(height: 40),
-                      
-                      // حقل الإيميل
                       TextFormField(
                         controller: _emailController,
-                        textAlign: TextAlign.start, // يبدأ من اليسار للإنجليزي واليمين للعربي تلقائياً
+                        enabled: !_isLoading, 
+                        textAlign: TextAlign.start,
                         validator: (v) => (v == null || !v.contains('@')) ? S.of(context).email_validation_error : null,
                         decoration: InputDecoration(
                           labelText: S.of(context).email_label,
                           prefixIcon: Icon(Icons.email_outlined, color: AppColors.primaryTeal(context)),
                           filled: true,
-                          fillColor: Colors.grey[50],
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide(color: Colors.grey[200]!),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(15),
-                            borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2),
-                          ),
+                          fillColor: AppColors.scaffoldBg(context),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: Colors.grey[200]!)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide(color: AppColors.primaryTeal(context), width: 2)),
                         ),
                       ),
                       const SizedBox(height: 30),
-                      
-                      // زر الإرسال
                       SizedBox(
                         width: double.infinity,
                         height: 55,
                         child: ElevatedButton(
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(S.of(context).link_sent_success),
-                                  backgroundColor: AppColors.primaryTeal(context),
-                                ),
-                              );
-                            }
-                          },
+                          onPressed: _isLoading ? null : _handleResetPassword,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primaryTeal(context),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                             elevation: 4,
                           ),
-                          child: Text(
-                            S.of(context).send_link_button, // زر الإرسال مترجم
-                            style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
+                              : Text(S.of(context).send_code_btn, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
                       ),
                     ],
@@ -139,6 +188,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ),
             ),
           ),
+        ),
         ],
       ),
     );

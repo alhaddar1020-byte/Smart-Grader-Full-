@@ -1,8 +1,12 @@
+import '../../generated/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '/core/colors.dart';
-import 'package:file_picker/file_picker.dart';
+import 'package:provider/provider.dart';
+import '../../core/colors.dart';
 import 'package:grade/generated/l10n.dart'; 
+import 'add_users_provider.dart'; 
+import 'users_management_provider.dart';
+import 'admin_settings_screen.dart';
 
 class AddUsersScreen extends StatefulWidget {
   const AddUsersScreen({super.key});
@@ -13,21 +17,21 @@ class AddUsersScreen extends StatefulWidget {
 
 class _AddUsersScreenState extends State<AddUsersScreen> {
   int selectedTabIndex = 0; 
-  String? selectedFileName; 
 
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
 
-  // ==========================================
-  // 💾 قاعدة بيانات وهمية (List) لتخزين سجل الرفع
-  // ==========================================
-  List<Map<String, dynamic>> historyRecords = [
-    {'name': 'students_batch_01.xlsx', 'date': '15 May 2024', 'count': '45', 'status': 'مكتمل', 'isSuccess': true},
-    {'name': 'teachers_2024.xlsx', 'date': '14 May 2024', 'count': '12', 'status': 'مكتمل', 'isSuccess': true},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<AddUsersProvider>().fetchHistory();
+    });
+  }
 
   @override
   void dispose() {
@@ -35,26 +39,23 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     _lastNameController.dispose();
     _idController.dispose();
     _emailController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
-  Future<void> _pickExcelFile() async {
-    try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['xls', 'xlsx', 'csv'],
-      );
-
-      if (result != null) {
-        setState(() {
-          selectedFileName = result.files.single.name;
-        });
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.of(context).error_opening_file), backgroundColor: Colors.red),
-      );
+  // --- دالة مساعدة لترجمة مفاتيح الباك إند ---
+  String _translateBackendMessage(String key, BuildContext context) {
+    if (key == 'KEY_EMAIL_ALREADY_EXISTS') return S.of(context).email_exists_error;
+    if (key == 'KEY_USER_ADDED_SUCCESSFULLY') return S.of(context).success_user_added;
+    if (key == 'KEY_INVALID_EXCEL_COLUMNS') return S.of(context).error_check_excel_columns;
+    if (key == 'KEY_NO_FILE_SELECTED') return S.of(context).error_no_file_selected;
+    if (key == 'KEY_SELECT_FILE_FIRST') return S.of(context).please_select_file_first;
+    if (key == 'KEY_SERVER_ERROR' || key == 'KEY_CONNECTION_ERROR') return S.of(context).connection_error;
+    if (key.startsWith('KEY_USERS_ADDED|')) {
+      final count = key.split('|')[1];
+      return S.of(context).success_users_added(count);
     }
+    return key; // يرجع النص كما هو لو لم يتعرف عليه
   }
 
   @override
@@ -62,38 +63,51 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     double width = MediaQuery.of(context).size.width;
     bool isMobile = width < 800; 
 
-    return Scaffold(
-      backgroundColor: AppColors.scaffoldBg(context),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.all(isMobile ? 16.0 : 32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildTopHeader(isMobile),
-              const SizedBox(height: 32),
-              isMobile
-                  ? Column(
-                      children: [
-                        _buildWorkspaceCard(isMobile),
-                        const SizedBox(height: 24),
-                        _buildInstructionsCard(),
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(flex: 7, child: _buildWorkspaceCard(isMobile)),
-                        const SizedBox(width: 24),
-                        Expanded(flex: 3, child: _buildInstructionsCard()),
-                      ],
-                    ),
-              const SizedBox(height: 32),
-              _buildImportHistoryTable(),
-            ],
+    return Consumer<AddUsersProvider>(
+      builder: (context, provider, child) {
+        return Scaffold(
+          backgroundColor: AppColors.secondaryTeal(context),
+          body: SafeArea(
+            child: Stack(
+              children: [
+                SingleChildScrollView(
+                  padding: EdgeInsets.all(isMobile ? 16.0 : 32.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTopHeader(isMobile),
+                      const SizedBox(height: 32),
+                      isMobile
+                          ? Column(
+                              children: [
+                                _buildWorkspaceCard(isMobile, provider),
+                                const SizedBox(height: 24),
+                                _buildInstructionsCard(),
+                              ],
+                            )
+                          : Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 7, child: _buildWorkspaceCard(isMobile, provider)),
+                                const SizedBox(width: 24),
+                                Expanded(flex: 3, child: _buildInstructionsCard()),
+                              ],
+                            ),
+                      const SizedBox(height: 32),
+                      _buildImportHistoryTable(provider),
+                    ],
+                  ),
+                ),
+                if (provider.isLoading)
+                  Container(
+                    color: Colors.black.withOpacity(0.3),
+                    child: Center(child: CircularProgressIndicator(color: AppColors.primaryTeal(context))),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ),
+        );
+      }
     );
   }
 
@@ -103,7 +117,7 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: isMobile ? 16 : 24, vertical: 16),
       decoration: BoxDecoration(
-        color: AppColors.textWhite(context),
+        color: AppColors.cardBg(context), // متناسق مع الدارك مود
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
       ),
@@ -112,13 +126,15 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
         children: [
           Row(
             children: [
-              InkWell(
-                onTap: () => Navigator.pop(context),
-                borderRadius: BorderRadius.circular(50),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: AppColors.scaffoldBg(context), shape: BoxShape.circle),
-                  child: Icon(isRtl ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded, color: AppColors.primaryTeal(context), size: 24),
+              Container(
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
+                ),
+                child: IconButton(
+                  icon: Icon(Icons.adaptive.arrow_back, color: AppColors.primaryTeal(context), size: 20),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ),
               const SizedBox(width: 16),
@@ -134,9 +150,9 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
           ),
           Row(
             children: [
-              _buildTopIcon(icon: Icons.notifications_none_rounded, onTap: () {}),
-              const SizedBox(width: 8),
-              _buildTopIcon(icon: Icons.person_outline_rounded, onTap: () {}),
+              _buildTopIcon(icon: Icons.person_outline_rounded, onTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminSettingsScreen(isFullScreen: true)));
+              }),
             ],
           )
         ],
@@ -149,18 +165,18 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
       onTap: onTap,
       borderRadius: BorderRadius.circular(50),
       child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(color: AppColors.scaffoldBg(context), shape: BoxShape.circle),
-        child: Icon(icon, color: AppColors.primaryTeal(context), size: 24),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(color: AppColors.secondaryTeal(context), shape: BoxShape.circle),
+        child: Icon(Icons.person_outline, color: AppColors.primaryTeal(context)),
       ),
     );
   }
 
-  Widget _buildWorkspaceCard(bool isMobile) {
+  Widget _buildWorkspaceCard(bool isMobile, AddUsersProvider provider) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.textWhite(context),
+        color: AppColors.cardBg(context), // متناسق مع الدارك مود
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.textSecondary(context).withOpacity(0.1)),
       ),
@@ -179,7 +195,7 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          selectedTabIndex == 0 ? _buildBulkUploadTab() : _buildManualEntryTab(isMobile),
+          selectedTabIndex == 0 ? _buildBulkUploadTab(provider) : _buildManualEntryTab(isMobile, provider),
         ],
       ),
     );
@@ -202,7 +218,7 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     );
   }
 
-  Widget _buildBulkUploadTab() {
+  Widget _buildBulkUploadTab(AddUsersProvider provider) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 32, horizontal: 24),
@@ -222,15 +238,21 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            selectedFileName != null ? '${S.of(context).ready_to_upload_file}\n$selectedFileName' : S.of(context).drag_drop_excel,
+            provider.selectedFileName != null ? '${S.of(context).ready_to_upload_file}\n${provider.selectedFileName}' : S.of(context).drag_drop_excel,
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: AppColors.textPrimary(context)),
           ),
           const SizedBox(height: 16),
           OutlinedButton.icon(
-            onPressed: _pickExcelFile,
+            onPressed: () async {
+              String? error = await provider.pickExcelFile();
+              if (error != null && mounted) {
+                // ترجمة رسالة الخطأ إذا كانت مسجلة في الدالة
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(_translateBackendMessage(error, context)), backgroundColor: Colors.red));
+              }
+            },
             icon: Icon(Icons.folder_open, color: AppColors.primaryTeal(context), size: 20),
-            label: Text(selectedFileName != null ? S.of(context).change_file : S.of(context).browse_files, style: TextStyle(color: AppColors.primaryTeal(context), fontWeight: FontWeight.bold)),
+            label: Text(provider.selectedFileName != null ? S.of(context).change_file : S.of(context).browse_files, style: TextStyle(color: AppColors.primaryTeal(context), fontWeight: FontWeight.bold)),
             style: OutlinedButton.styleFrom(
               side: BorderSide(color: AppColors.primaryTeal(context)),
               padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
@@ -245,12 +267,12 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
             alignment: AlignmentDirectional.centerStart,
             child: ElevatedButton(
               onPressed: () {
-                if (selectedFileName == null) {
+                if (provider.selectedFileName == null) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(S.of(context).please_select_file_first), backgroundColor: Colors.red),
                   );
                 } else {
-                  _showCategorySelectionDialog(isFileUpload: true);
+                  _showCategorySelectionDialog(isFileUpload: true, provider: provider);
                 }
               },
               style: ElevatedButton.styleFrom(
@@ -267,7 +289,7 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     );
   }
 
-  Widget _buildManualEntryTab(bool isMobile) {
+  Widget _buildManualEntryTab(bool isMobile, AddUsersProvider provider) {
     return Form(
       key: _formKey,
       child: Column(
@@ -290,10 +312,11 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
                 ],
               ),
           const SizedBox(height: 16),
+          
           isMobile 
             ? Column(
                 children: [
-                  _buildTextField(S.of(context).id_number, _idController, isNumber: true),
+                  _buildTextField('${S.of(context).id_number} ${S.of(context).optional_field}', _idController, isNumber: true, isOptional: true),
                   const SizedBox(height: 16),
                   _buildTextField(S.of(context).email_address, _emailController, isEmail: true),
                 ],
@@ -301,18 +324,31 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
             : Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(child: _buildTextField(S.of(context).id_number, _idController, isNumber: true)),
+                  Expanded(child: _buildTextField('${S.of(context).id_number} ${S.of(context).optional_field}', _idController, isNumber: true, isOptional: true)),
                   const SizedBox(width: 16),
                   Expanded(child: _buildTextField(S.of(context).email_address, _emailController, isEmail: true)),
                 ],
               ),
+          const SizedBox(height: 16),
+
+          isMobile 
+            ? _buildTextField('${S.of(context).phone_number} ${S.of(context).optional_field}', _phoneController, isNumber: true, isPhone: true, isOptional: true)
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: _buildTextField('${S.of(context).phone_number} ${S.of(context).optional_field}', _phoneController, isNumber: true, isPhone: true, isOptional: true)),
+                  const SizedBox(width: 16),
+                  const Expanded(child: SizedBox()), 
+                ],
+              ),
           const SizedBox(height: 24),
+          
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
-                  _showCategorySelectionDialog(isFileUpload: false);
+                  _showCategorySelectionDialog(isFileUpload: false, provider: provider);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(S.of(context).fill_all_required_fields), backgroundColor: Colors.red),
@@ -332,7 +368,7 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     );
   }
 
-  Widget _buildTextField(String label, TextEditingController controller, {bool isNumber = false, bool isEmail = false}) {
+  Widget _buildTextField(String label, TextEditingController controller, {bool isNumber = false, bool isEmail = false, bool isPhone = false, bool isOptional = false}) {
     bool isName = !isNumber && !isEmail;
     bool isRtl = Directionality.of(context) == TextDirection.rtl;
 
@@ -350,17 +386,19 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
           ],
           style: TextStyle(color: AppColors.textPrimary(context)),
           validator: (value) {
-            if (value == null || value.trim().isEmpty) {
+            if (!isOptional && (value == null || value.trim().isEmpty)) {
               return S.of(context).field_required;
             }
-            if (isEmail) {
-              final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-              if (!emailRegex.hasMatch(value)) {
-                return isRtl ? 'صيغة البريد الإلكتروني غير صحيحة' : 'Invalid email format';
+            if (value != null && value.trim().isNotEmpty) {
+              if (isEmail) {
+                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                if (!emailRegex.hasMatch(value)) {
+                  return isRtl ? S.of(context).err_invalid_email_format : 'Invalid email format';
+                }
               }
-            }
-            if (isNumber && value.length < 10) {
-              return isRtl ? 'رقم الهوية يجب أن يتكون من 10 أرقام' : 'ID must be at least 10 digits';
+              if (isPhone && value.length < 9) {
+                return isRtl ? S.of(context).error_phone_too_short : 'Phone number is too short';
+              }
             }
             return null;
           },
@@ -377,21 +415,22 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     );
   }
 
-  void _showCategorySelectionDialog({required bool isFileUpload}) {
-    List<String> categories = [
-      S.of(context).students_category, 
-      S.of(context).teachers_category, 
-      S.of(context).admins_category
-    ];
-    String selectedCategory = categories.first;
+  void _showCategorySelectionDialog({required bool isFileUpload, required AddUsersProvider provider}) {
+    // 💡 استخدام Map لربط المفتاح الإنجليزي بالنص المترجم للعرض
+    Map<String, String> categories = {
+      'STUDENT': S.of(context).students_category, 
+      'TEACHER': S.of(context).teachers_category, 
+      'ADMIN': S.of(context).admins_category
+    };
+    String selectedCategoryKey = 'STUDENT'; // الافتراضي هو مفتاح الطالب
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
+      builder: (BuildContext dialogContext) {
         return Directionality(
           textDirection: Directionality.of(context),
           child: AlertDialog(
-            backgroundColor: AppColors.textWhite(context),
+            backgroundColor: AppColors.cardBg(context),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text(
               isFileUpload ? S.of(context).confirm_file_upload : S.of(context).select_user_category,
@@ -409,17 +448,18 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<String>(
-                      value: selectedCategory,
-                      dropdownColor: AppColors.textWhite(context),
+                      value: selectedCategoryKey,
+                      dropdownColor: AppColors.cardBg(context),
                       style: TextStyle(color: AppColors.textPrimary(context)),
                       decoration: InputDecoration(
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       ),
-                      items: categories.map((category) {
-                        return DropdownMenuItem(value: category, child: Text(category));
+                      // نعرض القيمة المترجمة ونحتفظ بالمفتاح
+                      items: categories.entries.map((entry) {
+                        return DropdownMenuItem(value: entry.key, child: Text(entry.value));
                       }).toList(),
-                      onChanged: (value) => setStatePopup(() => selectedCategory = value!),
+                      onChanged: (value) => setStatePopup(() => selectedCategoryKey = value!),
                     ),
                   ],
                 );
@@ -427,49 +467,70 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.pop(dialogContext),
                 child: Text(S.of(context).cancel, style: TextStyle(color: AppColors.textSecondary(context), fontWeight: FontWeight.bold)),
               ),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  
-                  // ==========================================
-                  // 🚀 هنا السحر: إضافة العملية للجدول فوراً!
-                  // ==========================================
-                  setState(() {
-                    String todayDate = "${DateTime.now().day}/${DateTime.now().month}/${DateTime.now().year}";
+                onPressed: () async {
+                  // الفحص يعتمد الآن على المفتاح STUDENT بدلاً من النص المترجم
+                  if (!isFileUpload && 
+                      selectedCategoryKey == 'STUDENT' && 
+                      _idController.text.trim().isEmpty) {
+                    
+                    Navigator.pop(dialogContext); 
+                    
+                    ScaffoldMessenger.of(context).showSnackBar( 
+                      SnackBar(
+                        content: Text(S.of(context).id_required_for_students),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                    return;
+                  }
 
-                    if (isFileUpload) {
-                      // إضافة ملف في الجدول
-                      historyRecords.insert(0, {
-                        'name': selectedFileName ?? 'Unknown File',
-                        'date': todayDate,
-                        'count': 'جارِ الحساب', 
-                        'status': S.of(context).completed,
-                        'isSuccess': true
-                      });
-                      selectedFileName = null;
-                    } else {
-                      // إضافة شخص يدوي في الجدول
-                      String fullName = '${_firstNameController.text.trim()} ${_lastNameController.text.trim()}';
-                      historyRecords.insert(0, {
-                        'name': fullName,
-                        'date': todayDate,
-                        'count': '1',
-                        'status': S.of(context).completed,
-                        'isSuccess': true
-                      });
+                  Navigator.pop(dialogContext); 
+                  
+                  Map<String, dynamic> result;
+                  
+                  if (isFileUpload) {
+                    // نرسل المفتاح للباك إند
+                    result = await provider.uploadExcelFile(selectedCategoryKey);
+                  } else {
+                    // نرسل المفتاح للباك إند
+                    result = await provider.addManualUser(
+                      firstName: _firstNameController.text.trim(),
+                      lastName: _lastNameController.text.trim(),
+                      academicId: _idController.text.trim(), 
+                      email: _emailController.text.trim(),
+                      phone: _phoneController.text.trim(),
+                      categoryKey: selectedCategoryKey 
+                    );
+                    
+                    if (result['success']) {
                       _firstNameController.clear();
                       _lastNameController.clear();
                       _idController.clear();
                       _emailController.clear();
+                      _phoneController.clear();
                     }
-                  }); 
+                  }
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('${S.of(context).operation_successful_for_category} $selectedCategory'), backgroundColor: Colors.green),
-                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        // 💡 ترجمة الرسالة القادمة من السيرفر قبل عرضها
+                        content: Text(_translateBackendMessage(result['message'], context)),
+                        backgroundColor: result['success'] ? Colors.green : Colors.red,
+                      ),
+                    );
+                    
+                    if (result['success']) {
+                      context.read<UsersManagementProvider>().fetchUsers();
+                      if (isFileUpload) {
+                        Navigator.pop(context);
+                      }
+                    }
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryTeal(context),
@@ -530,11 +591,11 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     );
   }
 
-  Widget _buildImportHistoryTable() {
+  Widget _buildImportHistoryTable(AddUsersProvider provider) {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.textWhite(context),
+        color: AppColors.cardBg(context), // متناسق مع الدارك مود
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.textSecondary(context).withOpacity(0.1)),
       ),
@@ -561,7 +622,6 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                       child: Row(
                         children: [
-                          // ⬅️ تم تغيير العنوان هنا إلى S.of(context).upload_name
                           Expanded(flex: 3, child: Text(S.of(context).upload_name, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary(context)))),
                           Expanded(flex: 2, child: Text(S.of(context).upload_date, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary(context)))),
                           Expanded(flex: 1, child: Center(child: Text(S.of(context).count, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textSecondary(context))))),
@@ -572,18 +632,15 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
                     ),
                     Divider(height: 1, color: AppColors.textSecondary(context).withOpacity(0.1)),
                     
-                    // ==========================================
-                    // ♻️ حلقة تكرار (Loop) لرسم الجدول تلقائياً من البيانات!
-                    // ==========================================
-                    ...historyRecords.map((record) => Column(
+                    if (provider.historyRecords.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(32.0),
+                        child: Center(child: Text(S.of(context).error_no_recorded_operations, style: TextStyle(color: AppColors.textSecondary(context)))),
+                      ),
+
+                    ...provider.historyRecords.map((record) => Column(
                       children: [
-                        _buildTableRow(
-                          record['name'], 
-                          record['date'], 
-                          record['count'], 
-                          record['status'], 
-                          record['isSuccess']
-                        ),
+                        _buildTableRow(record, provider),
                         Divider(height: 1, color: AppColors.textSecondary(context).withOpacity(0.1)),
                       ],
                     )).toList(),
@@ -605,7 +662,7 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
     );
   }
 
-  Widget _buildTableRow(String name, String date, String count, String status, bool isSuccess) {
+  Widget _buildTableRow(ImportHistoryRecord record, AddUsersProvider provider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -614,22 +671,26 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
             flex: 3,
             child: Row(
               children: [
-                // تغيير الأيقونة بناءً على نوع الرفع (شخص أو ملف)
-                Icon(name.contains('.xls') || name.contains('.csv') ? Icons.insert_drive_file : Icons.person, color: AppColors.textSecondary(context), size: 20),
+                Icon(record.fileOrName.contains('.xls') || record.fileOrName.contains('.csv') ? Icons.insert_drive_file : Icons.person, color: AppColors.textSecondary(context), size: 20),
                 const SizedBox(width: 8),
-                Expanded(child: Text(name, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)))),
+                Expanded(child: Text(record.fileOrName, style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.textPrimary(context)), overflow: TextOverflow.ellipsis)),
               ],
             ),
           ),
-          Expanded(flex: 2, child: Text(date, style: TextStyle(color: AppColors.textSecondary(context)))),
-          Expanded(flex: 1, child: Center(child: Text(count, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary(context))))),
+          Expanded(flex: 2, child: Text(record.uploadDate, style: TextStyle(color: AppColors.textSecondary(context)))),
+          Expanded(flex: 1, child: Center(child: Text(record.recordsCount, style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.textPrimary(context))))),
           Expanded(
             flex: 1,
             child: Center(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(color: isSuccess ? const Color(0xFFD1FAE5).withOpacity(0.2) : const Color(0xFFFEE2E2).withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
-                child: Text(status, style: TextStyle(color: isSuccess ? Colors.green[500] : Colors.red[500], fontSize: 12, fontWeight: FontWeight.bold)),
+                decoration: BoxDecoration(color: record.isSuccess ? const Color(0xFFD1FAE5).withOpacity(0.2) : const Color(0xFFFEE2E2).withOpacity(0.2), borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  (record.status == 'مكتمل' || record.status == 'KEY_COMPLETED') 
+                      ? (Localizations.localeOf(context).languageCode == 'en' ? 'Completed' : 'مكتمل') 
+                      : record.status, 
+                  style: TextStyle(color: record.isSuccess ? Colors.green[500] : Colors.red[500], fontSize: 12, fontWeight: FontWeight.bold)
+                ),
               ),
             ),
           ),
@@ -639,31 +700,11 @@ class _AddUsersScreenState extends State<AddUsersScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 InkWell(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${S.of(context).viewing_file} $name'), backgroundColor: AppColors.primaryTeal(context)),
-                    );
-                  }, 
-                  child: Icon(Icons.visibility_outlined, color: AppColors.primaryTeal(context), size: 20)
-                ),
-                const SizedBox(width: 16),
-                InkWell(
-                  onTap: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('${S.of(context).downloading_file} $name'), backgroundColor: AppColors.primaryTeal(context)),
-                    );
-                  }, 
-                  child: Icon(Icons.download_outlined, color: AppColors.primaryTeal(context), size: 20)
-                ),
-                const SizedBox(width: 16),
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      historyRecords.removeWhere((item) => item['name'] == name);
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(S.of(context).file_deleted_successfully), backgroundColor: Colors.red),
-                    );
+                  onTap: () async {
+                    bool deleted = await provider.deleteHistoryRecord(record.id);
+                    if (deleted && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).file_deleted_successfully), backgroundColor: Colors.red));
+                    }
                   }, 
                   child: const Icon(Icons.delete_outline, color: Colors.red, size: 20)
                 ),

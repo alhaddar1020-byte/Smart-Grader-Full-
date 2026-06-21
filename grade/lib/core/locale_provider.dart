@@ -1,35 +1,48 @@
+import 'package:grade/core/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LocaleProvider extends ChangeNotifier {
   Locale _locale = const Locale('ar');
   Locale get locale => _locale;
 
-  // 1. هذه الدالة تُستدعى من الـ main (سريعة جداً لأنها لوكل)
   void setInitialLocale(String langCode) {
     _locale = Locale(langCode);
-    // لا نحتاج notifyListeners هنا لأنها تُستدعى قبل بناء التطبيق
+    notifyListeners();
   }
 
-  // 2. هذه الدالة تُستدعى من زر الإعدادات
-  Future<void> updateLanguage(String newLang) async {
-    // أ- تحديث "لوكل" فوراً (الاستجابة اللحظية)
+  // 💡 قمنا بإضافة باراميتر الـ studentId هنا للمزامنة
+  Future<void> updateLanguage(String newLang, int studentId) async {
     _locale = Locale(newLang);
     notifyListeners();
 
-    // ب- حفظ "لوكل" في ذاكرة الجهاز (لكي يفتح بها المرة القادمة فوراً)
+    // 1. حفظ محلي
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('language_code', newLang);
+    bool currentTheme = prefs.getBool('theme_mode') ?? false;
 
-    // ج- إرسال التحديث لـ "الداتا بيس الأصلية" (في الخلفية)
+    // 2. المزامنة مع قاعدة البيانات (Supabase) عبر الباكيند
     try {
-      // هنا كود الـ API الخاص بكِ
-      // await MyApiService.updateUserLangOnServer(userId, newLang);
-      print("تمت المزامنة مع السيرفر بنجاح");
+      final String url =
+          '${AppConfig.baseUrl}/settings/update-display-preferences';
+      final token = prefs.getString('auth_token') ?? '';
+      await http.put(
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: jsonEncode({
+          'user_id': studentId,
+          'language_code': newLang,
+          'is_dark_mode': currentTheme,
+        }),
+      );
+      print("✅ تم حفظ اللغة في قاعدة البيانات بنجاح");
     } catch (e) {
-      print("فشلت المزامنة، لكن اللغة تغيرت لوكل بنجاح");
+      print("❌ فشل الاتصال بالسيرفر لحفظ اللغة: $e");
     }
-    
   }
-  void setLocale(String langCode) => updateLanguage(langCode);
 }

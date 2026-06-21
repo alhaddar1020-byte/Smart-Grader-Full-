@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/colors.dart'; 
-import 'package:grade/generated/l10n.dart'; 
+import '../core/colors.dart';
+import 'package:grade/generated/l10n.dart';
 
 class CustomSidebar extends StatelessWidget {
   final int currentIndex;
@@ -36,32 +36,59 @@ class CustomSidebar extends StatelessWidget {
       child: Column(
         children: [
           const SizedBox(height: 50),
-          Icon(
-            Icons.check_circle_outline,
-            size: isTablet ? 50 : 70,
-            color: AppColors.textWhite(context),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            S.of(context).app_name, 
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: AppColors.textWhite(context),
-              fontSize: isTablet ? 14 : 16,
-              fontWeight: FontWeight.bold,
-            ),
+          Image.asset(
+            'assets/emaige/logo.PNG',
+            height: isTablet ? 70 : 110,
+            width: isTablet ? 70 : 110,
+            fit: BoxFit.contain,
           ),
           const SizedBox(height: 50),
           Expanded(
             child: ListView(
               physics: const BouncingScrollPhysics(),
               children: [
-                _menuItem(context, S.of(context).dashboard, Icons.home_rounded, 0, isRtl),
-                _menuItem(context, S.of(context).users_management, Icons.people, 1, isRtl),
-                _menuItem(context, S.of(context).reports_statistics, Icons.insert_chart, 2, isRtl),
-                _menuItem(context, S.of(context).system_logs, Icons.history, 3, isRtl),
-                _menuItem(context, S.of(context).backup, Icons.backup, 4, isRtl),
-                _menuItem(context, S.of(context).settings, Icons.settings_rounded, 5, isRtl),
+                _menuItem(
+                  context,
+                  S.of(context).dashboard,
+                  Icons.home_rounded,
+                  0,
+                  isRtl,
+                ),
+                _menuItem(
+                  context,
+                  S.of(context).users_management,
+                  Icons.people,
+                  1,
+                  isRtl,
+                ),
+                _menuItem(
+                  context,
+                  S.of(context).reports_statistics,
+                  Icons.insert_chart,
+                  2,
+                  isRtl,
+                ),
+                _menuItem(
+                  context,
+                  S.of(context).system_logs,
+                  Icons.history,
+                  3,
+                  isRtl,
+                ),
+                _menuItem(
+                  context,
+                  S.of(context).backup,
+                  Icons.backup,
+                  4,
+                  isRtl,
+                ),
+                _menuItem(
+                  context,
+                  S.of(context).settings,
+                  Icons.settings_rounded,
+                  5,
+                  isRtl,
+                ),
               ],
             ),
           ),
@@ -70,10 +97,16 @@ class CustomSidebar extends StatelessWidget {
     );
   }
 
-  Widget _menuItem(BuildContext context, String title, IconData icon, int index, bool isRtl) {
+  Widget _menuItem(
+    BuildContext context,
+    String title,
+    IconData icon,
+    int index,
+    bool isRtl,
+  ) {
     bool isActive = currentIndex == index;
-    Color activeBgColor = AppColors.scaffoldBg(context);
-    double radius = 30.0; 
+    Color activeBgColor = AppColors.secondaryTeal(context);
+    double radius = 30.0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 15),
@@ -99,7 +132,7 @@ class CustomSidebar extends StatelessWidget {
             Container(
               height: 60,
               margin: EdgeInsetsDirectional.only(
-                start: isActive ? 20 : 25, 
+                start: isActive ? 20 : 25,
                 end: isActive ? 0 : 20,
               ),
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -116,7 +149,9 @@ class CustomSidebar extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    color: isActive ? AppColors.primaryTeal(context) : AppColors.accentYellow(context),
+                    color: isActive
+                        ? AppColors.primaryTeal(context)
+                        : AppColors.accentYellow(context),
                     size: isTablet ? 22 : 26,
                   ),
                   const SizedBox(width: 15),
@@ -125,11 +160,13 @@ class CustomSidebar extends StatelessWidget {
                       title,
                       style: TextStyle(
                         fontFamily: "Arimo",
-                        color: isActive ? AppColors.primaryTeal(context) : Colors.white,
-                        fontSize: isTablet ? 14 : 16,
+                        color: isActive
+                            ? AppColors.primaryTeal(context)
+                            : Colors.white,
+                        fontSize: isTablet ? 15 : 18,
                         fontWeight: FontWeight.w900,
                       ),
-                      overflow: TextOverflow.ellipsis, 
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -151,7 +188,9 @@ class SidebarCurvePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()..color = bgColor..style = PaintingStyle.fill;
+    Paint paint = Paint()
+      ..color = bgColor
+      ..style = PaintingStyle.fill;
     Path path = Path();
 
     if (isRtl) {
@@ -161,7 +200,12 @@ class SidebarCurvePainter extends CustomPainter {
       path.close();
 
       path.moveTo(0, size.height);
-      path.quadraticBezierTo(0, size.height - radius, radius, size.height - radius);
+      path.quadraticBezierTo(
+        0,
+        size.height - radius,
+        radius,
+        size.height - radius,
+      );
       path.lineTo(0, size.height - radius);
       path.close();
     } else {
@@ -171,7 +215,12 @@ class SidebarCurvePainter extends CustomPainter {
       path.close();
 
       path.moveTo(size.width, size.height);
-      path.quadraticBezierTo(size.width, size.height - radius, size.width - radius, size.height - radius);
+      path.quadraticBezierTo(
+        size.width,
+        size.height - radius,
+        size.width - radius,
+        size.height - radius,
+      );
       path.lineTo(size.width, size.height - radius);
       path.close();
     }
@@ -180,5 +229,5 @@ class SidebarCurvePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true; 
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

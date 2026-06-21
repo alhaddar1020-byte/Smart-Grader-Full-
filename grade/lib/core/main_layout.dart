@@ -7,7 +7,8 @@ import '../screens/Admin_interface/admin_dashboard_screen.dart';
 import '../screens/Admin_interface/users_management_screen.dart'; 
 import '../screens/Admin_interface/dashboard_report_screen.dart';
 import '../screens/Admin_interface/system_logs_screen.dart';
-import '../screens/Admin_interface/BackupScreen.dart';
+import '../screens/Admin_interface/backup_screen.dart';
+import '../screens/Admin_interface/admin_settings_screen.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -32,12 +33,7 @@ class _MainLayoutState extends State<MainLayout> {
       case 4:
         return const BackupScreen(); 
       case 5:
-        return Center(
-          child: Text(
-            S.of(context).settings_under_development, 
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.grey)
-          )
-        );
+        return const AdminSettingsScreen(isFullScreen: false);
       default:
         return Center(
           child: Text(
