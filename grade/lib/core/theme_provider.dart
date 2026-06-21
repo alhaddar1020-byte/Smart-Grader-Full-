@@ -19,7 +19,8 @@ class ThemeProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleTheme(bool isOn, int studentId) async {
+  // إزالة studentId من هنا
+  void toggleTheme(bool isOn) async {
     _themeMode = isOn ? ThemeMode.dark : ThemeMode.light;
     notifyListeners();
 
@@ -27,15 +28,20 @@ class ThemeProvider extends ChangeNotifier {
     await prefs.setBool('theme_mode', isOn);
     String currentLang = prefs.getString('language_code') ?? 'ar';
 
+    // 💡 الحل الجذري: سحب user_id الحقيقي مباشرة من الذاكرة
+    int userId = prefs.getInt('user_id') ?? 0;
+
     // منع استدعاء الـ API إذا لم يكن المستخدم مسجلاً للدخول
-    if (studentId == 0) return;
+    if (userId == 0) {
+      print("⚠️ لم يتم العثور على user_id، تم حفظ الثيم محلياً فقط.");
+      return;
+    }
 
     try {
-      // 💡 تم توحيد مسار الـ IP ليتوافق مع الـ Localhost بشكل صحيح للويب
       final String url =
           '${AppConfig.baseUrl}/settings/update-display-preferences';
-
       final token = prefs.getString('auth_token') ?? '';
+
       await http.put(
         Uri.parse(url),
         headers: {
@@ -43,12 +49,12 @@ class ThemeProvider extends ChangeNotifier {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'user_id': studentId,
+          'user_id': userId, // 👈 الآن نحن نرسل الـ ID الصحيح 100%
           'language_code': currentLang,
           'is_dark_mode': isOn,
         }),
       );
-      print("✅ تم حفظ الثيم في قاعدة البيانات بنجاح");
+      print("✅ تم حفظ الثيم في قاعدة البيانات بنجاح للمستخدم رقم: $userId");
     } catch (e) {
       print("❌ فشل الاتصال بالسيرفر لحفظ الثيم: $e");
     }

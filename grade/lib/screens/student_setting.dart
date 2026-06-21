@@ -783,7 +783,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Switch(
                 value: themeProvider.isDarkMode,
                 onChanged: (v) {
-                  themeProvider.toggleTheme(v, ctrl.currentStudentId);
+                  themeProvider.toggleTheme(v);
                 },
                 activeColor: AppColors.primaryTeal(context),
               ),
@@ -1039,9 +1039,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
         onChanged: (v) async {
           if (v != null) {
-            await lp.updateLanguage(v, ctrl.currentStudentId);
+            await lp.updateLanguage(v);
             ctrl.updateLanguageLocally(v);
-
             if (context.mounted) {
               context.read<StudentDashboardController>().fetchDashboardData(
                 ctrl.currentStudentId,

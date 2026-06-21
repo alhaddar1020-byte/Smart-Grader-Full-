@@ -126,13 +126,66 @@ class _LoginScreenState extends State<LoginScreen> {
             }
             await prefs.setBool('visitor_preferences_changed', false);
           } else {
-            // الزائر لم يغير أي شيء، نقرأ إعداداته المحفوظة مسبقاً في الباك إند
-            final String userLang = data['language_code'] ?? 'ar';
-            localeProvider.setInitialLocale(userLang);
-            await prefs.setString('language_code', userLang);
+            // 🌟 نسخة محصنة ومطابقة تماماً لـ main.dart لقراءة إعدادات الطالب فوراً
+            try {
+              final profileUrl = Uri.parse(
+                '${AppConfig.baseUrl}/settings/profile/$userId',
+              );
+              final profileRes = await http
+                  .get(profileUrl)
+                  .timeout(const Duration(seconds: 5));
 
-            final bool isDark = data['is_dark_mode'] ?? false;
-            themeProvider.toggleTheme(isDark, roleId);
+              if (profileRes.statusCode == 200) {
+                final decodedData = jsonDecode(
+                  utf8.decode(profileRes.bodyBytes),
+                );
+                Map<String, dynamic>? serverSettings;
+
+                // 💡 هنا السحر: قبول البيانات سواء جاءت List أو Map لمنع التخطّي الصامت
+                if (decodedData is List && decodedData.isNotEmpty) {
+                  serverSettings = decodedData[0] as Map<String, dynamic>;
+                } else if (decodedData is Map<String, dynamic>) {
+                  serverSettings = decodedData;
+                }
+
+                if (serverSettings != null) {
+                  // 1. تحديث وتطبيق اللغة فوراً
+                  final String userLang =
+                      serverSettings['language_code'] ??
+                      data['language_code'] ??
+                      'ar';
+                  localeProvider.setInitialLocale(userLang);
+                  await prefs.setString('language_code', userLang);
+
+                  // 2. تحديث وتطبيق الثيم بذكاء لحمايته من نوع البيانات
+                  var fetchedTheme = serverSettings['is_dark_mode'];
+                  bool isDark = false;
+                  if (fetchedTheme != null) {
+                    if (fetchedTheme is bool)
+                      isDark = fetchedTheme;
+                    else if (fetchedTheme is int)
+                      isDark = (fetchedTheme == 1);
+                    else if (fetchedTheme is String)
+                      isDark =
+                          (fetchedTheme.toLowerCase() == 'true' ||
+                          fetchedTheme == '1');
+                  }
+
+                  themeProvider.toggleTheme(isDark);
+                  await prefs.setBool('theme_mode', isDark);
+
+                  print(
+                    "🎯 [نجاح] تم تطبيق الإعدادات الحية: اللغة = $userLang | دارك مود = $isDark",
+                  );
+                }
+              } else {
+                print(
+                  "⚠️ السيرفر رد بكود خطأ أثناء جلب الملف شخصي: ${profileRes.statusCode}",
+                );
+              }
+            } catch (e) {
+              print("⚠️ فشل جلب الإعدادات الحية بسبب الاتصال: $e");
+            }
           }
         }
 

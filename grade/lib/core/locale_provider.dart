@@ -14,20 +14,25 @@ class LocaleProvider extends ChangeNotifier {
   }
 
   // 💡 قمنا بإضافة باراميتر الـ studentId هنا للمزامنة
-  Future<void> updateLanguage(String newLang, int studentId) async {
+  // إزالة studentId من هنا
+  Future<void> updateLanguage(String newLang) async {
     _locale = Locale(newLang);
     notifyListeners();
 
-    // 1. حفظ محلي
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setString('language_code', newLang);
     bool currentTheme = prefs.getBool('theme_mode') ?? false;
 
-    // 2. المزامنة مع قاعدة البيانات (Supabase) عبر الباكيند
+    // 💡 الحل الجذري: سحب user_id الحقيقي
+    int userId = prefs.getInt('user_id') ?? 0;
+
+    if (userId == 0) return; // الخروج إذا لم يكن مسجلاً
+
     try {
       final String url =
           '${AppConfig.baseUrl}/settings/update-display-preferences';
       final token = prefs.getString('auth_token') ?? '';
+
       await http.put(
         Uri.parse(url),
         headers: {
@@ -35,12 +40,12 @@ class LocaleProvider extends ChangeNotifier {
           'Authorization': 'Bearer $token',
         },
         body: jsonEncode({
-          'user_id': studentId,
+          'user_id': userId, // 👈 تصحيح الفخ هنا أيضاً
           'language_code': newLang,
           'is_dark_mode': currentTheme,
         }),
       );
-      print("✅ تم حفظ اللغة في قاعدة البيانات بنجاح");
+      print("✅ تم حفظ اللغة في قاعدة البيانات بنجاح للمستخدم رقم: $userId");
     } catch (e) {
       print("❌ فشل الاتصال بالسيرفر لحفظ اللغة: $e");
     }

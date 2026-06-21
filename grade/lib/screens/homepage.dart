@@ -36,50 +36,77 @@ class SmartCorrectorUI extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Spacer(flex: 1),
-                        _buildLogoIcon(context, size: isMobile ? 80 : (isTablet ? 110 : 130)),
+                        _buildLogoIcon(
+                          context,
+                          size: isMobile ? 80 : (isTablet ? 110 : 130),
+                        ),
                         SizedBox(height: isMobile ? 15 : 25),
-                        
+
                         // العنوان الرئيسي المترجم
                         RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
                             style: TextStyle(
-                              fontSize: isMobile ? 26 : (isTablet ? 40 : 54), 
-                              fontWeight: FontWeight.bold, 
-                              fontFamily: 'Arimo'
+                              fontSize: isMobile ? 26 : (isTablet ? 40 : 54),
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Arimo',
                             ),
                             children: [
-                              TextSpan(text: S.of(context).systemTitlePrefix, style: TextStyle(color: AppColors.textPrimary(context))), 
-                              TextSpan(text: S.of(context).systemTitleSuffix, style: TextStyle(color: AppColors.primaryTeal(context))), 
+                              TextSpan(
+                                text: S.of(context).systemTitlePrefix,
+                                style: TextStyle(
+                                  color: AppColors.textPrimary(context),
+                                ),
+                              ),
+                              TextSpan(
+                                text: S.of(context).systemTitleSuffix,
+                                style: TextStyle(
+                                  color: AppColors.primaryTeal(context),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                        
+
                         SizedBox(height: isMobile ? 10 : 20),
                         Text(
                           S.of(context).heroSubtitle,
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            color: AppColors.textSecondary(context), 
-                            fontSize: isMobile ? 13 : (isTablet ? 16 : 18), 
-                            height: 1.5, 
-                            fontFamily: 'Arimo'
+                            color: AppColors.textSecondary(context),
+                            fontSize: isMobile ? 13 : (isTablet ? 16 : 18),
+                            height: 1.5,
+                            fontFamily: 'Arimo',
                           ),
                         ),
-                        
+
                         SizedBox(height: isMobile ? 20 : 40),
-                        
+
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _buildStatCard(context, percentage: "99.9%", label: S.of(context).accuracyLabel, iconData: Icons.check_circle_outline, width: isMobile ? 160 : 220, isMobile: isMobile),
+                            _buildStatCard(
+                              context,
+                              percentage: "99.9%",
+                              label: S.of(context).accuracyLabel,
+                              iconData: Icons.check_circle_outline,
+                              width: isMobile ? 160 : 220,
+                              isMobile: isMobile,
+                            ),
                             SizedBox(width: isMobile ? 10 : 30),
-                            _buildStatCard(context, percentage: "75%", label: S.of(context).timeSavingLabel, iconData: Icons.bolt, width: isMobile ? 160 : 220, isMobile: isMobile),
+                            _buildStatCard(
+                              context,
+                              percentage: "75%",
+                              label: S.of(context).timeSavingLabel,
+                              iconData: Icons.bolt,
+                              width: isMobile ? 160 : 220,
+                              isMobile: isMobile,
+                            ),
                           ],
                         ),
-                        
+
                         SizedBox(height: isMobile ? 25 : 50),
-                        
+
                         // أزرار التحكم (تسجيل الدخول ومستخدم جديد)
                         Wrap(
                           spacing: 15, // المسافة الأفقية بين الزرين
@@ -91,24 +118,37 @@ class SmartCorrectorUI extends StatelessWidget {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const LoginScreen()),
+                                  MaterialPageRoute(
+                                    builder: (context) => const LoginScreen(),
+                                  ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primaryTeal(context),
                                 foregroundColor: Colors.white,
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 30 : 50, 
-                                  vertical: isMobile ? 15 : 20
+                                  horizontal: isMobile ? 30 : 50,
+                                  vertical: isMobile ? 15 : 20,
                                 ),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(S.of(context).loginButton, style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    S.of(context).loginButton,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   const SizedBox(width: 8),
-                                  Icon(Icons.adaptive.arrow_forward, size: isMobile ? 18 : 22),
+                                  Icon(
+                                    Icons.adaptive.arrow_forward,
+                                    size: isMobile ? 18 : 22,
+                                  ),
                                 ],
                               ),
                             ),
@@ -118,24 +158,38 @@ class SmartCorrectorUI extends StatelessWidget {
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (context) => const RegisterEmailScreen()),
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const RegisterEmailScreen(),
+                                  ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primaryTeal(context),
                                 foregroundColor: Colors.white,
                                 padding: EdgeInsets.symmetric(
-                                  horizontal: isMobile ? 30 : 50, 
-                                  vertical: isMobile ? 15 : 20
+                                  horizontal: isMobile ? 30 : 50,
+                                  vertical: isMobile ? 15 : 20,
                                 ),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Text(S.of(context).registerButton, style: TextStyle(fontSize: isMobile ? 16 : 18, fontWeight: FontWeight.bold)),
+                                  Text(
+                                    S.of(context).registerButton,
+                                    style: TextStyle(
+                                      fontSize: isMobile ? 16 : 18,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
                                   const SizedBox(width: 8),
-                                  Icon(Icons.person_add_outlined, size: isMobile ? 18 : 22), 
+                                  Icon(
+                                    Icons.person_add_outlined,
+                                    size: isMobile ? 18 : 22,
+                                  ),
                                 ],
                               ),
                             ),
@@ -161,18 +215,32 @@ class SmartCorrectorUI extends StatelessWidget {
     final isDark = context.watch<ThemeProvider>().isDarkMode;
 
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isMobile ? 10 : 20, vertical: isMobile ? 10 : 20),
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 10 : 20,
+        vertical: isMobile ? 10 : 20,
+      ),
       child: Row(
         children: [
           const Spacer(), // يدفع القائمة لليسار/اليمين
           // قائمة النظام واللغة
           PopupMenuButton<int>(
-            icon: Icon(Icons.menu, color: AppColors.primaryTeal(context), size: isMobile ? 26 : 30),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            icon: Icon(
+              Icons.menu,
+              color: AppColors.primaryTeal(context),
+              size: isMobile ? 26 : 30,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             tooltip: 'القائمة',
             onSelected: (value) {
               if (value == 1) {
-                Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutSystemScreen()));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AboutSystemScreen(),
+                  ),
+                );
               }
             },
             itemBuilder: (context) => [
@@ -181,7 +249,11 @@ class SmartCorrectorUI extends StatelessWidget {
                 value: 1,
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, color: AppColors.primaryTeal(context), size: 22),
+                    Icon(
+                      Icons.info_outline,
+                      color: AppColors.primaryTeal(context),
+                      size: 22,
+                    ),
                     const SizedBox(width: 10),
                     Text(
                       S.of(context).aboutSystem,
@@ -197,13 +269,18 @@ class SmartCorrectorUI extends StatelessWidget {
               const PopupMenuDivider(),
               // 2. خيار اللغة مع Dropdown
               PopupMenuItem(
-                enabled: false, // كي لا تغلق القائمة عند الضغط خارج الـ Dropdown
+                enabled:
+                    false, // كي لا تغلق القائمة عند الضغط خارج الـ Dropdown
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.language, color: AppColors.primaryTeal(context), size: 22),
+                        Icon(
+                          Icons.language,
+                          color: AppColors.primaryTeal(context),
+                          size: 22,
+                        ),
                         const SizedBox(width: 10),
                         Text(
                           S.of(context).language_label,
@@ -219,15 +296,24 @@ class SmartCorrectorUI extends StatelessWidget {
                     DropdownButton<String>(
                       value: currentLang,
                       underline: const SizedBox(),
-                      icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.grey,
+                      ),
                       style: TextStyle(
                         color: AppColors.textPrimary(context),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
                       items: [
-                        DropdownMenuItem(value: 'ar', child: Text(S.of(context).lang_ar)),
-                        DropdownMenuItem(value: 'en', child: Text(S.of(context).lang_en)),
+                        DropdownMenuItem(
+                          value: 'ar',
+                          child: Text(S.of(context).lang_ar),
+                        ),
+                        DropdownMenuItem(
+                          value: 'en',
+                          child: Text(S.of(context).lang_en),
+                        ),
                       ],
                       onChanged: (String? newLang) async {
                         if (newLang != null) {
@@ -235,8 +321,14 @@ class SmartCorrectorUI extends StatelessWidget {
                           localeProvider.setInitialLocale(newLang);
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setString('language_code', newLang);
-                          await prefs.setBool('visitor_preferences_changed', true);
-                          if (context.mounted) Navigator.pop(context); // إغلاق القائمة بعد اختيار اللغة
+                          await prefs.setBool(
+                            'visitor_preferences_changed',
+                            true,
+                          );
+                          if (context.mounted)
+                            Navigator.pop(
+                              context,
+                            ); // إغلاق القائمة بعد اختيار اللغة
                         }
                       },
                     ),
@@ -246,13 +338,17 @@ class SmartCorrectorUI extends StatelessWidget {
               const PopupMenuDivider(),
               // 3. خيار المظهر مع Dropdown
               PopupMenuItem(
-                enabled: false, 
+                enabled: false,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
                       children: [
-                        Icon(isDark ? Icons.dark_mode : Icons.light_mode, color: AppColors.primaryTeal(context), size: 22),
+                        Icon(
+                          isDark ? Icons.dark_mode : Icons.light_mode,
+                          color: AppColors.primaryTeal(context),
+                          size: 22,
+                        ),
                         const SizedBox(width: 10),
                         Text(
                           S.of(context).theme_label,
@@ -268,21 +364,35 @@ class SmartCorrectorUI extends StatelessWidget {
                     DropdownButton<bool>(
                       value: isDark,
                       underline: const SizedBox(),
-                      icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+                      icon: const Icon(
+                        Icons.arrow_drop_down,
+                        color: Colors.grey,
+                      ),
                       style: TextStyle(
                         color: AppColors.textPrimary(context),
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
                       items: [
-                        DropdownMenuItem(value: false, child: Text(S.of(context).theme_light)),
-                        DropdownMenuItem(value: true, child: Text(S.of(context).theme_dark)),
+                        DropdownMenuItem(
+                          value: false,
+                          child: Text(S.of(context).theme_light),
+                        ),
+                        DropdownMenuItem(
+                          value: true,
+                          child: Text(S.of(context).theme_dark),
+                        ),
                       ],
                       onChanged: (bool? isDarkValue) async {
                         if (isDarkValue != null) {
-                          context.read<ThemeProvider>().toggleTheme(isDarkValue, 0);
+                          context.read<ThemeProvider>().toggleTheme(
+                            isDarkValue,
+                          );
                           final prefs = await SharedPreferences.getInstance();
-                          await prefs.setBool('visitor_preferences_changed', true);
+                          await prefs.setBool(
+                            'visitor_preferences_changed',
+                            true,
+                          );
                           if (context.mounted) Navigator.pop(context);
                         }
                       },
@@ -297,14 +407,23 @@ class SmartCorrectorUI extends StatelessWidget {
     );
   }
 
-  Widget _buildStatCard(BuildContext context, {required String percentage, required String label, required IconData iconData, required double width, required bool isMobile}) {
+  Widget _buildStatCard(
+    BuildContext context, {
+    required String percentage,
+    required String label,
+    required IconData iconData,
+    required double width,
+    required bool isMobile,
+  }) {
     return Container(
       width: width,
       padding: EdgeInsets.all(isMobile ? 15 : 25),
       decoration: BoxDecoration(
         color: AppColors.cardBg(context),
         borderRadius: BorderRadius.circular(isMobile ? 15 : 20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15),
+        ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -314,13 +433,31 @@ class SmartCorrectorUI extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(percentage, style: TextStyle(color: AppColors.textPrimary(context), fontSize: isMobile ? 18 : 24, fontWeight: FontWeight.bold)),
-                Text(label, style: TextStyle(color: AppColors.textSecondary(context), fontSize: isMobile ? 11 : 13), overflow: TextOverflow.ellipsis),
+                Text(
+                  percentage,
+                  style: TextStyle(
+                    color: AppColors.textPrimary(context),
+                    fontSize: isMobile ? 18 : 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: AppColors.textSecondary(context),
+                    fontSize: isMobile ? 11 : 13,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ],
             ),
           ),
           SizedBox(width: isMobile ? 5 : 15),
-          Icon(iconData, color: AppColors.primaryTeal(context), size: isMobile ? 24 : 30),
+          Icon(
+            iconData,
+            color: AppColors.primaryTeal(context),
+            size: isMobile ? 24 : 30,
+          ),
         ],
       ),
     );
@@ -352,8 +489,13 @@ class SmartCorrectorUI extends StatelessWidget {
       color: AppColors.primaryTeal(context),
       padding: const EdgeInsets.symmetric(vertical: 15),
       child: Center(
-        child: Text(S.of(context).copyright,
-          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+        child: Text(
+          S.of(context).copyright,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ),
     );

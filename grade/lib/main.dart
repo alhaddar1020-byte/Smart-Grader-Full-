@@ -96,9 +96,27 @@ void main() async {
   // المزامنة الحية مع السيرفر وتحديث القيم
   if (isLoggedIn) {
     final serverSettings = await loadSettings(userId, lang, isDark);
-    lang = serverSettings['language_code'] ?? lang;
-    isDark = serverSettings['is_dark_mode'] ?? isDark;
 
+    // 1. تحديث اللغة
+    lang = serverSettings['language_code'] ?? lang;
+
+    // 2. فحص وتحديث الثيم (الكود الذكي الجديد)
+    var fetchedTheme = serverSettings['is_dark_mode'];
+    print(
+      "🌍 قيمة الثيم الجاية من السيرفر: $fetchedTheme | نوعها: ${fetchedTheme.runtimeType}",
+    );
+
+    if (fetchedTheme != null) {
+      if (fetchedTheme is bool) {
+        isDark = fetchedTheme;
+      } else if (fetchedTheme is int) {
+        isDark = (fetchedTheme == 1);
+      } else if (fetchedTheme is String) {
+        isDark = (fetchedTheme.toLowerCase() == 'true' || fetchedTheme == '1');
+      }
+    }
+
+    // 3. حفظ القيم النهائية في الذاكرة المحلية
     await prefs.setBool('theme_mode', isDark);
     await prefs.setString('language_code', lang);
   }
