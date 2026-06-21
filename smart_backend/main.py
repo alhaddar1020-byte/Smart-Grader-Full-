@@ -481,8 +481,8 @@ def send_email_task(student_email: str, student_name: str, exam_title: str, lang
     
     SMTP_SERVER = "smtp.gmail.com"
     SMTP_PORT = 587
-    SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "GradeAi@gmail.com")  
-    SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "qmor nlvq lhre appp")          
+    SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "sosytane@gmail.com")  
+    SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "owxobwtkncijrxzr")          
 
     try:
         msg = MIMEMultipart("alternative")
@@ -527,13 +527,23 @@ def handle_grade_webhook(
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
+    print("--- 1. وصل طلب جديد للويب هوك (Webhook Received) ---")
+    
     new_data = payload.record
     old_data = payload.old_record or {}
+    
+    print(f"--- 2. البيانات التي وصلت هي: {new_data} ---")
 
-    new_status = new_data.get("status", "").lower()
-    old_status = old_data.get("status", "").lower()
+    # نتحقق من حالة النشر (is_published)
+    new_published = new_data.get("is_published")
+    old_published = old_data.get("is_published")
 
-    if new_status == "graded" and old_status != "graded":
+    print(f"--- 3. حالة النشر الحالية: {new_published} ---")
+
+    # الشرط: إذا تغيرت من False إلى True
+    if new_published is True and (old_published is False or old_published is None):
+        print("--- 4. الشرط تحقق! (is_published تحولت لـ True) جاري تجهيز الإيميل ---")
+        
         student_id = new_data.get("student_id")
         exam_id = new_data.get("exam_id")
 
@@ -548,6 +558,7 @@ def handle_grade_webhook(
             result = db.execute(query, {"sid": student_id, "eid": exam_id}).mappings().first()
 
             if result and result["email"]:
+                print(f"--- 5. تم العثور على بيانات الطالب: {result['full_name']} ---")
                 user_lang = result["language_code"] if result["language_code"] else "ar"
                 
                 background_tasks.add_task(
@@ -557,5 +568,12 @@ def handle_grade_webhook(
                     exam_title=result["exam_title"],
                     lang=user_lang
                 )
+                print("--- 6. تم إضافة مهمة إرسال الإيميل بنجاح! ---")
+            else:
+                print("--- ❌ خطأ: لم أجد إيميل الطالب في قاعدة البيانات ---")
+        else:
+            print("--- ❌ خطأ: الـ student_id أو exam_id مفقودين من البيانات ---")
+    else:
+        print("--- ⚠️ الشرط لم يتحقق (is_published لم تتحول لـ True) ---")
 
     return {"message": "Webhook processed successfully"}
