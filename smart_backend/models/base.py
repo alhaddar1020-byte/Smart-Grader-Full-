@@ -13,3 +13,6 @@ Base = declarative_base()
 # uvicorn main:app --reload
 # Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force
 # flutter run -d chrome --web-browser-flag="--user-data-dir=C:\Users\G.B\Desktop\flutter_chrome_cache"
+# git add .
+# git commit -m ""
+# git push

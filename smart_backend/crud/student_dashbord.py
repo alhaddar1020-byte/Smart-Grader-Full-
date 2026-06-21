@@ -1536,20 +1536,349 @@ def resolve_student_id(db: Session, student_id: int) -> int:
 # ══════════════════════════════════════════════════════════════════════════════
 # 1. دالة الداشبورد الرئيسية (مع حل الانفجار الديكارتي للحسابات)
 # ══════════════════════════════════════════════════════════════════════════════
-@router.get("/student-dashboard/{student_id}")
-def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
-    student_id = resolve_student_id(db, student_id) # 👈 الحماية هنا
+# @router.get("/student-dashboard/{student_id}")
+# def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+#     student_id = resolve_student_id(db, student_id) # 👈 الحماية هنا
     
-    current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
-    current_year = db.execute(current_year_query).scalar()
-    if not current_year:
-        current_year = db.execute(text("SELECT academic_year FROM semesters ORDER BY semester_id DESC LIMIT 1")).scalar()
+#     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
+#     current_year = db.execute(current_year_query).scalar()
+#     if not current_year:
+#         current_year = db.execute(text("SELECT academic_year FROM semesters ORDER BY semester_id DESC LIMIT 1")).scalar()
     
-    year_pattern = f"{current_year}%" if current_year else "%"
-    if current_year and "/" in current_year:
-        year_base = current_year.split("/")[0]
-        year_pattern = f"{year_base}%"
+#     year_pattern = f"{current_year}%" if current_year else "%"
+#     if current_year and "/" in current_year:
+#         year_base = current_year.split("/")[0]
+#         year_pattern = f"{year_base}%"
 
+#     profile_query = text("""
+#         SELECT u.full_name, l.level_name, d.department_name, u.language_code
+#         FROM student s
+#         JOIN users u ON s.user_id = u.user_id
+#         JOIN level l ON s.level_id = l.level_id
+#         JOIN department d ON s.department_id = d.department_id
+#         WHERE s.student_id = :sid
+#     """)
+#     profile = db.execute(profile_query, {"sid": student_id}).mappings().first()
+#     user_lang = profile["language_code"] if profile and profile["language_code"] else "ar"
+
+#     # 🌟 الحل السحري للحسابات: أخذ أحدث ورقة إجابة فقط لكل اختبار لمنع تكرار الأرقام
+#     stats_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.exam_id, ans.total_earned_mark, e.total_marks, e.passing_mark,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             JOIN semesters s ON tc.semester_id = s.semester_id
+#             WHERE ans.student_id = :sid 
+#               AND ans.status IN ('Graded', 'graded')
+#               AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+#         )
+#         SELECT 
+#             COUNT(exam_id) AS exams_count,
+#             COALESCE(MAX((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS highest_score,
+#             COALESCE(AVG((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS gpa,
+#             COALESCE(SUM(CASE WHEN total_earned_mark >= passing_mark THEN 1 ELSE 0 END), 0) AS passed_exams
+#         FROM LatestSheets WHERE rn = 1
+#     """)
+#     stats = db.execute(stats_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year}).mappings().first()
+
+#     subjects_query = text("""
+#         SELECT COUNT(DISTINCT sc.course_id)
+#         FROM student_courses sc
+#         JOIN semesters s ON sc.semester_id = s.semester_id
+#         WHERE sc.student_id = :sid AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+#     """)
+#     subjects_count = db.execute(subjects_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year}).scalar() or 0
+
+#     questions_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT sheet_id, ROW_NUMBER() OVER(PARTITION BY exam_id ORDER BY uploaded_at DESC) as rn
+#             FROM answer_sheet WHERE student_id = :sid AND status IN ('Graded', 'graded')
+#         )
+#         SELECT COUNT(sa.answer_id)
+#         FROM student_answers sa
+#         JOIN questions q ON sa.question_id = q.question_id  
+#         JOIN LatestSheets ls ON sa.sheet_id = ls.sheet_id AND ls.rn = 1
+#         -- التعديل في شرط WHERE في questions_query
+#        WHERE COALESCE(sa.teacher_mark, sa.ai_mark) >= q.question_mark - 0.1
+#     """)
+#     correct_questions_count = db.execute(questions_query, {"sid": student_id}).scalar() or 0
+    
+#     g_ex = get_text(user_lang, "امتياز", "Excellent")
+#     g_vg = get_text(user_lang, "جيد جداً", "Very Good")
+#     g_gd = get_text(user_lang, "جيد", "Good")
+#     g_pa = get_text(user_lang, "مقبول", "Pass")
+#     g_fa = get_text(user_lang, "ضعيف", "Fail")
+
+#     recent_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.total_earned_mark, e.total_marks, e.exam_id, e.exam_title, e.exam_date, e.number_of_questions, c.course_name,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             JOIN courses c ON tc.course_id = c.course_id
+#             JOIN semesters s ON tc.semester_id = s.semester_id
+#             WHERE ans.student_id = :sid 
+#               AND ans.status IN ('Graded', 'graded')
+#               AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+#         )
+#         SELECT course_name, exam_title, total_earned_mark, total_marks, exam_date, number_of_questions, exam_id,
+#                CASE 
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 80 THEN :g_vg
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 70 THEN :g_gd
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 50 THEN :g_pa
+#                    ELSE :g_fa
+#                END as grade_text
+#         FROM LatestSheets WHERE rn = 1
+#         ORDER BY exam_date DESC LIMIT 3
+#     """)
+#     recent_results = db.execute(recent_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year, "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa}).mappings().fetchall()
+    
+#     exams_count = int(stats["exams_count"]) if stats else 0
+#     passed_exams = int(stats["passed_exams"]) if stats else 0
+#     gpa = float(stats["gpa"]) if stats else 0
+#     highest = float(stats["highest_score"]) if stats else 0
+    
+#     success_rate = (passed_exams / exams_count * 100) if exams_count > 0 else 0
+    
+#     if success_rate >= 85:
+#         level = get_text(user_lang, "مستوى ممتاز", "Excellent")
+#     elif success_rate >= 70:
+#         level = get_text(user_lang, "مستوى جيد", "Good")
+#     else:
+#         level = get_text(user_lang, "يحتاج تحسين", "Needs Improvement")
+        
+#     formatted_recent = []
+#     for row in recent_results:
+#         total_m = float(row["total_marks"]) if row["total_marks"] else 0
+#         earned_m = float(row["total_earned_mark"]) if row["total_earned_mark"] else 0
+#         percentage = (earned_m / total_m) * 100 if total_m > 0 else 0
+        
+#         formatted_recent.append({
+#             "id": str(row["exam_id"]),
+#             "score": f"{round(percentage)}%", 
+#             "total_earned_mark": str(round(earned_m)), 
+#             "label": row["grade_text"],
+#             "title": row["exam_title"],
+#             "subject": row["course_name"] or get_text(user_lang, "غير معروف", "Unknown"),
+#             "date": str(row["exam_date"]) if row["exam_date"] else "",
+#             "total_questions": str(row["number_of_questions"] or 0),
+#             "answered_questions": "0"
+#         })
+    
+#     level_val = translate_live(profile['level_name'], user_lang) if profile else ""
+#     dept_val = translate_live(profile['department_name'], user_lang) if profile else ""
+
+#     return {
+#         # 🌟 رجعنا الاسم والمستوى برّا عشان فلاتر يقدر يقرأهم
+#         "name": profile["full_name"] if profile else get_text(user_lang, "غير معروف", "Unknown"),
+#         "level": f"{level_val} - {dept_val}" if profile else "",
+#         "badge": f"{round(gpa)}", 
+#         "stats": {
+#             "highest_score": f"{round(highest)}",
+#             "gpa": f"{round(gpa, 1)}%",
+#             "exams_count": str(exams_count),
+#             "subjects_count": str(subjects_count),
+#         },
+#         "recent_results": formatted_recent,
+#         "performance": {
+#             "graded_exams": str(passed_exams),              
+#             "total_exams": str(exams_count),                
+#             "success_rate": f"{round(success_rate, 1)}%",   
+#             "average_ai_score": f"{round(gpa, 1)}%",        
+#             "performance_level": level,
+#             "questions_mastered": str(correct_questions_count),      
+#         }
+#     }
+
+# @router.get("/student-dashboard/{student_id}")
+# def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+#     student_id = resolve_student_id(db, student_id)
+    
+#     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
+#     current_year = db.execute(current_year_query).scalar()
+#     if not current_year:
+#         current_year = db.execute(text("SELECT academic_year FROM semesters ORDER BY semester_id DESC LIMIT 1")).scalar()
+    
+#     year_pattern = f"{current_year}%" if current_year else "%"
+#     if current_year and "/" in current_year:
+#         year_base = current_year.split("/")[0]
+#         year_pattern = f"{year_base}%"
+
+#     # 1. جلب بيانات ملف الطالبة
+#     profile_query = text("""
+#         SELECT u.full_name, l.level_name, d.department_name, u.language_code
+#         FROM student s
+#         JOIN users u ON s.user_id = u.user_id
+#         JOIN level l ON s.level_id = l.level_id
+#         JOIN department d ON s.department_id = d.department_id
+#         WHERE s.student_id = :sid
+#     """)
+#     profile = db.execute(profile_query, {"sid": student_id}).mappings().first()
+#     user_lang = profile["language_code"] if profile and profile["language_code"] else "ar"
+
+#     # 2. حساب إحصائيات الاختبارات التي حلتها الطالبة فقط (مربوطة بـ student_id)
+#     stats_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.exam_id, ans.total_earned_mark, e.total_marks, e.passing_mark,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             JOIN semesters s ON tc.semester_id = s.semester_id
+#             WHERE ans.student_id = :sid 
+#               AND ans.status IN ('Graded', 'graded')
+#               AND ans.is_published = true  -- 👈 إضافة هذا السطر تمنع تسريب النتيجة قبل اعتمادها  
+#               AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+#         )
+#         SELECT 
+#             COUNT(exam_id) AS exams_taken,
+#             COALESCE(MAX((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS highest_score_pct,
+#             COALESCE(AVG((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS gpa,
+#             COALESCE(SUM(CASE WHEN total_earned_mark >= passing_mark THEN 1 ELSE 0 END), 0) AS passed_exams
+#         FROM LatestSheets WHERE rn = 1
+#     """)
+#     stats = db.execute(stats_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year}).mappings().first()
+
+#     # 3. عدد المواد المسجلة للطالبة
+#     subjects_query = text("""
+#         SELECT COUNT(DISTINCT sc.course_id)
+#         FROM student_courses sc
+#         JOIN semesters s ON sc.semester_id = s.semester_id
+#         WHERE sc.student_id = :sid AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+#     """)
+#     subjects_count = db.execute(subjects_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year}).scalar() or 0
+
+#     # 4. عدد الأسئلة المتقنة (التي حصلت فيها على الدرجة الكاملة)
+#     questions_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT sheet_id, ROW_NUMBER() OVER(PARTITION BY exam_id ORDER BY uploaded_at DESC) as rn
+#             FROM answer_sheet 
+#             WHERE student_id = :sid 
+#               AND status IN ('Graded', 'graded')
+#               AND is_published = true -- 👈 هنا التعديل: أضفنا شرط النشر
+#         )
+#         SELECT COUNT(sa.answer_id)
+#         FROM student_answers sa
+#         JOIN questions q ON sa.question_id = q.question_id  
+#         JOIN LatestSheets ls ON sa.sheet_id = ls.sheet_id AND ls.rn = 1
+#         WHERE COALESCE(sa.teacher_mark, sa.ai_mark) >= q.question_mark - 0.1
+#     """)
+#     correct_questions_count = db.execute(questions_query, {"sid": student_id}).scalar() or 0
+    
+#     # نصوص التقديرات مترجمة
+#     g_ex = get_text(user_lang, "امتياز", "Excellent")
+#     g_vg = get_text(user_lang, "جيد جداً", "Very Good")
+#     g_gd = get_text(user_lang, "جيد", "Good")
+#     g_pa = get_text(user_lang, "مقبول", "Pass")
+#     g_fa = get_text(user_lang, "ضعيف", "Fail")
+
+#     # 5. جلب آخر النتائج وترتيبها من الأحدث حلاً للطالبة
+#     recent_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.total_earned_mark, e.total_marks, e.exam_id, e.exam_title, ans.uploaded_at, e.number_of_questions, c.course_name,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             JOIN courses c ON tc.course_id = c.course_id
+#             JOIN semesters s ON tc.semester_id = s.semester_id
+#             WHERE ans.student_id = :sid 
+#               AND ans.status IN ('Graded', 'graded')
+#               AND ans.is_published = true  -- 👈 إضافة هذا السطر تمنع تسريب النتيجة قبل اعتمادها 
+#               AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+#         )
+#         SELECT course_name, exam_title, total_earned_mark, total_marks, uploaded_at, number_of_questions, exam_id,
+#                CASE 
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 80 THEN :g_vg
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 70 THEN :g_gd
+#                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 50 THEN :g_pa
+#                    ELSE :g_fa
+#                END as grade_text
+#         FROM LatestSheets WHERE rn = 1
+#         ORDER BY uploaded_at DESC LIMIT 3
+#     """)
+#     recent_results = db.execute(recent_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year, "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa}).mappings().fetchall()
+    
+#     # استخراج وتجهيز قيم المخرجات
+#     exams_taken = int(stats["exams_taken"]) if stats else 0
+#     passed_exams = int(stats["passed_exams"]) if stats else 0
+#     gpa = float(stats["gpa"]) if stats else 0
+#     highest = float(stats["highest_score_pct"]) if stats else 0
+    
+#     success_rate = (passed_exams / exams_taken * 100) if exams_taken > 0 else 0
+    
+#     if success_rate >= 85:
+#         level = get_text(user_lang, "مستوى ممتاز", "Excellent")
+#     elif success_rate >= 70:
+#         level = get_text(user_lang, "مستوى جيد", "Good")
+#     else:
+#         level = get_text(user_lang, "يحتاج تحسين", "Needs Improvement")
+        
+#     formatted_recent = []
+#     for row in recent_results:
+#         total_m = float(row["total_marks"]) if row["total_marks"] else 0
+#         earned_m = float(row["total_earned_mark"]) if row["total_earned_mark"] else 0
+#         percentage = (earned_m / total_m) * 100 if total_m > 0 else 0
+        
+#         formatted_recent.append({
+#             "id": str(row["exam_id"]),
+#             "score": f"{round(percentage)}%", 
+#             "total_earned_mark": str(round(earned_m)), 
+#             "label": row["grade_text"],
+#             "title": row["exam_title"],
+#             "subject": row["course_name"] or get_text(user_lang, "غير معروف", "Unknown"),
+#             "date": str(row["uploaded_at"])[:10] if row["uploaded_at"] else "",
+#             "total_questions": str(row["number_of_questions"] or 0),
+#             "answered_questions": "0" 
+#         })
+    
+#     level_val = translate_live(profile['level_name'], user_lang) if profile else ""
+#     dept_val = translate_live(profile['department_name'], user_lang) if profile else ""
+
+#     return {
+#         "name": profile["full_name"] if profile else get_text(user_lang, "غير معروف", "Unknown"),
+#         "level": f"{level_val} - {dept_val}" if profile else "",
+#         "badge": f"{round(gpa)}", 
+#         "stats": {
+#             "highest_score": f"{round(highest)}",
+#             "gpa": f"{round(gpa, 1)}%",
+#             "exams_count": str(exams_taken), # 👈 رجعت تحسب عدد اختبارات الطالبة فقط (بتطلع 5)
+#             "subjects_count": str(subjects_count),
+#         },
+#         "recent_results": formatted_recent,
+#         "performance": {
+#             "graded_exams": str(passed_exams),              
+#             "total_exams": str(exams_taken),               
+#             "success_rate": f"{round(success_rate, 1)}%",   
+#             "average_ai_score": f"{round(gpa, 1)}%",        
+#             "performance_level": level,
+#             "questions_mastered": str(correct_questions_count),      
+#         }
+    # }
+
+
+
+
+    @router.get("/student-dashboard/{student_id}")
+def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+    student_id = resolve_student_id(db, student_id)
+    
+    # 1. تحديد السنة الأكاديمية النشطة بدقة (نفس منطق صفحة المواد)
+    current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
+    active_year = db.execute(current_year_query).scalar()
+    if not active_year:
+        active_year = db.execute(text("SELECT academic_year FROM semesters ORDER BY semester_id DESC LIMIT 1")).scalar()
+
+    # 2. بيانات الطالبة
     profile_query = text("""
         SELECT u.full_name, l.level_name, d.department_name, u.language_code
         FROM student s
@@ -1561,7 +1890,7 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
     profile = db.execute(profile_query, {"sid": student_id}).mappings().first()
     user_lang = profile["language_code"] if profile and profile["language_code"] else "ar"
 
-    # 🌟 الحل السحري للحسابات: أخذ أحدث ورقة إجابة فقط لكل اختبار لمنع تكرار الأرقام
+    # 3. الإحصائيات (محمية بشرط is_published ومربوطة بالسنة النشطة فقط)
     stats_query = text("""
         WITH LatestSheets AS (
             SELECT ans.exam_id, ans.total_earned_mark, e.total_marks, e.passing_mark,
@@ -1573,37 +1902,48 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
             JOIN semesters s ON tc.semester_id = s.semester_id
             WHERE ans.student_id = :sid 
               AND ans.status IN ('Graded', 'graded')
-              AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+              AND ans.is_published = true 
+              AND s.academic_year = :year
         )
         SELECT 
-            COUNT(exam_id) AS exams_count,
-            COALESCE(MAX(total_earned_mark), 0) AS highest_score,
+            COUNT(exam_id) AS exams_taken,
+            COALESCE(MAX((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS highest_score_pct,
             COALESCE(AVG((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS gpa,
             COALESCE(SUM(CASE WHEN total_earned_mark >= passing_mark THEN 1 ELSE 0 END), 0) AS passed_exams
         FROM LatestSheets WHERE rn = 1
     """)
-    stats = db.execute(stats_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year}).mappings().first()
+    stats = db.execute(stats_query, {"sid": student_id, "year": active_year}).mappings().first()
 
+    # 4. عدد المواد للسنة النشطة
     subjects_query = text("""
         SELECT COUNT(DISTINCT sc.course_id)
         FROM student_courses sc
         JOIN semesters s ON sc.semester_id = s.semester_id
-        WHERE sc.student_id = :sid AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+        WHERE sc.student_id = :sid AND s.academic_year = :year
     """)
-    subjects_count = db.execute(subjects_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year}).scalar() or 0
+    subjects_count = db.execute(subjects_query, {"sid": student_id, "year": active_year}).scalar() or 0
 
+    # 5. عدد الأسئلة الصحيحة (محمية ومربوطة بالسنة النشطة)
     questions_query = text("""
         WITH LatestSheets AS (
-            SELECT sheet_id, ROW_NUMBER() OVER(PARTITION BY exam_id ORDER BY uploaded_at DESC) as rn
-            FROM answer_sheet WHERE student_id = :sid AND status IN ('Graded', 'graded')
+            SELECT ans.sheet_id, ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+            FROM answer_sheet ans
+            JOIN exam e ON ans.exam_id = e.exam_id
+            JOIN folder f ON e.folder_id = f.folder_id
+            JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+            JOIN semesters s ON tc.semester_id = s.semester_id
+            WHERE ans.student_id = :sid 
+              AND ans.status IN ('Graded', 'graded')
+              AND ans.is_published = true
+              AND s.academic_year = :year
         )
         SELECT COUNT(sa.answer_id)
         FROM student_answers sa
         JOIN questions q ON sa.question_id = q.question_id  
         JOIN LatestSheets ls ON sa.sheet_id = ls.sheet_id AND ls.rn = 1
-        WHERE COALESCE(sa.teacher_mark, sa.ai_mark) = q.question_mark 
+        WHERE COALESCE(sa.teacher_mark, sa.ai_mark) >= q.question_mark - 0.1
     """)
-    correct_questions_count = db.execute(questions_query, {"sid": student_id}).scalar() or 0
+    correct_questions_count = db.execute(questions_query, {"sid": student_id, "year": active_year}).scalar() or 0
     
     g_ex = get_text(user_lang, "امتياز", "Excellent")
     g_vg = get_text(user_lang, "جيد جداً", "Very Good")
@@ -1611,9 +1951,10 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
     g_pa = get_text(user_lang, "مقبول", "Pass")
     g_fa = get_text(user_lang, "ضعيف", "Fail")
 
+    # 6. آخر النتائج (محمية بشرط النشر ومحصورة بالسنة النشطة)
     recent_query = text("""
         WITH LatestSheets AS (
-            SELECT ans.total_earned_mark, e.total_marks, e.exam_id, e.exam_title, e.exam_date, e.number_of_questions, c.course_name,
+            SELECT ans.total_earned_mark, e.total_marks, e.exam_id, e.exam_title, ans.uploaded_at, e.number_of_questions, c.course_name,
                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
             FROM answer_sheet ans
             JOIN exam e ON ans.exam_id = e.exam_id
@@ -1623,9 +1964,10 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
             JOIN semesters s ON tc.semester_id = s.semester_id
             WHERE ans.student_id = :sid 
               AND ans.status IN ('Graded', 'graded')
-              AND (s.academic_year LIKE :year OR s.academic_year = :raw_year)
+              AND ans.is_published = true
+              AND s.academic_year = :year
         )
-        SELECT course_name, exam_title, total_earned_mark, total_marks, exam_date, number_of_questions, exam_id,
+        SELECT course_name, exam_title, total_earned_mark, total_marks, uploaded_at, number_of_questions, exam_id,
                CASE 
                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 80 THEN :g_vg
@@ -1634,16 +1976,16 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
                    ELSE :g_fa
                END as grade_text
         FROM LatestSheets WHERE rn = 1
-        ORDER BY exam_date DESC LIMIT 3
+        ORDER BY uploaded_at DESC LIMIT 3
     """)
-    recent_results = db.execute(recent_query, {"sid": student_id, "year": year_pattern, "raw_year": current_year, "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa}).mappings().fetchall()
+    recent_results = db.execute(recent_query, {"sid": student_id, "year": active_year, "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa}).mappings().fetchall()
     
-    exams_count = int(stats["exams_count"]) if stats else 0
+    exams_taken = int(stats["exams_taken"]) if stats else 0
     passed_exams = int(stats["passed_exams"]) if stats else 0
     gpa = float(stats["gpa"]) if stats else 0
-    highest = float(stats["highest_score"]) if stats else 0
+    highest = float(stats["highest_score_pct"]) if stats else 0
     
-    success_rate = (passed_exams / exams_count * 100) if exams_count > 0 else 0
+    success_rate = (passed_exams / exams_taken * 100) if exams_taken > 0 else 0
     
     if success_rate >= 85:
         level = get_text(user_lang, "مستوى ممتاز", "Excellent")
@@ -1665,29 +2007,28 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
             "label": row["grade_text"],
             "title": row["exam_title"],
             "subject": row["course_name"] or get_text(user_lang, "غير معروف", "Unknown"),
-            "date": str(row["exam_date"]) if row["exam_date"] else "",
+            "date": str(row["uploaded_at"])[:10] if row["uploaded_at"] else "",
             "total_questions": str(row["number_of_questions"] or 0),
-            "answered_questions": "0"
+            "answered_questions": "0" 
         })
     
     level_val = translate_live(profile['level_name'], user_lang) if profile else ""
     dept_val = translate_live(profile['department_name'], user_lang) if profile else ""
 
     return {
-        # 🌟 رجعنا الاسم والمستوى برّا عشان فلاتر يقدر يقرأهم
         "name": profile["full_name"] if profile else get_text(user_lang, "غير معروف", "Unknown"),
         "level": f"{level_val} - {dept_val}" if profile else "",
         "badge": f"{round(gpa)}", 
         "stats": {
             "highest_score": f"{round(highest)}",
             "gpa": f"{round(gpa, 1)}%",
-            "exams_count": str(exams_count),
+            "exams_count": str(exams_taken), 
             "subjects_count": str(subjects_count),
         },
         "recent_results": formatted_recent,
         "performance": {
             "graded_exams": str(passed_exams),              
-            "total_exams": str(exams_count),                
+            "total_exams": str(exams_taken),               
             "success_rate": f"{round(success_rate, 1)}%",   
             "average_ai_score": f"{round(gpa, 1)}%",        
             "performance_level": level,
@@ -1697,19 +2038,124 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
 # ══════════════════════════════════════════════════════════════════════════════
 # 2. دالة صفحة المواد الدراسية
 # ══════════════════════════════════════════════════════════════════════════════
+# @router.get("/student-subjects/{student_id}")
+# def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
+#     student_id = resolve_student_id(db, student_id)
+#     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
+#     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
+
+#     semesters_query = text("""
+#         SELECT DISTINCT sem.semester_id, sem.semester_name FROM student_courses sc
+#         JOIN semesters sem ON sc.semester_id = sem.semester_id WHERE sc.student_id = :sid ORDER BY sem.semester_id
+#     """)
+#     semesters_records = db.execute(semesters_query, {"sid": student_id}).fetchall()
+#     semesters_list = [{"id": sem.semester_id, "name": translate_live(sem.semester_name, user_lang)} for sem in semesters_records]
+
+#     stats_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.exam_id, ans.total_earned_mark, tc.semester_id, e.total_marks,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             WHERE ans.student_id = :sid AND ans.status IN ('Graded', 'graded')
+#         )
+#         SELECT sc.semester_id,
+#                COALESCE(COUNT(DISTINCT ls.exam_id), 0) AS exams_count,
+#                COALESCE(MAX(ls.total_earned_mark), 0) AS highest_score,
+#                COALESCE(AVG((CAST(ls.total_earned_mark AS FLOAT) / NULLIF(ls.total_marks, 0)) * 100), 0) AS avg_percentage,
+#                COUNT(DISTINCT sc.course_id) AS subjects_count
+#         FROM student_courses sc
+#         LEFT JOIN LatestSheets ls ON ls.semester_id = sc.semester_id AND ls.rn = 1
+#         WHERE sc.student_id = :sid
+#         GROUP BY sc.semester_id
+#     """)
+#     stats_records = db.execute(stats_query, {"sid": student_id}).fetchall()
+    
+#     stats_by_semester = {
+#         row.semester_id: {
+#             "highest_score": str(round(row.highest_score or 0)),        
+#             "average_score": f"{round(row.avg_percentage or 0, 1)}%",   
+#             "total_exams": str(row.exams_count or 0),
+#             "total_subjects": str(row.subjects_count or 0)
+#         } for row in stats_records
+#     }
+
+#     subjects_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.exam_id, e.exam_date, ans.total_earned_mark, tc.course_id, tc.semester_id,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             WHERE ans.student_id = :sid AND ans.status IN ('Graded', 'graded')
+#         )
+#         SELECT c.course_id, c.course_name, sc.semester_id,
+#             (SELECT u.full_name FROM teacher_courses tc_t JOIN teacher t ON tc_t.teacher_id = t.teacher_id
+#              JOIN users u ON t.user_id = u.user_id WHERE tc_t.course_id = c.course_id AND tc_t.semester_id = sc.semester_id LIMIT 1) AS teacher_name,
+#             COUNT(DISTINCT ls.exam_id) AS exams_taken, 
+#             SUM(ls.total_earned_mark) AS total_earned_mark, 
+#             MAX(ls.exam_date) AS last_exam_date
+#         FROM student_courses sc 
+#         JOIN courses c ON sc.course_id = c.course_id
+#         LEFT JOIN LatestSheets ls ON c.course_id = ls.course_id AND ls.semester_id = sc.semester_id AND ls.rn = 1
+#         WHERE sc.student_id = :sid 
+#         GROUP BY c.course_id, c.course_name, sc.semester_id
+#     """)
+#     subjects_records = db.execute(subjects_query, {"sid": student_id}).fetchall()
+
+#     semester_data = {}
+#     for sem in semesters_list:
+#         sem_id_str = str(sem["id"])
+#         semester_data[sem_id_str] = {
+#             "top_stats": stats_by_semester.get(sem["id"], {"highest_score": "0", "average_score": "0%", "total_exams": "0", "total_subjects": "0"}),
+#             "subjects": []
+#         }
+
+#     for row in subjects_records:
+#         sem_id_str = str(row.semester_id)
+#         if sem_id_str in semester_data:
+#             teacher_prefix = get_text(user_lang, 'أ. ', 'Mr./Ms. ')
+#             teacher_val = f"{teacher_prefix}{row.teacher_name}" if row.teacher_name else get_text(user_lang, "غير محدد", "Not specified")
+            
+#             semester_data[sem_id_str]["subjects"].append({
+#                 "name": row.course_name or get_text(user_lang, "غير معروف", "Unknown"),
+#                 "teacher": teacher_val,
+#                 "total_earned_mark": str(round(row.total_earned_mark or 0)),
+#                 "exams": str(row.exams_taken or 0),
+#                 "lastExam": row.last_exam_date.strftime("%Y-%m-%d") if row.last_exam_date else get_text(user_lang, "لا يوجد", "None")
+#             })
+
+#     return {"semesters": semesters_list, "semester_data": semester_data}
+
+
 @router.get("/student-subjects/{student_id}")
 def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
     student_id = resolve_student_id(db, student_id)
     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
+    # 1. تحديد السنة الأكاديمية النشطة حالياً (حجر الأساس)
+    current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
+    active_year = db.execute(current_year_query).scalar()
+    if not active_year:
+        # لو مافي ترم نشط، نجيب أحدث سنة في النظام
+        active_year = db.execute(text("SELECT academic_year FROM semesters ORDER BY semester_id DESC LIMIT 1")).scalar()
+
+    # 2. جلب الأطرام الخاصة بهذه السنة الأكاديمية فقط
     semesters_query = text("""
-        SELECT DISTINCT sem.semester_id, sem.semester_name FROM student_courses sc
-        JOIN semesters sem ON sc.semester_id = sem.semester_id WHERE sc.student_id = :sid ORDER BY sem.semester_id
+        SELECT DISTINCT sem.semester_id, sem.semester_name 
+        FROM student_courses sc
+        JOIN semesters sem ON sc.semester_id = sem.semester_id 
+        WHERE sc.student_id = :sid AND sem.academic_year = :year
+        ORDER BY sem.semester_id
     """)
-    semesters_records = db.execute(semesters_query, {"sid": student_id}).fetchall()
+    semesters_records = db.execute(semesters_query, {"sid": student_id, "year": active_year}).fetchall()
     semesters_list = [{"id": sem.semester_id, "name": translate_live(sem.semester_name, user_lang)} for sem in semesters_records]
 
+    # 3. حساب الإحصائيات العلوية معزولة لكل ترم (وداخل السنة النشطة)
     stats_query = text("""
         WITH LatestSheets AS (
             SELECT ans.exam_id, ans.total_earned_mark, tc.semester_id, e.total_marks,
@@ -1718,29 +2164,35 @@ def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
             JOIN exam e ON ans.exam_id = e.exam_id
             JOIN folder f ON e.folder_id = f.folder_id
             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
-            WHERE ans.student_id = :sid AND ans.status IN ('Graded', 'graded')
+            JOIN semesters sem ON tc.semester_id = sem.semester_id
+            WHERE ans.student_id = :sid 
+              AND ans.status IN ('Graded', 'graded')
+              AND ans.is_published = true
+              AND sem.academic_year = :year
         )
         SELECT sc.semester_id,
                COALESCE(COUNT(DISTINCT ls.exam_id), 0) AS exams_count,
-               COALESCE(MAX(ls.total_earned_mark), 0) AS highest_score,
-               COALESCE(AVG((CAST(ls.total_earned_mark AS FLOAT) / NULLIF(ls.total_marks, 0)) * 100), 0) AS avg_percentage,
+               COALESCE(MAX(ls.total_earned_mark), 0) AS highest_score, -- 👈 رجعناها كرقم لأعلى درجة في الترم
+               COALESCE((SUM(CAST(ls.total_earned_mark AS FLOAT)) / NULLIF(SUM(ls.total_marks), 0)) * 100, 0) AS avg_percentage,
                COUNT(DISTINCT sc.course_id) AS subjects_count
         FROM student_courses sc
+        JOIN semesters sem ON sc.semester_id = sem.semester_id
         LEFT JOIN LatestSheets ls ON ls.semester_id = sc.semester_id AND ls.rn = 1
-        WHERE sc.student_id = :sid
+        WHERE sc.student_id = :sid AND sem.academic_year = :year
         GROUP BY sc.semester_id
     """)
-    stats_records = db.execute(stats_query, {"sid": student_id}).fetchall()
+    stats_records = db.execute(stats_query, {"sid": student_id, "year": active_year}).fetchall()
     
     stats_by_semester = {
         row.semester_id: {
-            "highest_score": str(round(row.highest_score or 0)),        
-            "average_score": f"{round(row.avg_percentage or 0, 1)}%",   
+            "highest_score": str(round(row.highest_score or 0)), # بدون علامة % بناء على طلبك
+            "average_score": f"{round(row.avg_percentage or 0, 1)}%", 
             "total_exams": str(row.exams_count or 0),
             "total_subjects": str(row.subjects_count or 0)
         } for row in stats_records
     }
 
+    # 4. جلب تفاصيل المواد معزولة بالترم ومجموع الدرجات الفعلي
     subjects_query = text("""
         WITH LatestSheets AS (
             SELECT ans.exam_id, e.exam_date, ans.total_earned_mark, tc.course_id, tc.semester_id,
@@ -1749,21 +2201,26 @@ def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
             JOIN exam e ON ans.exam_id = e.exam_id
             JOIN folder f ON e.folder_id = f.folder_id
             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
-            WHERE ans.student_id = :sid AND ans.status IN ('Graded', 'graded')
+            JOIN semesters sem ON tc.semester_id = sem.semester_id
+            WHERE ans.student_id = :sid 
+              AND ans.status IN ('Graded', 'graded')
+              AND ans.is_published = true
+              AND sem.academic_year = :year
         )
         SELECT c.course_id, c.course_name, sc.semester_id,
             (SELECT u.full_name FROM teacher_courses tc_t JOIN teacher t ON tc_t.teacher_id = t.teacher_id
              JOIN users u ON t.user_id = u.user_id WHERE tc_t.course_id = c.course_id AND tc_t.semester_id = sc.semester_id LIMIT 1) AS teacher_name,
             COUNT(DISTINCT ls.exam_id) AS exams_taken, 
-            SUM(ls.total_earned_mark) AS total_earned_mark, 
+            COALESCE(SUM(ls.total_earned_mark), 0) AS subject_total_score, -- 👈 مجموع الدرجات المكتسبة للمادة
             MAX(ls.exam_date) AS last_exam_date
         FROM student_courses sc 
         JOIN courses c ON sc.course_id = c.course_id
+        JOIN semesters sem ON sc.semester_id = sem.semester_id
         LEFT JOIN LatestSheets ls ON c.course_id = ls.course_id AND ls.semester_id = sc.semester_id AND ls.rn = 1
-        WHERE sc.student_id = :sid 
+        WHERE sc.student_id = :sid AND sem.academic_year = :year
         GROUP BY c.course_id, c.course_name, sc.semester_id
     """)
-    subjects_records = db.execute(subjects_query, {"sid": student_id}).fetchall()
+    subjects_records = db.execute(subjects_query, {"sid": student_id, "year": active_year}).fetchall()
 
     semester_data = {}
     for sem in semesters_list:
@@ -1782,22 +2239,140 @@ def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
             semester_data[sem_id_str]["subjects"].append({
                 "name": row.course_name or get_text(user_lang, "غير معروف", "Unknown"),
                 "teacher": teacher_val,
-                "total_earned_mark": str(round(row.total_earned_mark or 0)),
+                "total_earned_mark": str(round(row.subject_total_score or 0)), # 👈 مجموع الدرجات يظهر كرقم عادي
                 "exams": str(row.exams_taken or 0),
                 "lastExam": row.last_exam_date.strftime("%Y-%m-%d") if row.last_exam_date else get_text(user_lang, "لا يوجد", "None")
             })
 
     return {"semesters": semesters_list, "semester_data": semester_data}
-
 # ══════════════════════════════════════════════════════════════════════════════
 # 3. دالة تفاصيل مادة معينة
 # ══════════════════════════════════════════════════════════════════════════════
+# @router.get("/subject-details/{student_id}/{course_name}")
+# def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
+#     student_id = resolve_student_id(db, student_id)
+#     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
+#     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
+
+#     stats_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.exam_id, ans.total_earned_mark, e.total_marks, tc.course_id,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans
+#             JOIN exam e ON ans.exam_id = e.exam_id
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
+#             JOIN courses c ON tc.course_id = c.course_id
+#             WHERE ans.student_id = :sid AND c.course_name = :cname AND ans.status IN ('Graded', 'graded')
+#         )
+#         SELECT 
+#             COUNT(exam_id) AS exams_count,
+#             COALESCE(MAX(total_earned_mark), 0) AS max_grade,
+#             COALESCE(MIN(total_earned_mark), 0) AS min_grade,
+#             COALESCE(AVG((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS avg_grade
+#         FROM LatestSheets WHERE rn = 1
+#     """)
+#     stats = db.execute(stats_query, {"sid": student_id, "cname": course_name}).mappings().first()
+
+#     g_ex = get_text(user_lang, "امتياز", "Excellent")
+#     g_vg = get_text(user_lang, "جيد جداً", "Very Good")
+#     g_gd = get_text(user_lang, "جيد", "Good")
+#     g_pa = get_text(user_lang, "مقبول", "Pass")
+#     g_fa = get_text(user_lang, "ضعيف", "Fail")
+
+#     exams_query = text("""
+#         WITH LatestSheets AS (
+#             SELECT ans.sheet_id, ans.total_earned_mark, e.total_marks, e.exam_title, e.exam_date, e.number_of_questions,
+#                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
+#             FROM answer_sheet ans 
+#             JOIN exam e ON ans.exam_id = e.exam_id 
+#             JOIN folder f ON e.folder_id = f.folder_id
+#             JOIN teacher_courses tc ON f.tc_id = tc.tc_id 
+#             JOIN courses c ON tc.course_id = c.course_id
+#             WHERE ans.student_id = :sid AND c.course_name = :cname AND ans.status IN ('Graded', 'graded')
+#         )
+#         SELECT exam_title, exam_date, total_earned_mark, total_marks, number_of_questions,
+#             (SELECT COUNT(*) FROM student_answers sa WHERE sa.sheet_id = ls.sheet_id) AS answered_count,
+#             CASE 
+#                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
+#                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 80 THEN :g_vg
+#                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 70 THEN :g_gd
+#                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 50 THEN :g_pa
+#                 ELSE :g_fa
+#             END as rating
+#         FROM LatestSheets ls WHERE rn = 1 ORDER BY exam_date DESC
+#     """)
+#     exams_records = db.execute(exams_query, {"sid": student_id, "cname": course_name, "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa}).mappings().fetchall()
+
+#     formatted_exams = []
+#     for row in exams_records:
+#         formatted_exams.append({
+#             "title": row["exam_title"],
+#             "date": row["exam_date"].strftime("%Y-%m-%d") if row["exam_date"] else get_text(user_lang, "غير محدد", "Not specified"),
+#             "total_earned_mark": str(round(row["total_earned_mark"] or 0)), 
+#             "total_marks": str(round(row["total_marks"] or 0)),
+#             "total": str(row["number_of_questions"] or 0),            
+#             "answers": str(row["answered_count"] or 0),                
+#             "rating": row["rating"]
+#         })
+
+#     avg = float(stats["avg_grade"]) if stats else 0.0
+#     min_grade = float(stats["min_grade"]) if stats else 0.0
+#     max_grade = float(stats["max_grade"]) if stats else 0.0
+#     exams_count = int(stats["exams_count"]) if stats else 0
+
+#     ai_summary_query = text("""
+#         SELECT sc.subject_strengths, sc.subject_weaknesses
+#         FROM student_courses sc
+#         JOIN courses c ON sc.course_id = c.course_id
+#         WHERE sc.student_id = :sid AND c.course_name = :cname
+#     """)
+#     ai_summary = db.execute(ai_summary_query, {"sid": student_id, "cname": course_name}).mappings().first()
+
+#     if ai_summary:
+#         if ai_summary["subject_strengths"]:
+#             translated_strengths = translate_live(ai_summary["subject_strengths"], user_lang)
+#             strengths = translated_strengths.split('\n')
+#         else:
+#             strengths = [get_text(user_lang, "في انتظار تقييم الذكاء الاصطناعي...", "Waiting for AI evaluation...")]
+
+#         if ai_summary["subject_weaknesses"]:
+#             translated_weaknesses = translate_live(ai_summary["subject_weaknesses"], user_lang)
+#             improvements = translated_weaknesses.split('\n')
+#         else:
+#             improvements = [get_text(user_lang, "في انتظار تقييم الذكاء الاصطناعي...", "Waiting for AI evaluation...")]
+#     else:
+#         strengths = [get_text(user_lang, "لا توجد بيانات حالياً", "No data available")]
+#         improvements = [get_text(user_lang, "لا توجد بيانات حالياً", "No data available")]
+
+#     return {
+#         "stats": {
+#             "min": str(round(min_grade)),                
+#             "max": str(round(max_grade)),                
+#             "avg": f"{round(avg, 1)}%",                  
+#             "count": str(exams_count)                    
+#         },
+#         "exams": formatted_exams,
+#         "strengths": strengths,
+#         "improvements": improvements
+#     }
+
+
+
+
 @router.get("/subject-details/{student_id}/{course_name}")
 def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
     student_id = resolve_student_id(db, student_id)
     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
+    # 1. سحب السنة النشطة لضمان تطابق البيانات مع الداشبورد
+    current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
+    active_year = db.execute(current_year_query).scalar()
+    if not active_year:
+        active_year = db.execute(text("SELECT academic_year FROM semesters ORDER BY semester_id DESC LIMIT 1")).scalar()
+
+    # 2. إحصائيات المادة (محمية ومحسوبة بالنسب المئوية الدقيقة)
     stats_query = text("""
         WITH LatestSheets AS (
             SELECT ans.exam_id, ans.total_earned_mark, e.total_marks, tc.course_id,
@@ -1807,16 +2382,21 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
             JOIN folder f ON e.folder_id = f.folder_id
             JOIN teacher_courses tc ON f.tc_id = tc.tc_id
             JOIN courses c ON tc.course_id = c.course_id
-            WHERE ans.student_id = :sid AND c.course_name = :cname AND ans.status IN ('Graded', 'graded')
+            JOIN semesters sem ON tc.semester_id = sem.semester_id
+            WHERE ans.student_id = :sid 
+              AND c.course_name = :cname 
+              AND ans.status IN ('Graded', 'graded')
+              AND ans.is_published = true
+              AND sem.academic_year = :year
         )
         SELECT 
             COUNT(exam_id) AS exams_count,
-            COALESCE(MAX(total_earned_mark), 0) AS max_grade,
-            COALESCE(MIN(total_earned_mark), 0) AS min_grade,
-            COALESCE(AVG((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS avg_grade
+            COALESCE(MAX((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS max_grade_pct,
+            COALESCE(MIN((CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100), 0) AS min_grade_pct,
+            COALESCE((SUM(CAST(total_earned_mark AS FLOAT)) / NULLIF(SUM(total_marks), 0)) * 100, 0) AS avg_grade_pct
         FROM LatestSheets WHERE rn = 1
     """)
-    stats = db.execute(stats_query, {"sid": student_id, "cname": course_name}).mappings().first()
+    stats = db.execute(stats_query, {"sid": student_id, "cname": course_name, "year": active_year}).mappings().first()
 
     g_ex = get_text(user_lang, "امتياز", "Excellent")
     g_vg = get_text(user_lang, "جيد جداً", "Very Good")
@@ -1824,18 +2404,24 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
     g_pa = get_text(user_lang, "مقبول", "Pass")
     g_fa = get_text(user_lang, "ضعيف", "Fail")
 
+    # 3. قائمة الاختبارات (مرتبة حسب التسليم ومحمية)
     exams_query = text("""
         WITH LatestSheets AS (
-            SELECT ans.sheet_id, ans.total_earned_mark, e.total_marks, e.exam_title, e.exam_date, e.number_of_questions,
+            SELECT ans.sheet_id, ans.total_earned_mark, e.total_marks, e.exam_title, ans.uploaded_at, e.number_of_questions,
                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
             FROM answer_sheet ans 
             JOIN exam e ON ans.exam_id = e.exam_id 
             JOIN folder f ON e.folder_id = f.folder_id
             JOIN teacher_courses tc ON f.tc_id = tc.tc_id 
             JOIN courses c ON tc.course_id = c.course_id
-            WHERE ans.student_id = :sid AND c.course_name = :cname AND ans.status IN ('Graded', 'graded')
+            JOIN semesters sem ON tc.semester_id = sem.semester_id
+            WHERE ans.student_id = :sid 
+              AND c.course_name = :cname 
+              AND ans.status IN ('Graded', 'graded')
+              AND ans.is_published = true
+              AND sem.academic_year = :year
         )
-        SELECT exam_title, exam_date, total_earned_mark, total_marks, number_of_questions,
+        SELECT exam_title, uploaded_at, total_earned_mark, total_marks, number_of_questions,
             (SELECT COUNT(*) FROM student_answers sa WHERE sa.sheet_id = ls.sheet_id) AS answered_count,
             CASE 
                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
@@ -1844,15 +2430,18 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 50 THEN :g_pa
                 ELSE :g_fa
             END as rating
-        FROM LatestSheets ls WHERE rn = 1 ORDER BY exam_date DESC
+        FROM LatestSheets ls WHERE rn = 1 ORDER BY uploaded_at DESC
     """)
-    exams_records = db.execute(exams_query, {"sid": student_id, "cname": course_name, "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa}).mappings().fetchall()
+    exams_records = db.execute(exams_query, {
+        "sid": student_id, "cname": course_name, "year": active_year, 
+        "g_ex": g_ex, "g_vg": g_vg, "g_gd": g_gd, "g_pa": g_pa, "g_fa": g_fa
+    }).mappings().fetchall()
 
     formatted_exams = []
     for row in exams_records:
         formatted_exams.append({
             "title": row["exam_title"],
-            "date": row["exam_date"].strftime("%Y-%m-%d") if row["exam_date"] else get_text(user_lang, "غير محدد", "Not specified"),
+            "date": row["uploaded_at"].strftime("%Y-%m-%d") if row["uploaded_at"] else get_text(user_lang, "غير محدد", "Not specified"),
             "total_earned_mark": str(round(row["total_earned_mark"] or 0)), 
             "total_marks": str(round(row["total_marks"] or 0)),
             "total": str(row["number_of_questions"] or 0),            
@@ -1860,18 +2449,20 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
             "rating": row["rating"]
         })
 
-    avg = float(stats["avg_grade"]) if stats else 0.0
-    min_grade = float(stats["min_grade"]) if stats else 0.0
-    max_grade = float(stats["max_grade"]) if stats else 0.0
+    avg = float(stats["avg_grade_pct"]) if stats else 0.0
+    min_grade = float(stats["min_grade_pct"]) if stats else 0.0
+    max_grade = float(stats["max_grade_pct"]) if stats else 0.0
     exams_count = int(stats["exams_count"]) if stats else 0
 
+    # 4. تقييم الذكاء الاصطناعي (مربوط بالسنة النشطة)
     ai_summary_query = text("""
         SELECT sc.subject_strengths, sc.subject_weaknesses
         FROM student_courses sc
         JOIN courses c ON sc.course_id = c.course_id
-        WHERE sc.student_id = :sid AND c.course_name = :cname
+        JOIN semesters sem ON sc.semester_id = sem.semester_id
+        WHERE sc.student_id = :sid AND c.course_name = :cname AND sem.academic_year = :year
     """)
-    ai_summary = db.execute(ai_summary_query, {"sid": student_id, "cname": course_name}).mappings().first()
+    ai_summary = db.execute(ai_summary_query, {"sid": student_id, "cname": course_name, "year": active_year}).mappings().first()
 
     if ai_summary:
         if ai_summary["subject_strengths"]:
@@ -1891,8 +2482,8 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
 
     return {
         "stats": {
-            "min": str(round(min_grade)),                
-            "max": str(round(max_grade)),                
+            "min": f"{round(min_grade)}%", # 👈 تم تحويلها لنسبة مئوية للمنطق الرياضي الصحيح
+            "max": f"{round(max_grade)}%", # 👈 تم تحويلها لنسبة مئوية للمنطق الرياضي الصحيح
             "avg": f"{round(avg, 1)}%",                  
             "count": str(exams_count)                    
         },

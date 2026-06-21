@@ -28,10 +28,10 @@ conf = ConnectionConfig(
     MAIL_USERNAME=os.environ.get("OTP_EMAIL", ""),
     MAIL_PASSWORD=os.environ.get("OTP_PASSWORD", ""), 
     MAIL_FROM=os.environ.get("OTP_EMAIL", ""),
-    MAIL_PORT=465,             
+    MAIL_PORT=587,               # 👈 غيرنا البورت هنا
     MAIL_SERVER="smtp.gmail.com",
-    MAIL_STARTTLS=False,       
-    MAIL_SSL_TLS=True,         
+    MAIL_STARTTLS=True,          # 👈 جعلناها True
+    MAIL_SSL_TLS=False,          # 👈 جعلناها False
     USE_CREDENTIALS=True
 )
 
