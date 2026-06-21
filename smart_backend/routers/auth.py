@@ -86,8 +86,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     # Check password match (supports both hashed and plaintext for backward compatibility)
     is_valid = False
     if db_password:
-        if verify_password(request.password, db_password):
-            is_valid = True
+        if verify_password(request.password.strip(), db_password):            is_valid = True
         elif request.password == db_password:
             is_valid = True
             
@@ -343,8 +342,7 @@ def verify_and_set_password(request: SetPasswordRequest):
         )
 
     # 2. تحديث كلمة المرور 
-    hashed_password = get_password_hash(request.new_password)
-    update_user = supabase.table("users") \
+    hashed_password = get_password_hash(request.new_password.strip())    update_user = supabase.table("users") \
         .update({"password": hashed_password}) \
         .eq("email", request.email) \
         .execute()
