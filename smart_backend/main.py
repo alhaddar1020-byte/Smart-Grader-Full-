@@ -468,6 +468,9 @@ def home():
 # ==========================================
 # 🔴 إعدادات الـ Webhooks وإرسال الإشعارات (شغل صاحبتك)
 # ==========================================
+# ==========================================
+# 🔴 إعدادات الـ Webhooks وإرسال الإشعارات (نسخة الـ API المضمونة)
+# ==========================================
 class SupabaseWebhookPayload(BaseModel):
     type: str
     table: str
@@ -478,15 +481,13 @@ def send_email_task(student_email: str, student_name: str, exam_title: str, lang
     import os
     import json
     import urllib.request
-    from dotenv import load_dotenv
-    load_dotenv()
+    import ssl # 👈 لمنع أي مشاكل في شهادات الأمان السحابية
     
-    # إيميلك الموثق في SendGrid
     SENDER_EMAIL = "aryjth953@gmail.com" 
-    # مفتاح SendGrid السري الخاص بك
-    SENDGRID_API_KEY = os.environ.get("SENDER_PASSWORD", "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")          
+    
+    # 🌟 قمنا بفصل الاسم تماماً عن الباسوورد القديم لضمان عدم التضارب
+    SENDGRID_API_KEY = os.environ.get("SENDGRID_API_KEY", "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")          
 
-    # تحديد لغة الإشعار
     if lang == "en":
         subject = f"Exam Grade Approved: {exam_title}"
         html_content = f"""
@@ -508,7 +509,6 @@ def send_email_task(student_email: str, student_name: str, exam_title: str, lang
         </div>
         """
 
-    # تجهيز طرد البيانات بتنسيق SendGrid الرسمي
     data = {
         "personalizations": [{"to": [{"email": student_email}]}],
         "from": {"email": SENDER_EMAIL, "name": "Intelligent Grading System"},
@@ -516,41 +516,37 @@ def send_email_task(student_email: str, student_name: str, exam_title: str, lang
         "content": [{"type": "text/html", "value": html_content}]
     }
 
-    # إرسال الطرد عبر الباب المفتوح (HTTPS API)
     req = urllib.request.Request("https://api.sendgrid.com/v3/mail/send")
     req.add_header("Authorization", f"Bearer {SENDGRID_API_KEY}")
     req.add_header("Content-Type", "application/json")
 
     try:
-        # تنفيذ الإرسال الفعلي
-        response = urllib.request.urlopen(req, json.dumps(data).encode('utf-8'))
-        print(f"--- ✅ تم إرسال الإيميل بنجاح عبر API! كود الاستجابة: {response.getcode()} ---")
+        # تجاوز فحص الشهادات المحلي إذا لزم الأمر في السيرفرات السحابية
+        context = ssl._create_unverified_context()
+        response = urllib.request.urlopen(req, json.dumps(data).encode('utf-8'), context=context)
+        print(f"--- ✅ نجاح ساحق: تم إرسال الإيميل للمستلم بنجاح! كود: {response.getcode()} ---")
+    except urllib.error.HTTPError as http_err:
+        # قراءة تفاصيل الخطأ القادم من SendGrid إن وجد (مثل خطأ في الصلاحية 401)
+        error_details = http_err.read().decode('utf-8')
+        print(f"--- ❌ خطأ HTTP من SendGrid: {http_err.code} - التفاصيل: {error_details} ---")
     except Exception as e:
-        print(f"--- ❌ فشل الإرسال عبر API: {e} ---")
+        print(f"--- ❌ فشل الإرسال النهائي عبر الـ API: {e} ---")
 
 @app.post("/api/webhook/grade-notification")
 def handle_grade_webhook(
     payload: SupabaseWebhookPayload, 
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db) # 👈 حذفنا الـ background_tasks
 ):
     print("--- 1. وصل طلب جديد للويب هوك (Webhook Received) ---")
-    
     new_data = payload.record
     old_data = payload.old_record or {}
     
-    print(f"--- 2. البيانات التي وصلت هي: {new_data} ---")
-
-    # نتحقق من حالة النشر (is_published)
     new_published = new_data.get("is_published")
     old_published = old_data.get("is_published")
 
-    print(f"--- 3. حالة النشر الحالية: {new_published} ---")
+    print(f"--- 2. حالة النشر الحالية: {new_published}, السابقة: {old_published} ---")
 
-    # الشرط: إذا تغيرت من False إلى True
     if new_published is True and (old_published is False or old_published is None):
-        print("--- 4. الشرط تحقق! (is_published تحولت لـ True) جاري تجهيز الإيميل ---")
-        
         student_id = new_data.get("student_id")
         exam_id = new_data.get("exam_id")
 
@@ -565,22 +561,21 @@ def handle_grade_webhook(
             result = db.execute(query, {"sid": student_id, "eid": exam_id}).mappings().first()
 
             if result and result["email"]:
-                print(f"--- 5. تم العثور على بيانات الطالب: {result['full_name']} ---")
+                print(f"--- 3. جاري إرسال الإيميل فوراً لـ: {result['full_name']} ---")
                 user_lang = result["language_code"] if result["language_code"] else "ar"
                 
-                background_tasks.add_task(
-                    send_email_task, 
+                # 🌟 الاستدعاء المباشر هنا! السيرفر سينتظر انتهاء الإرسال ثم يغلق الطلب، لتجبري اللوق على الطباعة
+                send_email_task(
                     student_email=result["email"], 
                     student_name=result["full_name"], 
                     exam_title=result["exam_title"],
                     lang=user_lang
                 )
-                print("--- 6. تم إضافة مهمة إرسال الإيميل بنجاح! ---")
             else:
-                print("--- ❌ خطأ: لم أجد إيميل الطالب في قاعدة البيانات ---")
+                print("--- ❌ خطأ: لم يتم العثور على إيميل الطالب ---")
         else:
-            print("--- ❌ خطأ: الـ student_id أو exam_id مفقودين من البيانات ---")
+            print("--- ❌ خطأ: المعرفات مفقودة ---")
     else:
-        print("--- ⚠️ الشرط لم يتحقق (is_published لم تتحول لـ True) ---")
+        print("--- ⚠️ الشرط لم يتحقق بعد ---")
 
-    return {"message": "Webhook processed successfully"}
+    return {"message": "Webhook processed"}
