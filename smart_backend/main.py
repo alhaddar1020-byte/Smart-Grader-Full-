@@ -476,50 +476,57 @@ class SupabaseWebhookPayload(BaseModel):
 
 def send_email_task(student_email: str, student_name: str, exam_title: str, lang: str):
     import os
+    import json
+    import urllib.request
     from dotenv import load_dotenv
     load_dotenv()
     
-    SMTP_SERVER = "smtp.gmail.com"
-    SMTP_PORT = 587
-    SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "sosytane@gmail.com")  
-    SENDER_PASSWORD = os.environ.get("SENDER_PASSWORD", "owxobwtkncijrxzr")          
+    # إيميلك الموثق في SendGrid
+    SENDER_EMAIL = "aryjth953@gmail.com" 
+    # مفتاح SendGrid السري الخاص بك
+    SENDGRID_API_KEY = os.environ.get("SENDER_PASSWORD", "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")          
+
+    # تحديد لغة الإشعار
+    if lang == "en":
+        subject = f"Exam Grade Approved: {exam_title}"
+        html_content = f"""
+        <div dir="ltr" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h2 style="color: #4FB7B5; text-align: center;">Intelligent Grading System</h2>
+            <p>Hello <strong>{student_name}</strong>,</p>
+            <p>Your exam grade for <strong style="color: #4FB7B5;">{exam_title}</strong> has been approved.</p>
+            <p>You can now log in to the platform to view your detailed report.</p>
+        </div>
+        """
+    else:
+        subject = f"اعتماد نتيجة اختبار: {exam_title}"
+        html_content = f"""
+        <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <h2 style="color: #4FB7B5; text-align: center;">نظام التصحيح الذكي</h2>
+            <p>مرحباً يا <strong>{student_name}</strong>،</p>
+            <p>تم اعتماد نتيجة اختبارك في مادة: <strong style="color: #4FB7B5;">{exam_title}</strong></p>
+            <p>بإمكانك الآن تسجيل الدخول للمنصة لمعاينة التقرير التفصيلي.</p>
+        </div>
+        """
+
+    # تجهيز طرد البيانات بتنسيق SendGrid الرسمي
+    data = {
+        "personalizations": [{"to": [{"email": student_email}]}],
+        "from": {"email": SENDER_EMAIL, "name": "Intelligent Grading System"},
+        "subject": subject,
+        "content": [{"type": "text/html", "value": html_content}]
+    }
+
+    # إرسال الطرد عبر الباب المفتوح (HTTPS API)
+    req = urllib.request.Request("https://api.sendgrid.com/v3/mail/send")
+    req.add_header("Authorization", f"Bearer {SENDGRID_API_KEY}")
+    req.add_header("Content-Type", "application/json")
 
     try:
-        msg = MIMEMultipart("alternative")
-        msg["From"] = SENDER_EMAIL
-        msg["To"] = student_email
-
-        if lang == "en":
-            msg["Subject"] = f"Exam Grade Approved: {exam_title}"
-            html_content = f"""
-            <div dir="ltr" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                <h2 style="color: #4FB7B5; text-align: center;">Intelligent Grading System</h2>
-                <p>Hello <strong>{student_name}</strong>,</p>
-                <p>Your exam grade for <strong style="color: #4FB7B5;">{exam_title}</strong> has been approved.</p>
-                <p>You can now log in to the platform to view your detailed report.</p>
-            </div>
-            """
-        else:
-            msg["Subject"] = f"اعتماد نتيجة اختبار: {exam_title}"
-            html_content = f"""
-            <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                <h2 style="color: #4FB7B5; text-align: center;">نظام التصحيح الذكي</h2>
-                <p>مرحباً يا <strong>{student_name}</strong>،</p>
-                <p>تم اعتماد نتيجة اختبارك في مادة: <strong style="color: #4FB7B5;">{exam_title}</strong></p>
-                <p>بإمكانك الآن تسجيل الدخول للمنصة لمعاينة التقرير التفصيلي.</p>
-            </div>
-            """
-
-        msg.attach(MIMEText(html_content, "html", "utf-8"))
-
-        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
-        server.starttls()
-        server.login(SENDER_EMAIL, SENDER_PASSWORD)
-        server.sendmail(SENDER_EMAIL, student_email, msg.as_string())
-        server.quit()
-        print(f"✅ تم إرسال الإيميل بنجاح إلى {student_email} باللغة {lang}")
+        # تنفيذ الإرسال الفعلي
+        response = urllib.request.urlopen(req, json.dumps(data).encode('utf-8'))
+        print(f"--- ✅ تم إرسال الإيميل بنجاح عبر API! كود الاستجابة: {response.getcode()} ---")
     except Exception as e:
-        print(f"❌ فشل إرسال الإيميل: {e}")
+        print(f"--- ❌ فشل الإرسال عبر API: {e} ---")
 
 @app.post("/api/webhook/grade-notification")
 def handle_grade_webhook(
