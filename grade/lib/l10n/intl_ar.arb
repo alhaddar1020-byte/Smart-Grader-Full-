@@ -202,7 +202,7 @@
   "sidebarSettings": "إعدادات",
   "statMaterials": "المواد",
   "statAverage": "المعدل العام",
-  "statHighScore": "أعلى درجة",
+  "statHighScore": "أعلى نتيجة",
   "recentResults": "النتائج الأخيرة",
   "viewAll": "عرض الكل",
   "viewAllMaterials": "عرض جميع المواد",
@@ -215,9 +215,9 @@
     "placeholders": {
       "badge": {}
     }
-  },
+  }
   "pageNotFound": "الصفحة غير موجودة",
-  "statsHighestScore": "أعلى درجة",
+  "statsHighestScore": "أعلى نتيجة",
   "statsGPA": "المعدل العام",
   "termFirst": "الفصل الدراسي الأول",
   "termSecond": "الفصل الدراسي الثاني",
@@ -226,7 +226,7 @@
   "examsLabel": "الاختبارات",
   "subjectsTitle": "المواد الدراسية",
   "statMinGrade": "أقل درجة",
-  "statMaxGrade": "أعلى درجة",
+  "statMaxGrade": "أعلى نتيجة",
   "examDate": "التاريخ",
   "examQuestions": "الأسئلة",
   "examAnswers": "الإجابات",
@@ -1139,7 +1139,7 @@
   "statMaterials": "المواد",
   "statExams": "الامتحانات",
   "statAverage": "المعدل العام",
-  "statHighScore": "أعلى درجة",
+  "statHighScore": "أعلى نتيجة",
   "recentResults": "النتائج الأخيرة",
   "viewAll": "عرض الكل",
   "viewAllMaterials": "عرض جميع المواد",
@@ -1155,7 +1155,7 @@
  
   "dashboardTitle": "لوحة التحكم",
   "welcomeMessage": "مرحباً {name}!",
-  "statsHighestScore": "أعلى درجة",
+  "statsHighestScore": "أعلى نتيجة",
   "statsGPA": "المعدل العام",
   "termFirst": "الفصل الدراسي الأول",
   "termSecond": "الفصل الدراسي الثاني",
@@ -1170,7 +1170,7 @@
 
   
   "statMinGrade": "أقل درجة",
-  "statMaxGrade": "أعلى درجة",
+  "statMaxGrade": "أعلى نتيجة",
   "statAverage": "المعدل العام",
   "statExams": "الامتحانات",
   "examDate": "التاريخ",

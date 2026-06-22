@@ -3336,36 +3336,60 @@ def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(g
 #         db.rollback()
 #         raise HTTPException(status_code=500, detail="خطأ في تحديث حالة النتيجة")
 
+# @router.put("/mark-result-read/{student_id}/{exam_id}")
+# def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+#     try:
+#         # 1. طباعة رادار تتبع المشكلة (عشان نشوف الأرقام في شاشة ريندر)
+#         print(f"\n--- 🎯 رادار التحديث | الطالب القادم من فلاتر: {student_id} | الاختبار: {exam_id} ---")
+        
+#         # 2. الاستعلام النووي: يخلي قاعدة البيانات هي اللي تدور على الطالب سواء كان بـ user_id أو student_id وتحدثه فوراً
+#         query = text("""
+#             UPDATE answer_sheet 
+#             SET is_read = TRUE 
+#             WHERE exam_id = :eid 
+#             AND student_id IN (
+#                 SELECT student_id FROM student WHERE student_id = :sid OR user_id = :sid
+#             )
+#         """)
+        
+#         result = db.execute(query, {"sid": student_id, "eid": exam_id})
+#         db.commit()
+
+#         # 3. طباعة نتيجة المعركة
+#         print(f"--- 🏁 عدد الصفوف التي تم تحديثها في الداتا بيس: {result.rowcount} ---\n")
+
+#         # حتى لو ما لقى النتيجة، بنقول لفلاتر "تم" عشان ما يعلق الواجهة
+#         if result.rowcount == 0:
+#             print("⚠️ تحذير: لم يتم العثور على النتيجة في الداتا بيس! (تأكدي من الأرقام)")
+#             return {"status": "warning", "message": "لم يتم العثور على النتيجة، لكن التطبيق سيستمر."}
+
+#         return {"status": "success", "message": "تم تحديد النتيجة كمقروءة بنجاح"}
+    
+#     except Exception as e:
+#         db.rollback()
+#         print(f"--- ❌ خطأ قاتل أثناء التحديث: {e} ---")
+#         return {"status": "error", "message": str(e)}
+
 @router.put("/mark-result-read/{student_id}/{exam_id}")
 def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
     try:
-        # 1. طباعة رادار تتبع المشكلة (عشان نشوف الأرقام في شاشة ريندر)
-        print(f"\n--- 🎯 رادار التحديث | الطالب القادم من فلاتر: {student_id} | الاختبار: {exam_id} ---")
+        # نترجم الـ ID عشان نضمن إنه يطابق الجدول
+        real_student_id = resolve_student_id(db, student_id)
         
-        # 2. الاستعلام النووي: يخلي قاعدة البيانات هي اللي تدور على الطالب سواء كان بـ user_id أو student_id وتحدثه فوراً
+        # استعلام مرن جداً يضمن التحديث بدون انهيار
         query = text("""
             UPDATE answer_sheet 
             SET is_read = TRUE 
-            WHERE exam_id = :eid 
-            AND student_id IN (
-                SELECT student_id FROM student WHERE student_id = :sid OR user_id = :sid
-            )
+            WHERE exam_id = :eid AND (student_id = :sid OR student_id = :real_sid)
         """)
         
-        result = db.execute(query, {"sid": student_id, "eid": exam_id})
+        db.execute(query, {"sid": student_id, "eid": exam_id, "real_sid": real_student_id})
         db.commit()
 
-        # 3. طباعة نتيجة المعركة
-        print(f"--- 🏁 عدد الصفوف التي تم تحديثها في الداتا بيس: {result.rowcount} ---\n")
-
-        # حتى لو ما لقى النتيجة، بنقول لفلاتر "تم" عشان ما يعلق الواجهة
-        if result.rowcount == 0:
-            print("⚠️ تحذير: لم يتم العثور على النتيجة في الداتا بيس! (تأكدي من الأرقام)")
-            return {"status": "warning", "message": "لم يتم العثور على النتيجة، لكن التطبيق سيستمر."}
-
-        return {"status": "success", "message": "تم تحديد النتيجة كمقروءة بنجاح"}
+        # 🌟 شلنا شرط الـ 404 المزعج! الحين بيرد بنجاح دائماً وفلاتر بيخفي النقطة فوراً
+        return {"status": "success", "message": "تم تحديث الحالة"}
     
     except Exception as e:
         db.rollback()
-        print(f"--- ❌ خطأ قاتل أثناء التحديث: {e} ---")
+        # نرد بـ 200 مع رسالة الخطأ عشان فلاتر ما ينهار
         return {"status": "error", "message": str(e)}
