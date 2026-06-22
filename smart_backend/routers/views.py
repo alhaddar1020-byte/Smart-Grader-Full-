@@ -111,7 +111,8 @@ from crud.student_dashbord import (
     get_student_dashboard_data, 
     get_student_subjects_data, 
     get_subject_details_data, 
-    get_exam_details_data
+    get_exam_details_data,
+    mark_result_as_read_data
 )
 
 router = APIRouter(prefix="/views", tags=["Data Views (عرض البيانات جاهزة)"])

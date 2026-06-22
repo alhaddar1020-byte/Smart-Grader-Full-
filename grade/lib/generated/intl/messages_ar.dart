@@ -1333,7 +1333,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "settingsLanguage": MessageLookupByLibrary.simpleMessage("اللغة"),
     "settingsLastChange": m15,
-    "settingsLevel": MessageLookupByLibrary.simpleMessage("التخصص الجامعي"),
+    "settingsLevel": MessageLookupByLibrary.simpleMessage("المستوى "),
     "settingsManagePassword": MessageLookupByLibrary.simpleMessage(
       "إدارة كلمة المرور",
     ),

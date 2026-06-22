@@ -2869,9 +2869,14 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
     level_val = translate_live(profile['level_name'], user_lang) if profile else ""
     dept_val = translate_live(profile['department_name'], user_lang) if profile else ""
 
+    if profile:
+        level_display = f"{level_val} - {dept_val}" if dept_val else level_val
+    else:
+        level_display = ""
+
     return {
         "name": profile["full_name"] if profile else get_text(user_lang, "غير معروف", "Unknown"),
-        "level": f"{level_val} - {dept_val}" if profile else "",
+        "level": level_display, # 👈 استخدمنا المتغير الذكي هنا
         "badge": f"{round(gpa)}", 
         "stats": {
             "highest_score": highest_score_display, # 👈 ستعرض الآن مثل: "35 / 40"
