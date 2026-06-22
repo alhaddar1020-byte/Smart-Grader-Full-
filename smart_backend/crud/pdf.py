@@ -313,10 +313,20 @@ reshaper = arabic_reshaper.ArabicReshaper(configuration=reshaper_config)
 
 def prep(txt):
     if not txt: return "-"
-    # 1. نربط الحروف (Reshaping)
-    reshaped = reshaper.reshape(str(txt))
-    # 2. نعكس ترتيب الجملة (Bidi) ليفهمها الـ PDF كمتتالية عربية
-    return get_display(reshaped)
+    
+    # 🌟 سطر سطر: عشان لو النص طويل ونزل سطر جديد، ما ينقلب من تحت لفوق!
+    lines = str(txt).split('\n')
+    final_lines = []
+    
+    for line in lines:
+        # 1. ربط الحروف
+        reshaped = reshaper.reshape(line)
+        # 2. السحر هنا: (base_dir='R') تجبر المكتبة تعتبر الجملة عربية وما تلخبط الإنجليزي!
+        bidi_line = get_display(reshaped, base_dir='R')
+        final_lines.append(bidi_line)
+        
+    # ندمجهم بـ <br/> عشان ReportLab يفهم إن فيه سطر جديد
+    return "<br/>".join(final_lines)
 
 def fmt_num(num):
     if num is None: return "0"
@@ -427,8 +437,6 @@ def download_exam_report(
 
     base = getSampleStyleSheet()
     def s(name, parent="Normal", **kw):
-        # 🌟 ملاحظة: إذا استخدمنا get_display، لا نستخدم wordWrap='RTL' 
-        # لأن النص جاهز ومعكوس مسبقاً.
         p = ParagraphStyle(name, parent=base[parent])
         for k, v in kw.items(): setattr(p, k, v)
         return p

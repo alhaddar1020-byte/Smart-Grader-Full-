@@ -2862,8 +2862,8 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
             "subject": row["course_name"] or get_text(user_lang, "غير معروف", "Unknown"),
             "date": str(row["uploaded_at"])[:10] if row["uploaded_at"] else "",
             "total_questions": str(row["number_of_questions"] or 0),
-            "answered_questions": "0" 
-            "is_read": row["is_read"] # 👈👈👈 هذا هو السطر السحري اللي كان مفقود!!
+            "answered_questions": "0", 
+            "is_read": row["is_read"] 
         })
     
     level_val = translate_live(profile['level_name'], user_lang) if profile else ""
