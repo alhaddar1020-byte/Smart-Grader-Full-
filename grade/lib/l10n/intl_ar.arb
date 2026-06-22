@@ -225,7 +225,7 @@
   "gradeLabel": "الدرجة",
   "examsLabel": "الاختبارات",
   "subjectsTitle": "المواد الدراسية",
-  "statMinGrade": "أقل درجة",
+  "statMinGrade": "أقل نتيجة",
   "statMaxGrade": "أعلى نتيجة",
   "examDate": "التاريخ",
   "examQuestions": "الأسئلة",
@@ -282,7 +282,7 @@
   "settingsDarkMode": "الوضع الداكن",
   "settingsLanguage": "اللغة",
   "settingsDangerZone": "منطقة الخطر",
-  "settingsDangerDesc": "سيتم حذف حسابك وجميع البيانات المرتبطة به بشكل نهائي.",
+  "settingsDangerDesc": "سيتم الغاء تنشيط حسابك فقط ولن يتم حدف بيانات  ",
   "settingsDeactivate": "إلغاء تنشيط الحساب",
   "settingsCurrentPassword": "كلمة المرور الحالية",
   "settingsNewPassword": "كلمة المرور الجديدة",
@@ -1161,6 +1161,7 @@
   "termSecond": "الفصل الدراسي الثاني",
   "lastExam": "آخر اختبار",
   "gradeLabel": "مجموع الدرجات",
+  "Grade1" : "الدرجة",
   "examsLabel": "الاختبارات",
   "subjectsTitle": "المواد الدراسية",
   "questionsMasteredTitle": " لقد جاوبت على",
@@ -1169,7 +1170,7 @@
   
 
   
-  "statMinGrade": "أقل درجة",
+  "statMinGrade": "أقل نتيجة",
   "statMaxGrade": "أعلى نتيجة",
   "statAverage": "المعدل العام",
   "statExams": "الامتحانات",
@@ -1237,7 +1238,7 @@
 "settingsDarkMode": "الوضع الداكن",
 "settingsLanguage": "اللغة",
 "settingsDangerZone": "منطقة الخطر",
-"settingsDangerDesc": "سيتم حذف حسابك وجميع البيانات المرتبطة به بشكل نهائي.",
+"settingsDangerDesc": "سيتم الغاء تنشيط حسابك فقط ولن يتم حذف بياناتك",
 "settingsDeactivate": "إلغاء تنشيط الحساب",
 "settingsCurrentPassword": "كلمة المرور الحالية",
 "settingsNewPassword": "كلمة المرور الجديدة",

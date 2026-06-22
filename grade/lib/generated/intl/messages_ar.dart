@@ -69,6 +69,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "Grade1": MessageLookupByLibrary.simpleMessage("الدرجة"),
     "a_month_ago": MessageLookupByLibrary.simpleMessage("منذ شهر"),
     "a_week_ago": MessageLookupByLibrary.simpleMessage("منذ أسبوع"),
     "aboutSystem": MessageLookupByLibrary.simpleMessage("عن النظام"),
@@ -1288,7 +1289,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "كلمة المرور الحالية",
     ),
     "settingsDangerDesc": MessageLookupByLibrary.simpleMessage(
-      "سيتم حذف حسابك وجميع البيانات المرتبطة به بشكل نهائي.",
+      "سيتم الغاء تنشيط حسابك فقط ولن يتم حذف بياناتك",
     ),
     "settingsDangerZone": MessageLookupByLibrary.simpleMessage("منطقة الخطر"),
     "settingsDarkMode": MessageLookupByLibrary.simpleMessage("الوضع الداكن"),
@@ -1410,7 +1411,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "statHighScore": MessageLookupByLibrary.simpleMessage("أعلى نتيجة"),
     "statMaterials": MessageLookupByLibrary.simpleMessage("المواد"),
     "statMaxGrade": MessageLookupByLibrary.simpleMessage("أعلى نتيجة"),
-    "statMinGrade": MessageLookupByLibrary.simpleMessage("أقل درجة"),
+    "statMinGrade": MessageLookupByLibrary.simpleMessage("أقل نتيجة"),
     "stat_active_users": MessageLookupByLibrary.simpleMessage(
       "المستخدمين النشطين",
     ),

@@ -34,6 +34,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _obscureConfirm = true;
 
   @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return; // 🛡️ حماية
+
+      // جلب رقم الطالب من الداشبورد
+      final studentId = context
+          .read<StudentDashboardController>()
+          .currentStudentId;
+
+      // طلب البيانات وتمرير الـ context لتفعيل درع الحماية اللي سويناه
+      context.read<SettingsController>().fetchProfile(
+        studentId,
+        context: context,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // 🌟 السطر الوحيد الذي يربط الشاشة بالكنترولر في Provider
     final ctrl = context.watch<SettingsController>();
@@ -355,16 +375,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               );
                               return;
                             }
-                            setState(() {
-                              isLoading = true;
-                            });
+                            setState(() => isLoading = true);
                             bool success = await ctrl.sendEmailChangeOtp(
                               newEmail: _emailController.text,
                               context: context,
                             );
-                            setState(() {
-                              isLoading = false;
-                            });
+
+                            if (!mounted)
+                              return; // 👈 🛡️ أضيفي هذا السطر هنا فوراً بعد الـ await
+
+                            setState(() => isLoading = false);
                             if (success) {
                               setState(() {
                                 isOtpStep = true;
@@ -388,17 +408,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               );
                               return;
                             }
-                            setState(() {
-                              isLoading = true;
-                            });
+                            setState(() => isLoading = true);
                             bool success = await ctrl.verifyEmailOtp(
                               otpCode: _otpController.text,
                               newEmail: _emailController.text,
                               context: context,
                             );
-                            setState(() {
-                              isLoading = false;
-                            });
+
+                            if (!mounted)
+                              return; // 👈 🛡️ وأضيفي هذا السطر هنا أيضاً بعد الـ await सेकंड
+
+                            setState(() => isLoading = false);
                             if (success) {
                               Navigator.pop(dialogContext);
                               await Future.delayed(
@@ -643,6 +663,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             bool sent = await ctrl.sendForgotPasswordOtp(
                               context: context,
                             );
+                            if (!mounted) return; // 👈 🛡️ حماية هنا
                             setState(() => isLoading = false);
                             if (sent) setState(() => step = 2);
                           } else if (step == 2) {
@@ -661,6 +682,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               _otpController.text,
                               context: context,
                             );
+                            if (!mounted) return; // 👈 🛡️ حماية هنا
                             setState(() => isLoading = false);
                             if (verified) setState(() => step = 3);
                           } else if (step == 3) {
@@ -682,6 +704,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               _newPasswordController.text,
                               context: context,
                             );
+                            if (!mounted) return; // 👈 🛡️ حماية هنا
                             setState(() => isLoading = false);
                             if (success) {
                               Navigator.pop(dialogContext);
@@ -1020,6 +1043,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ],
   );
 
+  // Widget _buildLanguageSelector(
+  //   LocaleProvider lp,
+  //   SettingsController ctrl,
+  // ) => Container(
+  //   padding: const EdgeInsets.symmetric(horizontal: 12),
+  //   decoration: BoxDecoration(
+  //     color: AppColors.scaffoldBg(context),
+  //     borderRadius: BorderRadius.circular(8),
+  //   ),
+  //   child: DropdownButtonHideUnderline(
+  //     child: DropdownButton<String>(
+  //       value: lp.locale.languageCode,
+  //       isExpanded: true,
+  //       items: const [
+  //         DropdownMenuItem(value: 'ar', child: Text("العربية")),
+  //         DropdownMenuItem(value: 'en', child: Text("English")),
+  //       ],
+  //       onChanged: (v) async {
+  //         if (v != null) {
+  //           await lp.updateLanguage(v);
+  //           ctrl.updateLanguageLocally(v);
+  //           if (context.mounted) {
+  //             context.read<StudentDashboardController>().fetchDashboardData(
+  //               ctrl.currentStudentId,
+  //               isSilent: true,
+  //             );
+  //           }
+  //           if (context.mounted) {
+  //             // تأكدي من اسم الكلاس، إذا سميتيه SubjectScreenProvider استخدميه بدال القديم
+  //             context.read<SubjectScreenController>().fetchSubjectsData(
+  //               ctrl.currentStudentId,
+  //               context, // 👈 التعديل هنا: أضفنا الكونتكست كمتغير ثاني
+  //             );
+  //           }
+  //         }
+  //       },
+  //     ),
+  //   ),
+  // );
+
   Widget _buildLanguageSelector(
     LocaleProvider lp,
     SettingsController ctrl,
@@ -1039,21 +1102,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
         onChanged: (v) async {
           if (v != null) {
+            // 1. تحديث اللغة
             await lp.updateLanguage(v);
             ctrl.updateLanguageLocally(v);
+
+            // 2. تحديث الداش بورد فقط (لأنه موجود دائماً في الخلفية)
             if (context.mounted) {
               context.read<StudentDashboardController>().fetchDashboardData(
                 ctrl.currentStudentId,
                 isSilent: true,
               );
             }
-            if (context.mounted) {
-              // تأكدي من اسم الكلاس، إذا سميتيه SubjectScreenProvider استخدميه بدال القديم
-              context.read<SubjectScreenController>().fetchSubjectsData(
-                ctrl.currentStudentId,
-                context, // 👈 التعديل هنا: أضفنا الكونتكست كمتغير ثاني
-              );
-            }
+
+            // ❌ تم حذف استدعاء SubjectScreenController لأنه يسبب تعليق التطبيق ❌
           }
         },
       ),

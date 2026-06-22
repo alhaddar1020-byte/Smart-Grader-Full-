@@ -3095,9 +3095,11 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
     g_fa = get_text(user_lang, "ضعيف", "Fail")
 
     # 3. قائمة الاختبارات (مرتبة حسب التسليم، ومضاف إليها exam_id للربط)
+    # 3. قائمة الاختبارات (مرتبة حسب التسليم، ومضاف إليها exam_id للربط)
     exams_query = text("""
         WITH LatestSheets AS (
-            SELECT ans.sheet_id, ans.total_earned_mark, e.total_marks, e.exam_title, e.exam_id, ans.uploaded_at, e.number_of_questions,
+            -- 🌟 التعديل هنا: سحبنا e.exam_date (تاريخ الاختبار) واحتفظنا بـ uploaded_at بس للترتيب
+            SELECT ans.sheet_id, ans.total_earned_mark, e.total_marks, e.exam_title, e.exam_id, e.exam_date, ans.uploaded_at, e.number_of_questions,
                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
             FROM answer_sheet ans 
             JOIN exam e ON ans.exam_id = e.exam_id 
@@ -3111,7 +3113,8 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
               AND ans.is_published = true
               AND sem.academic_year = :year
         )
-        SELECT exam_id, exam_title, uploaded_at, total_earned_mark, total_marks, number_of_questions,
+        -- 🌟 التعديل هنا: نطلب exam_date عشان نرسله لفلاتر
+        SELECT exam_id, exam_title, exam_date, uploaded_at, total_earned_mark, total_marks, number_of_questions,
             (SELECT COUNT(*) FROM student_answers sa WHERE sa.sheet_id = ls.sheet_id) AS answered_count,
             CASE 
                 WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
@@ -3130,9 +3133,10 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
     formatted_exams = []
     for row in exams_records:
         formatted_exams.append({
-            "exam_id": str(row["exam_id"]), # 👈 تم إضافة الآي دي هنا لكي يستعمله فلاتر
+            "exam_id": str(row["exam_id"]), 
             "title": row["exam_title"],
-            "date": row["uploaded_at"].strftime("%Y-%m-%d") if row["uploaded_at"] else get_text(user_lang, "غير محدد", "Not specified"),
+            # 🌟 التعديل هنا: صرنا نرسل تاريخ الاختبار الفعلي. إذا مافي تاريخ، نرسل فراغ وفلاتر بيتكفل بالباقي ويكتب "غير محدد"
+            "date": row["exam_date"].strftime("%Y-%m-%d") if row["exam_date"] else "",
             "total_earned_mark": str(round(row["total_earned_mark"] or 0)), 
             "total_marks": str(round(row["total_marks"] or 0)),
             "total": str(row["number_of_questions"] or 0),            

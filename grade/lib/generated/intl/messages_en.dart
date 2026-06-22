@@ -69,6 +69,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "Grade1": MessageLookupByLibrary.simpleMessage("Grade"),
     "a_month_ago": MessageLookupByLibrary.simpleMessage("1 month ago"),
     "a_week_ago": MessageLookupByLibrary.simpleMessage("1 week ago"),
     "aboutSystem": MessageLookupByLibrary.simpleMessage("About System"),
@@ -837,7 +838,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "We wish you a successful school day",
     ),
     "good_luck": MessageLookupByLibrary.simpleMessage("--- Good Luck ---"),
-    "gradeLabel": MessageLookupByLibrary.simpleMessage("Grade"),
+    "gradeLabel": MessageLookupByLibrary.simpleMessage("Total marks"),
     "gradeOf": MessageLookupByLibrary.simpleMessage("of"),
     "grade_label": MessageLookupByLibrary.simpleMessage("Grade"),
     "graded": MessageLookupByLibrary.simpleMessage("graded"),
@@ -1304,7 +1305,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Current Password",
     ),
     "settingsDangerDesc": MessageLookupByLibrary.simpleMessage(
-      "Your account and all associated data will be permanently deleted.",
+      "Your account will only be deactivated; your data will not be deleted..",
     ),
     "settingsDangerZone": MessageLookupByLibrary.simpleMessage("Danger Zone"),
     "settingsDarkMode": MessageLookupByLibrary.simpleMessage("Dark Mode"),
@@ -1427,8 +1428,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "statExams": MessageLookupByLibrary.simpleMessage("Exams"),
     "statHighScore": MessageLookupByLibrary.simpleMessage("Highest Score"),
     "statMaterials": MessageLookupByLibrary.simpleMessage("Subjects"),
-    "statMaxGrade": MessageLookupByLibrary.simpleMessage("Max Grade"),
-    "statMinGrade": MessageLookupByLibrary.simpleMessage("Min Grade"),
+    "statMaxGrade": MessageLookupByLibrary.simpleMessage("Max result"),
+    "statMinGrade": MessageLookupByLibrary.simpleMessage("Min result"),
     "stat_active_users": MessageLookupByLibrary.simpleMessage("Active Users"),
     "stat_active_users_desc": MessageLookupByLibrary.simpleMessage(
       "↑ +8% from last month",

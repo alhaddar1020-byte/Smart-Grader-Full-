@@ -1109,16 +1109,18 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
   @override
   void initState() {
     super.initState();
-    // جلب البيانات بعد بناء الشاشة الأولى (الطريقة الصحيحة في Provider)
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 🛡️ درع الحماية هنا
+      if (!mounted) return;
+
       final dashController = context.read<StudentDashboardController>();
       final examController = context.read<ExamDetailsController>();
 
       int realStudentId = dashController.currentStudentId;
       examController.fetchExamDetails(
         realStudentId,
-        widget
-            .examId, // 👈 التعديل: تمرير رقم الاختبار بدلاً من اسمه        context: context,
+        widget.examId,
+        context: context,
       );
     });
   }
@@ -1606,19 +1608,25 @@ class _ExamReportActionsState extends State<ExamReportActions> {
         if (await canLaunchUrl(url)) {
           await launchUrl(url);
         } else {
+          if (!mounted) return; // 🌟 حماية
           _showError('لا يمكن فتح ملف الطباعة');
         }
       } else {
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
+          if (!mounted) return; // 🌟 حماية
           _showError('لا يمكن تحميل الملف');
         }
       }
     } catch (e) {
+      if (!mounted) return; // 🌟 حماية
       _showError('تأكد من اتصالك بالإنترنت');
     } finally {
-      setState(() => _isLoading = false);
+      // 🌟 أهم حماية: ممنوع عمل setState إذا الشاشة مقفلة!
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -1767,9 +1775,15 @@ class _QuestionCard extends StatelessWidget {
     return const Color(0xFFE7000B);
   }
 
+  bool _isArabic(String text) {
+    return RegExp(r'[\u0600-\u06FF]').hasMatch(text);
+  }
+
   @override
   Widget build(BuildContext context) {
     final color = _getStatusColor();
+    bool isQuestionArabic = _isArabic(data['text'] ?? '');
+    bool isEvalArabic = _isArabic(data['evaluation'] ?? '');
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -1799,19 +1813,33 @@ class _QuestionCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 10),
-          Text(data['text'], style: const TextStyle(height: 1.5)),
+
+          // 🌟 تطبيق التعرف الذكي على السؤال
+          SizedBox(
+            width: double.infinity,
+            child: Text(
+              data['text'],
+              style: const TextStyle(height: 1.5),
+              textAlign: isQuestionArabic ? TextAlign.right : TextAlign.left,
+              textDirection: isQuestionArabic
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
+            ),
+          ),
+
           const SizedBox(height: 15),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _answerBox(
                 S.of(context).examModelAnswer,
-                data['modelAnswer'],
+                data['modelAnswer'] ?? '',
                 context,
               ),
               const SizedBox(width: 10),
               _answerBox(
                 S.of(context).examYourAnswer,
-                data['studentAnswer'],
+                data['studentAnswer'] ?? '',
                 context,
               ),
             ],
@@ -1824,6 +1852,7 @@ class _QuestionCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Icon(
                   Icons.auto_awesome,
@@ -1832,7 +1861,11 @@ class _QuestionCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 Expanded(
+                  // 🌟 تطبيق التعرف الذكي على التقييم
                   child: RichText(
+                    textDirection: isEvalArabic
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
                     text: TextSpan(
                       style: TextStyle(
                         fontSize: 12,
@@ -1858,6 +1891,9 @@ class _QuestionCard extends StatelessWidget {
   }
 
   Widget _answerBox(String title, String content, BuildContext context) {
+    // 🌟 تطبيق التعرف الذكي على مربعات الإجابة
+    bool isContentArabic = _isArabic(content);
+
     return Expanded(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1874,7 +1910,11 @@ class _QuestionCard extends StatelessWidget {
             child: Text(
               content,
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
+              // تعديل المحاذاة والاتجاه ليكون يمين إذا النص عربي، ويسار إذا إنجليزي
+              textAlign: isContentArabic ? TextAlign.right : TextAlign.left,
+              textDirection: isContentArabic
+                  ? TextDirection.rtl
+                  : TextDirection.ltr,
             ),
           ),
         ],

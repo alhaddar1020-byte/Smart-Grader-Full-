@@ -1111,28 +1111,44 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   int? selectedExamId; // 👈 🚨 تأكدي مليون بالمية إن هذا السطر موجود هنا!
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
+  // @override
+  // void initState() {
+  //   super.initState();
+
+  //   // استخدام addPostFrameCallback لضمان أن الواجهة جاهزة
+  //   WidgetsBinding.instance.addPostFrameCallback((_) async {
+  //     final prefs = await SharedPreferences.getInstance();
+
+  //     // 1. نقرأ الرقم المحفوظ
+  //     final int? savedId = prefs.getInt('user_id');
+
+  //     print(
+  //       "🔎 قراءة رقم الطالب من الذاكرة: $savedId",
+  //     ); // 👈 شوفي التيرمنال إيش يقول هنا
+
+  //     if (savedId != null) {
+  //       // 2. إذا وجدنا الرقم المحفوظ، نستخدمه
+  //       final dashController = context.read<StudentDashboardController>();
+  //       dashController.initController(savedId, context: context);
+  //     } else {
+  //       // 3. إذا لم يوجد رقم (أول مرة أو خطأ)، لا تجلبي بيانات الطالب 1، بل انتظر أو اطلبي تسجيل الدخول
+  //       print("⚠️ تحذير: لا يوجد رقم طالب محفوظ في الذاكرة!");
+  //     }
+  //   });
+  // }
+
   @override
   void initState() {
     super.initState();
-
-    // استخدام addPostFrameCallback لضمان أن الواجهة جاهزة
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return; // 🌟 حماية 1
       final prefs = await SharedPreferences.getInstance();
 
-      // 1. نقرأ الرقم المحفوظ
+      if (!mounted) return; // 🌟 حماية 2 (مهمة جداً بعد الـ await)
       final int? savedId = prefs.getInt('user_id');
-
-      print(
-        "🔎 قراءة رقم الطالب من الذاكرة: $savedId",
-      ); // 👈 شوفي التيرمنال إيش يقول هنا
-
       if (savedId != null) {
-        // 2. إذا وجدنا الرقم المحفوظ، نستخدمه
         final dashController = context.read<StudentDashboardController>();
         dashController.initController(savedId, context: context);
-      } else {
-        // 3. إذا لم يوجد رقم (أول مرة أو خطأ)، لا تجلبي بيانات الطالب 1، بل انتظر أو اطلبي تسجيل الدخول
-        print("⚠️ تحذير: لا يوجد رقم طالب محفوظ في الذاكرة!");
       }
     });
   }
@@ -1760,38 +1776,41 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     required StudentDashboardController controller,
   }) {
     List results = controller.studentData["recent_results"] ?? [];
-    return Expanded(
-      flex: isMobile ? 0 : 3,
-      child: Container(
-        padding: const EdgeInsets.all(22),
-        decoration: BoxDecoration(
-          color: AppColors.cardBg(context),
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  S.of(context).recentResults,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
+
+    // 1. نفصل المحتوى في متغير لحاله
+    Widget content = Container(
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: AppColors.cardBg(context),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                S.of(context).recentResults,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                TextButton(
-                  onPressed: () => setState(() => selectedIndex = 1),
-                  child: Text(S.of(context).viewAll),
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            ...results.map((r) => _resultItem(r, controller)).toList(),
-          ],
-        ),
+              ),
+              TextButton(
+                onPressed: () => setState(() => selectedIndex = 1),
+                child: Text(S.of(context).viewAll),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+          ...results.map((r) => _resultItem(r, controller)).toList(),
+        ],
       ),
     );
+
+    // 🌟 2. الحل السحري: إذا كانت الشاشة جوال (بسبب وجود Scroll) نمنع استخدام Expanded تماماً!
+    // نستخدمه فقط في شاشات الويب لأنها تستخدم Row.
+    return isMobile ? content : Expanded(flex: 3, child: content);
   }
 
   Widget _resultItem(Map data, StudentDashboardController controller) {
@@ -1814,7 +1833,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         }
 
         // 🌟 التعديل السحري الثاني: إرسال الطلب للباك إند لتوثيق القراءة
-        markAsRead(safeExamId);
+        controller.markAsRead(safeExamId);
 
         setState(() {
           // إخفاء النقطة محلياً فوراً عشان تجربة المستخدم تكون سريعة

@@ -1,65 +1,206 @@
-// import 'package:get/get.dart';
+// // import 'package:get/get.dart';
+// // import 'package:shared_preferences/shared_preferences.dart';
+// // import 'package:grade/core/app_config.dart';
+// // import 'package:http/http.dart' as http;
+// // import 'dart:convert';
+// // import 'package:url_launcher/url_launcher.dart';
+
+// // class ExamDetailsController extends GetxController {
+// //   var isLoading = true.obs;
+// //   RxList<String> originalPaperImages = <String>[].obs;
+
+// //   var stats = {}.obs;
+// //   var questions = [].obs;
+
+// //   Future<void> fetchExamDetails(int studentId, String examTitle) async {
+// //     if (examTitle.trim().isEmpty) {
+// //       print("تم إيقاف الطلب: اسم الاختبار فارغ!");
+// //       isLoading(false);
+// //       return;
+// //     }
+
+// //     try {
+// //       isLoading(true);
+
+// //       String encodedTitle = Uri.encodeComponent(examTitle);
+
+// //       final prefs = await SharedPreferences.getInstance();
+// //       final token = prefs.getString('auth_token') ?? '';
+
+// //       final String url =
+// //           '${AppConfig.baseUrl}/views/exam-details/$studentId/$encodedTitle';
+
+// //       final response = await http.get(
+// //         Uri.parse(url),
+// //         headers: {'Authorization': 'Bearer $token'},
+// //       );
+
+// //       if (response.statusCode == 200) {
+// //         var data = json.decode(utf8.decode(response.bodyBytes));
+// //         stats.value = data['stats'] ?? {};
+// //         questions.value = data['questions'] ?? [];
+// //         stats.refresh();
+// //         questions.refresh();
+// //         originalPaperImages.value = List<String>.from(
+// //           data['paper_images'] ?? [],
+// //         );
+// //       } else {
+// //         Get.snackbar('خطأ', 'فشل في جلب تفاصيل الاختبار');
+// //       }
+// //     } catch (e) {
+// //       print("خطأ: $e");
+// //     } finally {
+// //       isLoading(false);
+// //     }
+// //   }
+
+// //   // تأكدي من استدعاء مكتبة url_launcher في أعلى الملف إذا لم تكن موجودة
+// //   // import 'package:url_launcher/url_launcher.dart';
+
+// //   Future<void> downloadExamReport(int studentId, int examId) async {
+// //     // جلب اللغة الحالية للتطبيق (اختياري، يمكنك تثبيتها على 'ar' مؤقتاً)
+// //     String lang = Get.locale?.languageCode ?? 'ar';
+
+// //     // الرابط الديناميكي الصحيح
+// //     final String url =
+// //         '${AppConfig.baseUrl}/api/download-exam-report/$studentId/$examId?lang=$lang&theme=light';
+
+// //     try {
+// //       final Uri pdfUri = Uri.parse(url);
+
+// //       // نستخدم url_launcher لفتح الـ PDF في المتصفح أو تطبيق خارجي للتحميل
+// //       if (await canLaunchUrl(pdfUri)) {
+// //         await launchUrl(pdfUri, mode: LaunchMode.externalApplication);
+// //       } else {
+// //         Get.snackbar('خطأ', 'لا يمكن فتح رابط التقرير');
+// //       }
+// //     } catch (e) {
+// //       print("خطأ في فتح الـ PDF: $e");
+// //       Get.snackbar('خطأ', 'حدثت مشكلة أثناء محاولة تحميل التقرير');
+// //     }
+// //   }
+// // }
+
+// import 'dart:convert';
+// import 'package:flutter/material.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:grade/core/app_config.dart';
 // import 'package:http/http.dart' as http;
-// import 'dart:convert';
 // import 'package:url_launcher/url_launcher.dart';
 
-// class ExamDetailsController extends GetxController {
-//   var isLoading = true.obs;
-//   RxList<String> originalPaperImages = <String>[].obs;
+// class ExamDetailsController extends ChangeNotifier {
+//   bool isLoading = true;
+//   List<String> originalPaperImages = [];
+//   Map<String, dynamic> stats = {};
+//   List<dynamic> questions = [];
 
-//   var stats = {}.obs;
-//   var questions = [].obs;
+//   // Future<void> fetchExamDetails(
+//   //   int studentId,
+//   //   int examId, {
+//   //   BuildContext? context,
+//   // }) async {
+//   //   if (examId <= 0) {
+//   //     debugPrint("تم إيقاف الطلب: رقم الاختبار غير صالح!");
+//   //     isLoading = false;
+//   //     notifyListeners();
+//   //     return;
+//   //   }
 
-//   Future<void> fetchExamDetails(int studentId, String examTitle) async {
-//     if (examTitle.trim().isEmpty) {
-//       print("تم إيقاف الطلب: اسم الاختبار فارغ!");
-//       isLoading(false);
+//   //   try {
+//   //     isLoading = true;
+//   //     notifyListeners();
+
+//   //     final prefs = await SharedPreferences.getInstance();
+//   //     final token = prefs.getString('auth_token') ?? '';
+
+//   //     // 🌟 الحل هنا: أضفنا /views/ للرابط عشان يتطابق مع الباك إند حقك!
+//   //     final String url =
+//   //         '${AppConfig.baseUrl}/views/exam-details/$studentId/$examId';
+
+//   //     final response = await http.get(
+//   //       Uri.parse(url),
+//   //       headers: {'Authorization': 'Bearer $token'},
+//   //     );
+
+//   //     if (response.statusCode == 200) {
+//   //       var data = json.decode(utf8.decode(response.bodyBytes));
+//   //       stats = data['stats'] ?? {};
+//   //       questions = data['questions'] ?? [];
+//   //       originalPaperImages = List<String>.from(data['paper_images'] ?? []);
+//   //     } else {
+//   //       if (context != null && context.mounted) {
+//   //         ScaffoldMessenger.of(context).showSnackBar(
+//   //           const SnackBar(content: Text('فشل في جلب تفاصيل الاختبار')),
+//   //         );
+//   //       }
+//   //     }
+//   //   } catch (e) {
+//   //     debugPrint("خطأ: $e");
+//   //   } finally {
+//   //     isLoading = false;
+//   //     notifyListeners();
+//   //   }
+//   // }
+
+//   Future<void> fetchExamDetails(
+//     int studentId,
+//     int examId, {
+//     BuildContext? context,
+//   }) async {
+//     if (examId <= 0) {
+//       isLoading = false;
+//       notifyListeners();
 //       return;
 //     }
 
 //     try {
-//       isLoading(true);
-
-//       String encodedTitle = Uri.encodeComponent(examTitle);
+//       isLoading = true;
+//       notifyListeners();
 
 //       final prefs = await SharedPreferences.getInstance();
 //       final token = prefs.getString('auth_token') ?? '';
 
 //       final String url =
-//           '${AppConfig.baseUrl}/views/exam-details/$studentId/$encodedTitle';
+//           '${AppConfig.baseUrl}/views/exam-details/$studentId/$examId';
 
 //       final response = await http.get(
 //         Uri.parse(url),
 //         headers: {'Authorization': 'Bearer $token'},
 //       );
 
+//       // 🌟 🛡️ درع الحماية!
+//       if (context != null && !context.mounted) return;
+
 //       if (response.statusCode == 200) {
 //         var data = json.decode(utf8.decode(response.bodyBytes));
-//         stats.value = data['stats'] ?? {};
-//         questions.value = data['questions'] ?? [];
-//         stats.refresh();
-//         questions.refresh();
-//         originalPaperImages.value = List<String>.from(
-//           data['paper_images'] ?? [],
-//         );
+//         stats = data['stats'] ?? {};
+//         questions = data['questions'] ?? [];
+//         originalPaperImages = List<String>.from(data['paper_images'] ?? []);
 //       } else {
-//         Get.snackbar('خطأ', 'فشل في جلب تفاصيل الاختبار');
+//         if (context != null) {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             const SnackBar(content: Text('فشل في جلب تفاصيل الاختبار')),
+//           );
+//         }
 //       }
 //     } catch (e) {
-//       print("خطأ: $e");
+//       debugPrint("خطأ: $e");
 //     } finally {
-//       isLoading(false);
+//       isLoading = false;
+//       notifyListeners();
 //     }
 //   }
 
-//   // تأكدي من استدعاء مكتبة url_launcher في أعلى الملف إذا لم تكن موجودة
-//   // import 'package:url_launcher/url_launcher.dart';
-
-//   Future<void> downloadExamReport(int studentId, int examId) async {
-//     // جلب اللغة الحالية للتطبيق (اختياري، يمكنك تثبيتها على 'ar' مؤقتاً)
-//     String lang = Get.locale?.languageCode ?? 'ar';
+//   Future<void> downloadExamReport(
+//     int studentId,
+//     int examId, {
+//     BuildContext? context,
+//   }) async {
+//     // جلب اللغة الحالية للتطبيق بأمان
+//     String lang = 'ar';
+//     if (context != null && context.mounted) {
+//       lang = Localizations.localeOf(context).languageCode;
+//     }
 
 //     // الرابط الديناميكي الصحيح
 //     final String url =
@@ -72,11 +213,21 @@
 //       if (await canLaunchUrl(pdfUri)) {
 //         await launchUrl(pdfUri, mode: LaunchMode.externalApplication);
 //       } else {
-//         Get.snackbar('خطأ', 'لا يمكن فتح رابط التقرير');
+//         if (context != null && context.mounted) {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             const SnackBar(content: Text('لا يمكن فتح رابط التقرير')),
+//           );
+//         }
 //       }
 //     } catch (e) {
-//       print("خطأ في فتح الـ PDF: $e");
-//       Get.snackbar('خطأ', 'حدثت مشكلة أثناء محاولة تحميل التقرير');
+//       debugPrint("خطأ في فتح الـ PDF: $e");
+//       if (context != null && context.mounted) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           const SnackBar(
+//             content: Text('حدثت مشكلة أثناء محاولة تحميل التقرير'),
+//           ),
+//         );
+//       }
 //     }
 //   }
 // }
@@ -90,6 +241,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 class ExamDetailsController extends ChangeNotifier {
   bool isLoading = true;
+
+  // 🌟 السحر هنا: تعقب رقم الطلب عشان نلغي الطلبات القديمة المتداخلة
+  String _currentFetchId = '';
+
   List<String> originalPaperImages = [];
   Map<String, dynamic> stats = {};
   List<dynamic> questions = [];
@@ -100,11 +255,14 @@ class ExamDetailsController extends ChangeNotifier {
     BuildContext? context,
   }) async {
     if (examId <= 0) {
-      debugPrint("تم إيقاف الطلب: رقم الاختبار غير صالح!");
       isLoading = false;
       notifyListeners();
       return;
     }
+
+    // 🌟 نعطي هذا الطلب رقم تعريفي خاص فيه
+    String fetchId = DateTime.now().millisecondsSinceEpoch.toString();
+    _currentFetchId = fetchId;
 
     try {
       isLoading = true;
@@ -113,7 +271,6 @@ class ExamDetailsController extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('auth_token') ?? '';
 
-      // 🌟 الحل هنا: أضفنا /views/ للرابط عشان يتطابق مع الباك إند حقك!
       final String url =
           '${AppConfig.baseUrl}/views/exam-details/$studentId/$examId';
 
@@ -121,6 +278,12 @@ class ExamDetailsController extends ChangeNotifier {
         Uri.parse(url),
         headers: {'Authorization': 'Bearer $token'},
       );
+
+      // 🌟 🛡️ حماية 1: هل الشاشة ماتت؟
+      if (context != null && !context.mounted) return;
+
+      // 🌟 🛡️ حماية 2: هل الطالب طلب اختبار ثاني قبل ما يخلص هذا؟ (نقتل القديم)
+      if (_currentFetchId != fetchId) return;
 
       if (response.statusCode == 200) {
         var data = json.decode(utf8.decode(response.bodyBytes));
@@ -137,8 +300,11 @@ class ExamDetailsController extends ChangeNotifier {
     } catch (e) {
       debugPrint("خطأ: $e");
     } finally {
-      isLoading = false;
-      notifyListeners();
+      // 🌟 لا نقوم بإخفاء اللودنق إلا إذا كان هذا هو الطلب الأخير الفعلي!
+      if (_currentFetchId == fetchId) {
+        isLoading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -147,20 +313,17 @@ class ExamDetailsController extends ChangeNotifier {
     int examId, {
     BuildContext? context,
   }) async {
-    // جلب اللغة الحالية للتطبيق بأمان
     String lang = 'ar';
     if (context != null && context.mounted) {
       lang = Localizations.localeOf(context).languageCode;
     }
 
-    // الرابط الديناميكي الصحيح
     final String url =
         '${AppConfig.baseUrl}/api/download-exam-report/$studentId/$examId?lang=$lang&theme=light';
 
     try {
       final Uri pdfUri = Uri.parse(url);
 
-      // نستخدم url_launcher لفتح الـ PDF في المتصفح أو تطبيق خارجي للتحميل
       if (await canLaunchUrl(pdfUri)) {
         await launchUrl(pdfUri, mode: LaunchMode.externalApplication);
       } else {

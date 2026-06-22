@@ -633,8 +633,8 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // جلب البيانات فور فتح الشاشة بالطريقة الآمنة لـ Provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return; // 🌟 الحماية السحرية هنا
       final dashController = context.read<StudentDashboardController>();
       final subjectDetailsController = context.read<SubjectDetailsController>();
 
@@ -884,8 +884,181 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
     );
   }
 
+  //   Widget _buildExamCard(BuildContext context, dynamic exam) {
+  // String rawDate = exam["date"]?.toString().trim() ?? "";
+
+  //     // إذا كان التاريخ فارغ، أو يحتوي على كلمة null أو خط، نعطيه قيمة "غير مسجل/محدد" باللغتين
+  //     if (rawDate.isEmpty || rawDate == "null" || rawDate == "-") {
+  //       // استخدمنا مفتاح الترجمة الموجود عندك مسبقاً ليدعم اللغتين تلقائياً
+  //       rawDate = S.of(context).not_specified;
+  //     }
+
+  //     final String date = exam["date"]?.toString() ?? "-";
+  //     final String totalQ = exam["total"]?.toString() ?? "0";
+  //     final String answeredQ = exam["answers"]?.toString() ?? "0";
+  //     final String rating = exam["rating"]?.toString() ?? "-";
+
+  //     final String questionsRatio = "$answeredQ / $totalQ";
+  //     return Container(
+  //       margin: const EdgeInsets.only(bottom: 20),
+  //       padding: const EdgeInsets.all(16),
+  //       decoration: BoxDecoration(
+  //         color: AppColors.cardBg(context),
+  //         borderRadius: BorderRadius.circular(14),
+  //         boxShadow: [
+  //           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5),
+  //         ],
+  //       ),
+  //       child: Row(
+  //         children: [
+  //           Expanded(
+  //             child: Column(
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   exam["title"]?.toString() ?? "بدون عنوان",
+  //                   style: const TextStyle(
+  //                     fontSize: 18,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 const SizedBox(height: 12),
+  //                 Row(
+  //                   children: [
+  //                     Expanded(
+  //                       child: _badgeInfo(context, S.of(context).examDate, date),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                     Expanded(
+  //                       child: _badgeInfo(
+  //                         context,
+  //                         S.of(context).examQuestions,
+  //                         exam["total"]?.toString() ?? "-",
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                     Expanded(
+  //                       child: _badgeInfo(
+  //                         context,
+  //                         S.of(context).examAnswers,
+  //                         questionsRatio,
+  //                       ),
+  //                     ),
+  //                     const SizedBox(width: 8),
+  //                     Expanded(
+  //                       child: _badgeInfo(
+  //                         context,
+  //                         S.of(context).examRating,
+  //                         rating,
+  //                         isBlue: true,
+  //                       ),
+  //                     ),
+  //                   ],
+  //                 ),
+  //                 const SizedBox(height: 16),
+  //                 Center(
+  //                   child: InkWell(
+  //                     // 🌟 هنا التعديل الجوهري السحري!
+  //                     onTap: () {
+  //                       // سحب الرقم سواء كان اسمه exam_id أو id، وبدون ما يضرب الكود لو كان null
+  //                       String idStr =
+  //                           exam["exam_id"]?.toString() ??
+  //                           exam["id"]?.toString() ??
+  //                           '0';
+  //                       int safeExamId = int.tryParse(idStr) ?? 0;
+
+  //                       if (safeExamId <= 0) {
+  //                         ScaffoldMessenger.of(context).showSnackBar(
+  //                           const SnackBar(
+  //                             content: Text('خطأ: رقم الاختبار غير متوفر!'),
+  //                             backgroundColor: Colors.red,
+  //                           ),
+  //                         );
+  //                         return; // توقيف الانتقال إذا مافي رقم
+  //                       }
+
+  //                       widget.onExamTap(
+  //                         widget.subjectName,
+  //                         exam["title"]?.toString() ?? "",
+  //                         safeExamId, // 👈 إرسال الرقم السليم والصحيح 100%
+  //                       );
+  //                     },
+  //                     child: Container(
+  //                       padding: const EdgeInsets.symmetric(
+  //                         horizontal: 24,
+  //                         vertical: 8,
+  //                       ),
+  //                       decoration: BoxDecoration(
+  //                         color: AppColors.primaryTeal(context),
+  //                         borderRadius: BorderRadius.circular(10),
+  //                       ),
+  //                       child: Text(
+  //                         S.of(context).viewDetails,
+  //                         style: const TextStyle(
+  //                           color: Colors.white,
+  //                           fontWeight: FontWeight.bold,
+  //                         ),
+  //                       ),
+  //                     ),
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //           const SizedBox(width: 20),
+  //           Container(
+  //             width: 100,
+  //             height: 130,
+  //             decoration: BoxDecoration(
+  //               color: AppColors.primaryTeal(context),
+  //               borderRadius: BorderRadius.circular(12),
+  //             ),
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               children: [
+  //                 Text(
+  //                   S.of(context).Grade1,
+  //                   style: const TextStyle(color: Colors.white, fontSize: 12),
+  //                 ),
+  //                 Text(
+  //                   exam["total_earned_mark"]?.toString() ?? "0",
+  //                   style: const TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 28,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //                 Text(
+  //                   S.of(context).gradeOf,
+  //                   style: const TextStyle(color: Colors.white70, fontSize: 10),
+  //                 ),
+  //                 Text(
+  //                   exam["total_marks"]?.toString() ?? "100",
+  //                   style: const TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 14,
+  //                     fontWeight: FontWeight.bold,
+  //                   ),
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
+
   Widget _buildExamCard(BuildContext context, dynamic exam) {
-    final String date = exam["date"]?.toString() ?? "-";
+    // 🌟 التعديل السحري هنا: تنظيف وفحص التاريخ
+    String rawDate = exam["date"]?.toString().trim() ?? "";
+
+    // إذا كان التاريخ فارغ، أو يحتوي على كلمة null أو خط، نعطيه قيمة "غير مسجل/محدد" باللغتين
+    if (rawDate.isEmpty || rawDate == "null" || rawDate == "-") {
+      // استخدمنا مفتاح الترجمة الموجود عندك مسبقاً ليدعم اللغتين تلقائياً
+      rawDate = S.of(context).not_specified;
+    }
+
+    final String date = rawDate;
     final String totalQ = exam["total"]?.toString() ?? "0";
     final String answeredQ = exam["answers"]?.toString() ?? "0";
     final String rating = exam["rating"]?.toString() ?? "-";
@@ -950,9 +1123,7 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
                 const SizedBox(height: 16),
                 Center(
                   child: InkWell(
-                    // 🌟 هنا التعديل الجوهري السحري!
                     onTap: () {
-                      // سحب الرقم سواء كان اسمه exam_id أو id، وبدون ما يضرب الكود لو كان null
                       String idStr =
                           exam["exam_id"]?.toString() ??
                           exam["id"]?.toString() ??
@@ -966,13 +1137,13 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
                             backgroundColor: Colors.red,
                           ),
                         );
-                        return; // توقيف الانتقال إذا مافي رقم
+                        return;
                       }
 
                       widget.onExamTap(
                         widget.subjectName,
                         exam["title"]?.toString() ?? "",
-                        safeExamId, // 👈 إرسال الرقم السليم والصحيح 100%
+                        safeExamId,
                       );
                     },
                     child: Container(
@@ -1009,7 +1180,7 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  S.of(context).gradeLabel,
+                  S.of(context).Grade1,
                   style: const TextStyle(color: Colors.white, fontSize: 12),
                 ),
                 Text(

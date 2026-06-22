@@ -1854,9 +1854,9 @@ class S {
     return Intl.message('Last Exam', name: 'lastExam', desc: '', args: []);
   }
 
-  /// `Grade`
+  /// `Total marks`
   String get gradeLabel {
-    return Intl.message('Grade', name: 'gradeLabel', desc: '', args: []);
+    return Intl.message('Total marks', name: 'gradeLabel', desc: '', args: []);
   }
 
   /// `Exams`
@@ -1929,14 +1929,14 @@ class S {
     );
   }
 
-  /// `Min Grade`
+  /// `Min result`
   String get statMinGrade {
-    return Intl.message('Min Grade', name: 'statMinGrade', desc: '', args: []);
+    return Intl.message('Min result', name: 'statMinGrade', desc: '', args: []);
   }
 
-  /// `Max Grade`
+  /// `Max result`
   String get statMaxGrade {
-    return Intl.message('Max Grade', name: 'statMaxGrade', desc: '', args: []);
+    return Intl.message('Max result', name: 'statMaxGrade', desc: '', args: []);
   }
 
   /// `Date`
@@ -2374,10 +2374,10 @@ class S {
     );
   }
 
-  /// `Your account and all associated data will be permanently deleted.`
+  /// `Your account will only be deactivated; your data will not be deleted..`
   String get settingsDangerDesc {
     return Intl.message(
-      'Your account and all associated data will be permanently deleted.',
+      'Your account will only be deactivated; your data will not be deleted..',
       name: 'settingsDangerDesc',
       desc: '',
       args: [],
@@ -7667,6 +7667,11 @@ class S {
       desc: '',
       args: [],
     );
+  }
+
+  /// `Grade`
+  String get Grade1 {
+    return Intl.message('Grade', name: 'Grade1', desc: '', args: []);
   }
 
   /// `Exam Type`

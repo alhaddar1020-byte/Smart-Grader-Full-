@@ -145,7 +145,7 @@ class AppColors {
   // --- ألوان ثابتة (تُستدعى بدون context وبدون أقواس) ---
   // أضفت هذه الأسطر بنفس المسميات الموجودة في أخطائك لحلها فوراً
   static const Color textprimary = Color(0xFF000000);
-  static const Color textseccondary = Color(0xFF8F959E); 
+  static const Color textseccondary = Color(0xFF8F959E);
   static const Color textWhiteConstant = Colors.white;
 
   // 1. اللون التركواز الأساسي
@@ -207,4 +207,6 @@ class AppColors {
 
   // دالة للـ textWhite كـ Method لتجنب أي تعارض قديم
   static Color textWhite(BuildContext context) => Colors.white;
+
+  // dart run intl_utils:generate
 }
