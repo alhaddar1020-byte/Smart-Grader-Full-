@@ -284,29 +284,29 @@ class StudentDashboardController extends ChangeNotifier {
 
 // دالة إرسال التحديث للباك إند
 // دالة تحديث حالة النتيجة في الداتا بيس
+// دالة تحديث حالة النتيجة في الداتا بيس
 Future<void> markAsRead(int examId) async {
   try {
     final prefs = await SharedPreferences.getInstance();
-    final int? studentId = prefs.getInt(
-      'user_id',
-    ); // نسحب رقم الطالب من هنا مباشرة
+    final int? studentId = prefs.getInt('user_id');
 
     if (studentId != null) {
-      // ⚠️ تأكدي من تغيير الرابط لرابط الريندر حقك
+      // 🌟 التعديل هنا: استخدمنا الرابط الحقيقي حق السيرفر تبعك
+      final String url =
+          '${AppConfig.baseUrl}/views/mark-result-read/$studentId/$examId';
+
       final response = await http.put(
-        Uri.parse(
-          'https://your-render-url.com/views/mark-result-read/$studentId/$examId',
-        ),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
+
       if (response.statusCode == 200) {
-        print('✅ تم مسح النقطة الزرقاء من الداتا بيس بنجاح');
+        print('✅ نجاح: تم مسح النقطة الزرقاء من الداتا بيس');
+      } else {
+        print('⚠️ فشل التحديث: السيرفر رد بكود ${response.statusCode}');
       }
     }
   } catch (e) {
-    print('❌ خطأ في الاتصال بالباك إند: $e');
+    print('❌ خطأ في الاتصال: $e');
   }
 }
-
-// ------------------------------------
-// استخدامها داخل زر الضغط على النتيجة:
