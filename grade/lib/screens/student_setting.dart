@@ -1102,25 +1102,27 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
         onChanged: (v) async {
           if (v != null) {
-            // 1. تحديث اللغة
+            // 1. تحديث اللغة (هنا الكود ينتظر أجزاء من الثانية)
             await lp.updateLanguage(v);
+
+            // 🌟 🛡️ الدرع الواقي الأهم: إذا الطالب غير اللغة وطلع بسرعة، نوقف كل شيء فوراً!
+            if (!mounted) return;
+
+            // 2. تحديث المتغيرات محلياً
             ctrl.updateLanguageLocally(v);
 
-            // 2. تحديث الداش بورد فقط (لأنه موجود دائماً في الخلفية)
+            // 3. تحديث الداش بورد فقط
             if (context.mounted) {
               context.read<StudentDashboardController>().fetchDashboardData(
                 ctrl.currentStudentId,
                 isSilent: true,
               );
             }
-
-            // ❌ تم حذف استدعاء SubjectScreenController لأنه يسبب تعليق التطبيق ❌
           }
         },
       ),
     ),
   );
-
   void _showDeactivateDialog(BuildContext context) {
     showDialog(
       context: context,
