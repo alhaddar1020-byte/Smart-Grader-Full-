@@ -122,10 +122,10 @@ void main() async {
   }
 
   // تهيئة الكنترولر الخاص بالطالب
-  final dashboardController = Get.put(StudentDashboardController());
-  if (isLoggedIn) {
-    dashboardController.initController(userId);
-  }
+  // final dashboardController = Get.put(StudentDashboardController());
+  // if (isLoggedIn) {
+  //   dashboardController.initController(userId);
+  // }
 
   // التوجيه الذكي: تحديد شاشة البداية تلقائياً
   Widget startingScreen;

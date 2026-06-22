@@ -3311,27 +3311,61 @@ def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(g
 
 # أضيفي هذا المسار في ملف views.py
 # أضيفي هذا المسار في ملف views.py
+# @router.put("/mark-result-read/{student_id}/{exam_id}")
+# def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+#     try:
+#         # 🌟 التعديل السحري: ترجمة الـ ID من فلاتر إلى الـ ID الحقيقي في قاعدة البيانات
+#         real_student_id = resolve_student_id(db, student_id)
+        
+#         # التحديث الآن يتم باستخدام الـ ID الصحيح (real_student_id)
+#         query = text("""
+#             UPDATE answer_sheet 
+#             SET is_read = TRUE 
+#             WHERE student_id = :sid AND exam_id = :eid
+#         """)
+        
+#         result = db.execute(query, {"sid": real_student_id, "eid": exam_id})
+#         db.commit()
+
+#         if result.rowcount == 0:
+#             raise HTTPException(status_code=404, detail="النتيجة غير موجودة")
+
+#         return {"status": "success", "message": "تم تحديد النتيجة كمقروءة"}
+    
+#     except Exception as e:
+#         db.rollback()
+#         raise HTTPException(status_code=500, detail="خطأ في تحديث حالة النتيجة")
+
 @router.put("/mark-result-read/{student_id}/{exam_id}")
 def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
     try:
-        # 🌟 التعديل السحري: ترجمة الـ ID من فلاتر إلى الـ ID الحقيقي في قاعدة البيانات
-        real_student_id = resolve_student_id(db, student_id)
+        # 1. طباعة رادار تتبع المشكلة (عشان نشوف الأرقام في شاشة ريندر)
+        print(f"\n--- 🎯 رادار التحديث | الطالب القادم من فلاتر: {student_id} | الاختبار: {exam_id} ---")
         
-        # التحديث الآن يتم باستخدام الـ ID الصحيح (real_student_id)
+        # 2. الاستعلام النووي: يخلي قاعدة البيانات هي اللي تدور على الطالب سواء كان بـ user_id أو student_id وتحدثه فوراً
         query = text("""
             UPDATE answer_sheet 
             SET is_read = TRUE 
-            WHERE student_id = :sid AND exam_id = :eid
+            WHERE exam_id = :eid 
+            AND student_id IN (
+                SELECT student_id FROM student WHERE student_id = :sid OR user_id = :sid
+            )
         """)
         
-        result = db.execute(query, {"sid": real_student_id, "eid": exam_id})
+        result = db.execute(query, {"sid": student_id, "eid": exam_id})
         db.commit()
 
-        if result.rowcount == 0:
-            raise HTTPException(status_code=404, detail="النتيجة غير موجودة")
+        # 3. طباعة نتيجة المعركة
+        print(f"--- 🏁 عدد الصفوف التي تم تحديثها في الداتا بيس: {result.rowcount} ---\n")
 
-        return {"status": "success", "message": "تم تحديد النتيجة كمقروءة"}
+        # حتى لو ما لقى النتيجة، بنقول لفلاتر "تم" عشان ما يعلق الواجهة
+        if result.rowcount == 0:
+            print("⚠️ تحذير: لم يتم العثور على النتيجة في الداتا بيس! (تأكدي من الأرقام)")
+            return {"status": "warning", "message": "لم يتم العثور على النتيجة، لكن التطبيق سيستمر."}
+
+        return {"status": "success", "message": "تم تحديد النتيجة كمقروءة بنجاح"}
     
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="خطأ في تحديث حالة النتيجة")
+        print(f"--- ❌ خطأ قاتل أثناء التحديث: {e} ---")
+        return {"status": "error", "message": str(e)}
