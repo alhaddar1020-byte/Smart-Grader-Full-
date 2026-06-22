@@ -1841,14 +1841,60 @@ async def send_email_otp(body: SendEmailOtpRequest, db: Session = Depends(get_db
         db.rollback()
         raise HTTPException(status_code=500, detail=get_msg(user, "فشل في إرسال البريد", "Failed to send email"))
 
+# @router.post("/verify-email-otp")
+# def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db)):
+#     student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
+#     user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
+
+#     if not student or not user:
+#         raise HTTPException(status_code=404, detail="Student/User not found")
+
+#     record = db.query(VerificationCode).filter(
+#         VerificationCode.user_id == user.user_id,
+#         VerificationCode.otp_code == body.otp_code,
+#         VerificationCode.is_used == False
+#     ).first()
+
+#     if record is None:
+#         raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صحيح", "Invalid OTP"))
+
+#     try:
+#         user.email = body.new_email
+#         record.is_used = True
+#         db.commit()
+#         return {"message": get_msg(user, "تم تحديث البريد بنجاح", "Email updated successfully")}
+#     except Exception as e:
+#         db.rollback()
+#         raise HTTPException(status_code=500, detail=get_msg(user, "فشل تحديث قاعدة البيانات", "Database update failed"))
+
 @router.post("/verify-email-otp")
 def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db)):
+    # 1. جلب بيانات الطالب الحالي
     student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
     user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
 
     if not student or not user:
         raise HTTPException(status_code=404, detail="Student/User not found")
 
+    # تنظيف الإيميل الجديد المدخل (لضمان دقة البحث)
+    clean_new_email = body.new_email.strip().lower()
+
+    # 🌟 [الإضافة الجديدة 1] التحقق: هل الإيميل الجديد هو نفس الإيميل الحالي للطالب؟
+    if user.email.lower() == clean_new_email:
+        raise HTTPException(
+            status_code=400, 
+            detail=get_msg(user, "هذا هو بريدك الإلكتروني الحالي بالفعل", "This is already your current email")
+        )
+
+    # 🌟 [الإضافة الجديدة 2] التحقق: هل الإيميل مسجل مسبقاً لحساب آخر في قاعدة البيانات؟
+    existing_user = db.query(User).filter(User.email == clean_new_email).first()
+    if existing_user:
+        raise HTTPException(
+            status_code=400, 
+            detail=get_msg(user, "هذا البريد الإلكتروني مستخدم لحساب آخر", "This email is already in use by another account")
+        )
+
+    # 2. التحقق من صحة الرمز (OTP)
     record = db.query(VerificationCode).filter(
         VerificationCode.user_id == user.user_id,
         VerificationCode.otp_code == body.otp_code,
@@ -1856,10 +1902,11 @@ def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db))
     ).first()
 
     if record is None:
-        raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صحيح", "Invalid OTP"))
+        raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صحيح أو منتهي الصلاحية", "Invalid or expired OTP"))
 
+    # 3. تحديث الإيميل بعد اجتياز كل الفحوصات الأمنية
     try:
-        user.email = body.new_email
+        user.email = clean_new_email
         record.is_used = True
         db.commit()
         return {"message": get_msg(user, "تم تحديث البريد بنجاح", "Email updated successfully")}
