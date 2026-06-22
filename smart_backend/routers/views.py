@@ -173,3 +173,13 @@ def get_subject_details(student_id: int, course_name: str, db: Session = Depends
 def get_exam_details(student_id: int, exam_id: int, db: Session = Depends(get_db)):
     # 🌟 التعديل: إرسال exam_id للدالة الأساسية
     return get_exam_details_data(db=db, student_id=student_id, exam_id=exam_id)
+
+
+# 5. تحديث حالة النتيجة إلى مقروءة (لإخفاء النقطة الزرقاء)
+@router.put("/mark-result-read/{student_id}/{exam_id}")
+def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+    """
+    هذا الرابط يستقبل طلب فلاتر لمسح النقطة الزرقاء ويوجهه للـ CRUD
+    """
+    # ⚠️ تأكدي إنك مسوية استدعاء (import) لدالة mark_result_as_read_data في أعلى ملف views.py
+    return mark_result_as_read_data(db=db, student_id=student_id, exam_id=exam_id)

@@ -3370,26 +3370,52 @@ def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(g
 #         print(f"--- ❌ خطأ قاتل أثناء التحديث: {e} ---")
 #         return {"status": "error", "message": str(e)}
 
-@router.put("/mark-result-read/{student_id}/{exam_id}")
-def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
-    try:
-        # نترجم الـ ID عشان نضمن إنه يطابق الجدول
-        real_student_id = resolve_student_id(db, student_id)
+# @router.put("/mark-result-read/{student_id}/{exam_id}")
+# def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+#     try:
+#         # نترجم الـ ID عشان نضمن إنه يطابق الجدول
+#         real_student_id = resolve_student_id(db, student_id)
         
-        # استعلام مرن جداً يضمن التحديث بدون انهيار
+#         # استعلام مرن جداً يضمن التحديث بدون انهيار
+#         query = text("""
+#             UPDATE answer_sheet 
+#             SET is_read = TRUE 
+#             WHERE exam_id = :eid AND (student_id = :sid OR student_id = :real_sid)
+#         """)
+        
+#         db.execute(query, {"sid": student_id, "eid": exam_id, "real_sid": real_student_id})
+#         db.commit()
+
+#         # 🌟 شلنا شرط الـ 404 المزعج! الحين بيرد بنجاح دائماً وفلاتر بيخفي النقطة فوراً
+#         return {"status": "success", "message": "تم تحديث الحالة"}
+    
+#     except Exception as e:
+#         db.rollback()
+#         # نرد بـ 200 مع رسالة الخطأ عشان فلاتر ما ينهار
+#         return {"status": "error", "message": str(e)}
+
+
+
+def mark_result_as_read_data(db, student_id: int, exam_id: int):
+    try:
+        print(f"\n--- 🎯 رادار التحديث (CRUD) | الطالب: {student_id} | الاختبار: {exam_id} ---")
+        
         query = text("""
             UPDATE answer_sheet 
             SET is_read = TRUE 
-            WHERE exam_id = :eid AND (student_id = :sid OR student_id = :real_sid)
+            WHERE exam_id = :eid 
+            AND student_id IN (
+                SELECT student_id FROM student WHERE student_id = :sid OR user_id = :sid
+            )
         """)
         
-        db.execute(query, {"sid": student_id, "eid": exam_id, "real_sid": real_student_id})
+        result = db.execute(query, {"sid": student_id, "eid": exam_id})
         db.commit()
 
-        # 🌟 شلنا شرط الـ 404 المزعج! الحين بيرد بنجاح دائماً وفلاتر بيخفي النقطة فوراً
-        return {"status": "success", "message": "تم تحديث الحالة"}
-    
+        print(f"--- 🏁 عدد الصفوف التي تم تحديثها: {result.rowcount} ---\n")
+        return {"status": "success", "message": "تم تحديث النتيجة"}
+        
     except Exception as e:
         db.rollback()
-        # نرد بـ 200 مع رسالة الخطأ عشان فلاتر ما ينهار
+        print(f"--- ❌ خطأ في CRUD أثناء التحديث: {e} ---")
         return {"status": "error", "message": str(e)}
