@@ -3310,18 +3310,21 @@ def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(g
 
 
 # أضيفي هذا المسار في ملف views.py
+# أضيفي هذا المسار في ملف views.py
 @router.put("/mark-result-read/{student_id}/{exam_id}")
 def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
     try:
-        # تحديث قيمة is_read إلى True
+        # 🌟 التعديل السحري: ترجمة الـ ID من فلاتر إلى الـ ID الحقيقي في قاعدة البيانات
+        real_student_id = resolve_student_id(db, student_id)
+        
+        # التحديث الآن يتم باستخدام الـ ID الصحيح (real_student_id)
         query = text("""
             UPDATE answer_sheet 
             SET is_read = TRUE 
             WHERE student_id = :sid AND exam_id = :eid
         """)
         
-        # ملاحظة: تأكدي أن اسم الجدول student_answers يطابق اسم الجدول عندك
-        result = db.execute(query, {"sid": student_id, "eid": exam_id})
+        result = db.execute(query, {"sid": real_student_id, "eid": exam_id})
         db.commit()
 
         if result.rowcount == 0:
