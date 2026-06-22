@@ -312,10 +312,11 @@ reshaper_config = {
 reshaper = arabic_reshaper.ArabicReshaper(configuration=reshaper_config)
 
 def prep(txt):
-    if not txt:
-        return "-"
-    # فقط نربط الحروف ببعضها، ولا نستخدم get_display
-    return reshaper.reshape(str(txt))
+    if not txt: return "-"
+    # 1. نربط الحروف (Reshaping)
+    reshaped = reshaper.reshape(str(txt))
+    # 2. نعكس ترتيب الجملة (Bidi) ليفهمها الـ PDF كمتتالية عربية
+    return get_display(reshaped)
 
 def fmt_num(num):
     if num is None: return "0"
@@ -426,9 +427,9 @@ def download_exam_report(
 
     base = getSampleStyleSheet()
     def s(name, parent="Normal", **kw):
-        # 🌟 السحر هنا: نفعل ميزة الالتفاف العربي (RTL) برمجياً إذا كانت اللغة عربية
-        wrap_dir = 'RTL' if is_ar else None
-        p = ParagraphStyle(name, parent=base[parent], wordWrap=wrap_dir)
+        # 🌟 ملاحظة: إذا استخدمنا get_display، لا نستخدم wordWrap='RTL' 
+        # لأن النص جاهز ومعكوس مسبقاً.
+        p = ParagraphStyle(name, parent=base[parent])
         for k, v in kw.items(): setattr(p, k, v)
         return p
 
