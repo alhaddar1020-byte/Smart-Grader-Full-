@@ -582,22 +582,83 @@ class SupabaseWebhookPayload(BaseModel):
 
 #     return {"message": "Webhook processed"}
 
-async def send_email_task(student_email: str, student_name: str, exam_title: str, lang: str):
+# async def send_email_task(student_email: str, student_name: str, exam_title: str, lang: str):
+#     sendgrid_key = os.environ.get("SENDGRID_API_KEY")
+#     sender_email = os.environ.get("OTP_EMAIL") # 🌟 نفس الإيميل الموحد في كل النظام
+    
+#     if not sendgrid_key or not sender_email:
+#         print("--- ❌ خطأ: مفاتيح SendGrid غير موجودة في متغيرات البيئة ---")
+#         return
+
+#     if lang == "en":
+#         subject = f"Exam Grade Approved: {exam_title}"
+#         html_content = f"""
+#         <div dir="ltr" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+#             <h2 style="color: #4FB7B5; text-align: center;">Intelligent Grading System</h2>
+#             <p>Hello <strong>{student_name}</strong>,</p>
+#             <p>Your exam grade for <strong style="color: #4FB7B5;">{exam_title}</strong> has been approved.</p>
+#             <p>You can now log in to the platform to view your detailed report.</p>
+#         </div>
+#         """
+#     else:
+#         subject = f"اعتماد نتيجة اختبار: {exam_title}"
+#         html_content = f"""
+#         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
+#             <h2 style="color: #4FB7B5; text-align: center;">نظام التصحيح الذكي</h2>
+#             <p>مرحباً يا <strong>{student_name}</strong>،</p>
+#             <p>تم اعتماد نتيجة اختبارك في مادة: <strong style="color: #4FB7B5;">{exam_title}</strong></p>
+#             <p>بإمكانك الآن تسجيل الدخول للمنصة لمعاينة التقرير التفصيلي.</p>
+#         </div>
+#         """
+
+#     payload = {
+#         "personalizations": [{"to": [{"email": student_email}]}],
+#         "from": {"email": sender_email, "name": "Intelligent Grading System"},
+#         "subject": subject,
+#         "content": [{"type": "text/html", "value": html_content}]
+#     }
+
+#     headers = {
+#         "Authorization": f"Bearer {sendgrid_key}",
+#         "Content-Type": "application/json"
+#     }
+
+#     try:
+#         async with httpx.AsyncClient() as client:
+#             response = await client.post("https://api.sendgrid.com/v3/mail/send", json=payload, headers=headers)
+#             if response.status_code in (200, 202):
+#                 print(f"--- ✅ نجاح ساحق: تم إرسال إشعار النتيجة لـ {student_name} بنجاح! ---")
+#             else:
+#                 print(f"--- ❌ خطأ HTTP من SendGrid: {response.text} ---")
+#     except Exception as e:
+#         print(f"--- ❌ فشل الإرسال النهائي عبر الـ API: {e} ---")
+
+# الدالة الموحدة لإرسال الإشعار عبر SendGrid API مع عرض الدرجة
+async def send_email_task(student_email: str, student_name: str, exam_title: str, student_score: str, total_marks: str, lang: str):
     sendgrid_key = os.environ.get("SENDGRID_API_KEY")
-    sender_email = os.environ.get("OTP_EMAIL") # 🌟 نفس الإيميل الموحد في كل النظام
+    sender_email = os.environ.get("OTP_EMAIL") 
     
     if not sendgrid_key or not sender_email:
         print("--- ❌ خطأ: مفاتيح SendGrid غير موجودة في متغيرات البيئة ---")
         return
 
+    # تصميم صندوق الدرجة بلون احترافي
     if lang == "en":
-        subject = f"Exam Grade Approved: {exam_title}"
+        subject = f"Exam Grade Published: {exam_title}"
         html_content = f"""
         <div dir="ltr" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
             <h2 style="color: #4FB7B5; text-align: center;">Intelligent Grading System</h2>
             <p>Hello <strong>{student_name}</strong>,</p>
-            <p>Your exam grade for <strong style="color: #4FB7B5;">{exam_title}</strong> has been approved.</p>
-            <p>You can now log in to the platform to view your detailed report.</p>
+            <p>Your exam grade for <strong style="color: #4FB7B5;">{exam_title}</strong> has been officially published.</p>
+            
+            <div style="background: #f8fafc; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
+                <p style="margin: 0; color: #64748b; font-size: 14px;">Your Score</p>
+                <h1 style="margin: 10px 0 0 0; color: #0f172a; font-size: 36px;">
+                    <span style="color: #4FB7B5;">{student_score}</span> <span style="font-size: 24px; color: #94a3b8;">/ {total_marks}</span>
+                </h1>
+            </div>
+
+            <p>You can log in to the platform to view your detailed report.</p>
         </div>
         """
     else:
@@ -606,7 +667,15 @@ async def send_email_task(student_email: str, student_name: str, exam_title: str
         <div dir="rtl" style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
             <h2 style="color: #4FB7B5; text-align: center;">نظام التصحيح الذكي</h2>
             <p>مرحباً يا <strong>{student_name}</strong>،</p>
-            <p>تم اعتماد نتيجة اختبارك في مادة: <strong style="color: #4FB7B5;">{exam_title}</strong></p>
+            <p>تم اعتماد ونشر نتيجة اختبارك في مادة: <strong style="color: #4FB7B5;">{exam_title}</strong></p>
+            
+            <div style="background: #f8fafc; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0; border: 1px solid #e2e8f0;">
+                <p style="margin: 0; color: #64748b; font-size: 14px;">الدرجة الحاصل عليها</p>
+                <h1 style="margin: 10px 0 0 0; color: #0f172a; font-size: 36px;">
+                    <span style="color: #4FB7B5;">{student_score}</span> <span style="font-size: 24px; color: #94a3b8;">/ {total_marks}</span>
+                </h1>
+            </div>
+
             <p>بإمكانك الآن تسجيل الدخول للمنصة لمعاينة التقرير التفصيلي.</p>
         </div>
         """
@@ -633,10 +702,62 @@ async def send_email_task(student_email: str, student_name: str, exam_title: str
     except Exception as e:
         print(f"--- ❌ فشل الإرسال النهائي عبر الـ API: {e} ---")
 
+
+# @app.post("/api/webhook/grade-notification")
+# async def handle_grade_webhook(
+#     payload: SupabaseWebhookPayload, 
+#     background_tasks: BackgroundTasks, # 🌟 رجعناها عشان النظام يكون صاروخ وما يعلق مع سوبايس
+#     db: Session = Depends(get_db)
+# ):
+#     print("--- 1. وصل طلب جديد للويب هوك (Webhook Received) ---")
+#     new_data = payload.record
+#     old_data = payload.old_record or {}
+    
+#     new_published = new_data.get("is_published")
+#     old_published = old_data.get("is_published")
+
+#     print(f"--- 2. حالة النشر الحالية: {new_published}, السابقة: {old_published} ---")
+
+#     if new_published is True and (old_published is False or old_published is None):
+#         student_id = new_data.get("student_id")
+#         exam_id = new_data.get("exam_id")
+
+#         if student_id and exam_id:
+#             query = text("""
+#                 SELECT u.email, u.full_name, u.language_code, e.exam_title
+#                 FROM student s
+#                 JOIN users u ON s.user_id = u.user_id
+#                 JOIN exam e ON e.exam_id = :eid
+#                 WHERE s.student_id = :sid
+#             """)
+#             result = db.execute(query, {"sid": student_id, "eid": exam_id}).mappings().first()
+
+#             if result and result["email"]:
+#                 print(f"--- 3. جاري تجهيز إرسال الإشعار لـ: {result['full_name']} ---")
+#                 user_lang = result["language_code"] if result["language_code"] else "ar"
+                
+#                 # 🌟 إسناد المهمة للخلفية (السيرفر يرد على سوبايس فوراً، ويرسل الإيميل برواق)
+#                 background_tasks.add_task(
+#                     send_email_task,
+#                     student_email=result["email"], 
+#                     student_name=result["full_name"], 
+#                     exam_title=result["exam_title"],
+#                     lang=user_lang
+#                 )
+#             else:
+#                 print("--- ❌ خطأ: لم يتم العثور على إيميل الطالب ---")
+#         else:
+#             print("--- ❌ خطأ: المعرفات مفقودة ---")
+#     else:
+#         print("--- ⚠️ لم يتغير النشر، لا حاجة لإرسال إشعار ---")
+
+#     # نرد على سوبايس بسرعة عشان ما يحسبها Timeout
+#     return {"status": "success", "message": "Webhook processed successfully"}
+
 @app.post("/api/webhook/grade-notification")
 async def handle_grade_webhook(
     payload: SupabaseWebhookPayload, 
-    background_tasks: BackgroundTasks, # 🌟 رجعناها عشان النظام يكون صاروخ وما يعلق مع سوبايس
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db)
 ):
     print("--- 1. وصل طلب جديد للويب هوك (Webhook Received) ---")
@@ -646,15 +767,19 @@ async def handle_grade_webhook(
     new_published = new_data.get("is_published")
     old_published = old_data.get("is_published")
 
-    print(f"--- 2. حالة النشر الحالية: {new_published}, السابقة: {old_published} ---")
+    # 🌟 استخراج درجة الطالب من الحدث اللي جاي من سوبايس
+    # (إذا كان اسم العمود عندك بالداتا بيس مختلف، مثلاً total_score، غيري كلمة score هنا)
+    student_score = new_data.get("total_earned_mark", "--") 
 
     if new_published is True and (old_published is False or old_published is None):
         student_id = new_data.get("student_id")
         exam_id = new_data.get("exam_id")
 
         if student_id and exam_id:
+            # 🌟 أضفنا سحب الدرجة الكلية للاختبار (total_marks) من جدول exam
+            # (تأكدي أن اسم عمود الدرجة الكلية في جدول الاختبار هو total_marks)
             query = text("""
-                SELECT u.email, u.full_name, u.language_code, e.exam_title
+                SELECT u.email, u.full_name, u.language_code, e.exam_title, e.total_marks
                 FROM student s
                 JOIN users u ON s.user_id = u.user_id
                 JOIN exam e ON e.exam_id = :eid
@@ -663,15 +788,20 @@ async def handle_grade_webhook(
             result = db.execute(query, {"sid": student_id, "eid": exam_id}).mappings().first()
 
             if result and result["email"]:
-                print(f"--- 3. جاري تجهيز إرسال الإشعار لـ: {result['full_name']} ---")
+                print(f"--- 3. جاري تجهيز إرسال الإشعار لـ: {result['full_name']} بدرجة {student_score} ---")
                 user_lang = result["language_code"] if result["language_code"] else "ar"
                 
-                # 🌟 إسناد المهمة للخلفية (السيرفر يرد على سوبايس فوراً، ويرسل الإيميل برواق)
+                # جلب الدرجة الكلية للاختبار (وإذا مو موجودة يحط 100 كافتراضي)
+                exam_total = result.get("total_marks") or "100"
+                
+                # إسناد المهمة للخلفية مع الدرجات
                 background_tasks.add_task(
                     send_email_task,
                     student_email=result["email"], 
                     student_name=result["full_name"], 
                     exam_title=result["exam_title"],
+                    student_score=str(student_score),
+                    total_marks=str(exam_total),
                     lang=user_lang
                 )
             else:
@@ -681,5 +811,4 @@ async def handle_grade_webhook(
     else:
         print("--- ⚠️ لم يتغير النشر، لا حاجة لإرسال إشعار ---")
 
-    # نرد على سوبايس بسرعة عشان ما يحسبها Timeout
     return {"status": "success", "message": "Webhook processed successfully"}
