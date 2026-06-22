@@ -2815,7 +2815,7 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
               AND ans.is_published = true
               AND s.academic_year = :year
         )
-        SELECT course_name, exam_title, total_earned_mark, total_marks, uploaded_at, number_of_questions, exam_id,
+        SELECT course_name, exam_title, total_earned_mark, total_marks, uploaded_at, number_of_questions, exam_id,is_read,
                CASE 
                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 90 THEN :g_ex
                    WHEN (CAST(total_earned_mark AS FLOAT) / NULLIF(total_marks, 0)) * 100 >= 80 THEN :g_vg
