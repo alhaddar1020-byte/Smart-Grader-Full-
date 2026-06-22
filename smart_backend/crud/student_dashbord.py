@@ -2131,7 +2131,7 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
     # 6. آخر النتائج 
     recent_query = text("""
         WITH LatestSheets AS (
-            SELECT ans.total_earned_mark, e.total_marks, e.exam_id, e.exam_title, ans.uploaded_at, e.number_of_questions, c.course_name,
+            SELECT ans.total_earned_mark, e.total_marks, e.exam_id, e.exam_title, ans.uploaded_at, e.number_of_questions,ans.is_read, c.course_name,
                    ROW_NUMBER() OVER(PARTITION BY ans.exam_id ORDER BY ans.uploaded_at DESC) as rn
             FROM answer_sheet ans
             JOIN exam e ON ans.exam_id = e.exam_id
@@ -3307,7 +3307,7 @@ def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get
     try:
         # تحديث قيمة is_read إلى True
         query = text("""
-            UPDATE student_answers 
+            UPDATE answer_sheet 
             SET is_read = TRUE 
             WHERE student_id = :sid AND exam_id = :eid
         """)

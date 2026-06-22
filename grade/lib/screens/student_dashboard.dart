@@ -1800,8 +1800,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
 
     // 🌟 التعديل السحري الأول: النقطة صارت تقرأ من الداتا بيس مباشرة
     // إذا الداتا بيس أرسلت false (يعني النتيجة جديدة)، تظهر النقطة
-    bool isNew = data["is_read"] == false;
-
+    // إذا كانت القيمة false أو null (غير موجودة)، نعتبرها نتيجة جديدة ونعرض النقطة
+    bool isNew = data["is_read"] == false || data["is_read"] == null;
     return InkWell(
       onTap: () {
         if (safeExamId <= 0) {
