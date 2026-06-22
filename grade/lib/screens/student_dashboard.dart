@@ -1795,12 +1795,12 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
   }
 
   Widget _resultItem(Map data, StudentDashboardController controller) {
-    // 1. سحبنا الآي دي بأمان تام عشان ما يعطينا 0
     String examIdStr = data["id"]?.toString() ?? "0";
     int safeExamId = int.tryParse(examIdStr) ?? 0;
 
-    bool isNew =
-        examIdStr.isNotEmpty && !controller.viewedExams.contains(examIdStr);
+    // 🌟 التعديل السحري الأول: النقطة صارت تقرأ من الداتا بيس مباشرة
+    // إذا الداتا بيس أرسلت false (يعني النتيجة جديدة)، تظهر النقطة
+    bool isNew = data["is_read"] == false;
 
     return InkWell(
       onTap: () {
@@ -1813,11 +1813,16 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
           return;
         }
 
-        controller.markExamAsViewed(examIdStr);
+        // 🌟 التعديل السحري الثاني: إرسال الطلب للباك إند لتوثيق القراءة
+        markAsRead(safeExamId);
+
         setState(() {
+          // إخفاء النقطة محلياً فوراً عشان تجربة المستخدم تكون سريعة
+          data["is_read"] = true;
+
           selectedSubjectName = data['subject'];
           selectedExamTitle = data['title'];
-          selectedExamId = safeExamId; // 👈 تمرير الآي دي السليم 100%
+          selectedExamId = safeExamId;
           selectedIndex = 5;
         });
       },
@@ -1832,7 +1837,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // 🌟 الحل الجذري لمشكلة الـ Overflow (توسيع المساحة)
             Expanded(
               child: Row(
                 children: [
@@ -1847,7 +1851,6 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                     ),
                     const SizedBox(width: 12),
                   ],
-                  // 🌟 إجبار النصوص على احترام المساحة
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1855,7 +1858,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                         Text(
                           data["title"] ?? "",
                           style: const TextStyle(fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.ellipsis, // يقص النص الطويل
+                          overflow: TextOverflow.ellipsis,
                         ),
                         Text(
                           data["subject"] ?? "",
@@ -1863,7 +1866,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                             color: Colors.grey,
                             fontSize: 12,
                           ),
-                          overflow: TextOverflow.ellipsis, // يقص النص الطويل
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -1871,7 +1874,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
                 ],
               ),
             ),
-            const SizedBox(width: 10), // فاصل صغير لحماية الدرجة
+            const SizedBox(width: 10),
             Column(
               children: [
                 Text(

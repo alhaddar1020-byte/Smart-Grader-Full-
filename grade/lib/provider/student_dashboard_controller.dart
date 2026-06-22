@@ -281,3 +281,23 @@ class StudentDashboardController extends ChangeNotifier {
     }
   }
 }
+
+// دالة إرسال التحديث للباك إند
+Future<void> markAsRead(int studentId, int examId) async {
+  try {
+    final response = await http.put(
+      Uri.parse(
+        'https://your-render-url.com/views/mark-result-read/$studentId/$examId',
+      ),
+      headers: {'Content-Type': 'application/json'},
+    );
+    if (response.statusCode == 200) {
+      print('تم التحديث بنجاح');
+    }
+  } catch (e) {
+    print('خطأ في الاتصال: $e');
+  }
+}
+
+// ------------------------------------
+// استخدامها داخل زر الضغط على النتيجة:

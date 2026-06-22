@@ -3299,3 +3299,28 @@ def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(g
         "questions": formatted_questions,
         "paper_images": paper_images
     }
+
+
+# أضيفي هذا المسار في ملف views.py
+@router.put("/mark-result-read/{student_id}/{exam_id}")
+def mark_result_as_read(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+    try:
+        # تحديث قيمة is_read إلى True
+        query = text("""
+            UPDATE student_answers 
+            SET is_read = TRUE 
+            WHERE student_id = :sid AND exam_id = :eid
+        """)
+        
+        # ملاحظة: تأكدي أن اسم الجدول student_answers يطابق اسم الجدول عندك
+        result = db.execute(query, {"sid": student_id, "eid": exam_id})
+        db.commit()
+
+        if result.rowcount == 0:
+            raise HTTPException(status_code=404, detail="النتيجة غير موجودة")
+
+        return {"status": "success", "message": "تم تحديد النتيجة كمقروءة"}
+    
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="خطأ في تحديث حالة النتيجة")

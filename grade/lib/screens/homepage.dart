@@ -428,30 +428,30 @@ class SmartCorrectorUI extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  percentage,
-                  style: TextStyle(
-                    color: AppColors.textPrimary(context),
-                    fontSize: isMobile ? 18 : 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: AppColors.textSecondary(context),
-                    fontSize: isMobile ? 11 : 13,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
+          // Expanded(
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     mainAxisSize: MainAxisSize.min,
+          //     children: [
+          //       Text(
+          //         percentage,
+          //         style: TextStyle(
+          //           color: AppColors.textPrimary(context),
+          //           fontSize: isMobile ? 18 : 24,
+          //           fontWeight: FontWeight.bold,
+          //         ),
+          //       ),
+          //       Text(
+          //         label,
+          //         style: TextStyle(
+          //           color: AppColors.textSecondary(context),
+          //           fontSize: isMobile ? 11 : 13,
+          //         ),
+          //         overflow: TextOverflow.ellipsis,
+          //       ),
+          //     ],
+          //   ),
+          // ),
           SizedBox(width: isMobile ? 5 : 15),
           Icon(
             iconData,
