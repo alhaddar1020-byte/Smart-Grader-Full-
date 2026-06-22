@@ -314,10 +314,8 @@ reshaper = arabic_reshaper.ArabicReshaper(configuration=reshaper_config)
 def prep(txt):
     if not txt:
         return "-"
-    # 🌟 التشكيل فقط لشبك الحروف مع بعضها
-    reshaped = reshaper.reshape(str(txt))
-    # 🌟 نحذف get_display نهائياً لكي لا تعكس الجمل الطويلة، وسنترك ReportLab يرتبها!
-    return reshaped
+    # فقط نربط الحروف ببعضها، ولا نستخدم get_display
+    return reshaper.reshape(str(txt))
 
 def fmt_num(num):
     if num is None: return "0"
