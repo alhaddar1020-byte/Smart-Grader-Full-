@@ -950,13 +950,29 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
                 const SizedBox(height: 16),
                 Center(
                   child: InkWell(
+                    // 🌟 هنا التعديل الجوهري السحري!
                     onTap: () {
+                      // سحب الرقم سواء كان اسمه exam_id أو id، وبدون ما يضرب الكود لو كان null
+                      String idStr =
+                          exam["exam_id"]?.toString() ??
+                          exam["id"]?.toString() ??
+                          '0';
+                      int safeExamId = int.tryParse(idStr) ?? 0;
+
+                      if (safeExamId <= 0) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('خطأ: رقم الاختبار غير متوفر!'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return; // توقيف الانتقال إذا مافي رقم
+                      }
+
                       widget.onExamTap(
                         widget.subjectName,
                         exam["title"]?.toString() ?? "",
-                        exam["id"] is int
-                            ? exam["id"]
-                            : int.tryParse(exam["id"]?.toString() ?? '0') ?? 0,
+                        safeExamId, // 👈 إرسال الرقم السليم والصحيح 100%
                       );
                     },
                     child: Container(

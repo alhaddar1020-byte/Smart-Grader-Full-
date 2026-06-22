@@ -168,9 +168,8 @@ def get_subject_details(student_id: int, course_name: str, db: Session = Depends
 
 
 # 4. صفحة تفاصيل ورقة الاختبار (التصحيح التفصيلي)
-@router.get("/exam-details/{student_id}/{exam_title}")
-def get_exam_details(student_id: int, exam_title: str, db: Session = Depends(get_db)):
-    """
-    هذا الرابط يرسل بيانات تصحيح اختبار معين تفصيلياً لعرضها للطالب
-    """
-    return get_exam_details_data(db=db, student_id=student_id, exam_title=exam_title)
+# 🌟 التعديل: تغيير exam_title إلى exam_id
+@router.get("/exam-details/{student_id}/{exam_id}")
+def get_exam_details(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+    # 🌟 التعديل: إرسال exam_id للدالة الأساسية
+    return get_exam_details_data(db=db, student_id=student_id, exam_id=exam_id)
