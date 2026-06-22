@@ -314,8 +314,10 @@ reshaper = arabic_reshaper.ArabicReshaper(configuration=reshaper_config)
 def prep(txt):
     if not txt:
         return "-"
+    # 🌟 التشكيل فقط لشبك الحروف مع بعضها
     reshaped = reshaper.reshape(str(txt))
-    return get_display(reshaped)
+    # 🌟 نحذف get_display نهائياً لكي لا تعكس الجمل الطويلة، وسنترك ReportLab يرتبها!
+    return reshaped
 
 def fmt_num(num):
     if num is None: return "0"
@@ -426,7 +428,9 @@ def download_exam_report(
 
     base = getSampleStyleSheet()
     def s(name, parent="Normal", **kw):
-        p = ParagraphStyle(name, parent=base[parent])
+        # 🌟 السحر هنا: نفعل ميزة الالتفاف العربي (RTL) برمجياً إذا كانت اللغة عربية
+        wrap_dir = 'RTL' if is_ar else None
+        p = ParagraphStyle(name, parent=base[parent], wordWrap=wrap_dir)
         for k, v in kw.items(): setattr(p, k, v)
         return p
 
@@ -448,7 +452,7 @@ def download_exam_report(
     elems.append(HRFlowable(width="100%", thickness=2, color=TEAL, spaceAfter=10))
 
     actual_date = record.get('exam_date')
-    date_str = actual_date.strftime("%Y-%m-%d") if actual_date else date.today().strftime("%Y-%m-%d")
+    date_str = actual_date.strftime("%Y-%m-%d") if actual_date else tr("غير مسجل", "Not recorded")
     dept_name = record.get('department_name') or "غير محدد"
 
     exam_lbl = tr(f"الاختبار: {record['exam_title']}", f"Exam: {record['exam_title']}")
