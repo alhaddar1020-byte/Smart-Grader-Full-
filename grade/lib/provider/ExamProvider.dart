@@ -595,6 +595,7 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../generated/l10n.dart';
+import 'package:grade/core/app_config.dart';
 
 // ══════════════════════════════════════════════════════════════
 // نماذج البيانات (Data Models)
@@ -789,6 +790,8 @@ class ExamProvider extends ChangeNotifier {
       final response = await http.get(
         Uri.parse('http://localhost:8000/api/exams/teacher/1/courses-dropdown'),
       );
+
+      final String url = '${AppConfig.baseUrl}؟';
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);

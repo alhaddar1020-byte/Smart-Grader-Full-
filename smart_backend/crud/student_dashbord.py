@@ -570,11 +570,58 @@ def get_exam_details_data(student_id: int, exam_id: int,lang: str = 'ar', db: Se
     total_marks = stats_record["total_marks"] or 100
 
     # 2. سحب الأسئلة والتقييمات
+    # questions_query = text("""
+    #     SELECT 
+    #         q.question_id, q.question_order, q.question_text, q.question_mark AS total,
+    #         sa.extracted_text AS student_answer, sa.teacher_mark, sa.ai_mark, sa.ai_feedback AS evaluation,
+    #         ea.answer_text AS model_answer
+    #     FROM questions q
+    #     LEFT JOIN student_answers sa ON q.question_id = sa.question_id AND sa.sheet_id = :sheet_id
+    #     LEFT JOIN expected_answers ea ON q.question_id = ea.question_id
+    #     WHERE q.exam_id = :exam_id
+    #     ORDER BY q.question_order ASC
+    # """)
+    # questions_records = db.execute(questions_query, {"sheet_id": sheet_id, "exam_id": exam_id}).mappings().fetchall()
+
+    # correct_count = 0
+    # wrong_count = 0
+    # partial_count = 0
+    # formatted_questions = []
+
+    # for row in questions_records:
+    #     total_q_mark = float(row["total"] or 0.0)
+    #     t_mark = row["teacher_mark"]
+    #     a_mark = row["ai_mark"]
+    #     earned_score = float(t_mark) if t_mark is not None else float(a_mark) if a_mark is not None else 0.0
+
+    #     # شرط دقيق للكسور (هامش خطأ 0.1)
+    #     if earned_score >= (total_q_mark - 0.1) and total_q_mark > 0:
+    #         correct_count += 1
+    #     elif earned_score <= 0.1 or (t_mark is None and a_mark is None):
+    #         wrong_count += 1
+    #     else:
+    #         partial_count += 1
+
+    #     eval_text = row["evaluation"]
+    #     final_evaluation = translate_live(eval_text, user_lang) if eval_text else get_text(user_lang, "في انتظار التقييم الذكي", "Waiting for AI evaluation")
+
+    #     formatted_questions.append({
+    #         "id": str(row["question_order"] or 1),
+    #         "text": row["question_text"] or get_text(user_lang, "بدون نص", "No text"),
+    #         "score": round(earned_score, 2),
+    #         "total": round(total_q_mark, 2),
+    #         "score_display": f"{round(earned_score, 1)} / {round(total_q_mark, 1)}", # 👈 إضافة التنسيق الموحد لكل سؤال
+    #         "modelAnswer": row["model_answer"] or get_text(user_lang, "الإجابة النموذجية قيد المراجعة", "Model answer under review"),
+    #         "studentAnswer": row["student_answer"] or get_text(user_lang, "لم يتم استخراج الإجابة", "Answer not extracted"),
+    #         "evaluation": final_evaluation 
+    #     })
+
+    # 2. سحب الأسئلة والتقييمات
     questions_query = text("""
         SELECT 
             q.question_id, q.question_order, q.question_text, q.question_mark AS total,
             sa.extracted_text AS student_answer, sa.teacher_mark, sa.ai_mark, sa.ai_feedback AS evaluation,
-            ea.answer_text AS model_answer
+            ea.answer_text AS model_answer, ea.is_correct
         FROM questions q
         LEFT JOIN student_answers sa ON q.question_id = sa.question_id AND sa.sheet_id = :sheet_id
         LEFT JOIN expected_answers ea ON q.question_id = ea.question_id
@@ -586,35 +633,62 @@ def get_exam_details_data(student_id: int, exam_id: int,lang: str = 'ar', db: Se
     correct_count = 0
     wrong_count = 0
     partial_count = 0
-    formatted_questions = []
+    
+    # 🌟 القاموس السحري لمنع التكرار (يجمع الخيارات في سؤال واحد)
+    unique_questions = {}
 
     for row in questions_records:
-        total_q_mark = float(row["total"] or 0.0)
-        t_mark = row["teacher_mark"]
-        a_mark = row["ai_mark"]
-        earned_score = float(t_mark) if t_mark is not None else float(a_mark) if a_mark is not None else 0.0
+        qid = row["question_id"]
+        
+        # 🌟 إذا كان السؤال يمر علينا لأول مرة، نجهزه ونحسب درجاته
+        if qid not in unique_questions:
+            total_q_mark = float(row["total"] or 0.0)
+            t_mark = row["teacher_mark"]
+            a_mark = row["ai_mark"]
+            earned_score = float(t_mark) if t_mark is not None else float(a_mark) if a_mark is not None else 0.0
 
-        # شرط دقيق للكسور (هامش خطأ 0.1)
-        if earned_score >= (total_q_mark - 0.1) and total_q_mark > 0:
-            correct_count += 1
-        elif earned_score <= 0.1 or (t_mark is None and a_mark is None):
-            wrong_count += 1
+            # حساب الصح والخطأ مرة واحدة فقط للسؤال
+            if earned_score >= (total_q_mark - 0.1) and total_q_mark > 0:
+                correct_count += 1
+            elif earned_score <= 0.1 or (t_mark is None and a_mark is None):
+                wrong_count += 1
+            else:
+                partial_count += 1
+
+            eval_text = row["evaluation"]
+            final_evaluation = translate_live(eval_text, user_lang) if eval_text else get_text(user_lang, "في انتظار التقييم الذكي", "Waiting for AI evaluation")
+
+            unique_questions[qid] = {
+                "id": str(row["question_order"] or 1),
+                "text": row["question_text"] or get_text(user_lang, "بدون نص", "No text"),
+                "score": round(earned_score, 2),
+                "total": round(total_q_mark, 2),
+                "score_display": f"{round(earned_score, 1)} / {round(total_q_mark, 1)}",
+                "studentAnswer": row["student_answer"] or get_text(user_lang, "لم يتم استخراج الإجابة", "Answer not extracted"),
+                "evaluation": final_evaluation,
+                "model_answers_list": [] # قائمة مؤقتة لجمع الخيارات الصحيحة
+            }
+
+        # 🌟 جمع الإجابات النموذجية:
+        # نأخذ الإجابة فقط إذا كانت هي الصحيحة (is_correct = True) أو إذا لم يكن هناك تحديد
+        if row["model_answer"]:
+            if row["is_correct"] is True or row["is_correct"] is None:
+                unique_questions[qid]["model_answers_list"].append(row["model_answer"])
+
+    # 🌟 تحويل القاموس إلى القائمة النهائية التي تذهب لفلاتر
+    formatted_questions = []
+    for qid, q_data in unique_questions.items():
+        # دمج الإجابات الصحيحة (لو كان فيه أكثر من إجابة صحيحة بيفصل بينهم بـ " أو ")
+        if q_data["model_answers_list"]:
+            q_data["modelAnswer"] = " أو ".join(q_data["model_answers_list"])
         else:
-            partial_count += 1
+            q_data["modelAnswer"] = get_text(user_lang, "الإجابة النموذجية قيد المراجعة", "Model answer under review")
+            
+        # نحذف القائمة المؤقتة عشان ما تعترض فلاتر
+        del q_data["model_answers_list"]
+        formatted_questions.append(q_data)
 
-        eval_text = row["evaluation"]
-        final_evaluation = translate_live(eval_text, user_lang) if eval_text else get_text(user_lang, "في انتظار التقييم الذكي", "Waiting for AI evaluation")
-
-        formatted_questions.append({
-            "id": str(row["question_order"] or 1),
-            "text": row["question_text"] or get_text(user_lang, "بدون نص", "No text"),
-            "score": round(earned_score, 2),
-            "total": round(total_q_mark, 2),
-            "score_display": f"{round(earned_score, 1)} / {round(total_q_mark, 1)}", # 👈 إضافة التنسيق الموحد لكل سؤال
-            "modelAnswer": row["model_answer"] or get_text(user_lang, "الإجابة النموذجية قيد المراجعة", "Model answer under review"),
-            "studentAnswer": row["student_answer"] or get_text(user_lang, "لم يتم استخراج الإجابة", "Answer not extracted"),
-            "evaluation": final_evaluation 
-        })
+    # ... (الجزء اللي بعده حق سحب الصور يبقى زي ما هو) ...
 
     # 3. سحب ومعالجة روابط الصور (Supabase / Local)
     images_query = text("SELECT image_path FROM sheet_images WHERE sheet_id = :sheet_id ORDER BY page_number ASC")
