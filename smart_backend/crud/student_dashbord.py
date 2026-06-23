@@ -527,7 +527,7 @@ def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar'
 
 
 @router.get("/exam-details/{student_id}/{exam_id}")
-def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(get_db)):
+def get_exam_details_data(student_id: int, exam_id: int,lang: str = 'ar', db: Session = Depends(get_db)):
     user_lang = lang # 🌟 هذا هو السطر المنقذ اللي كان ناقص!
     student_id = resolve_student_id(db, student_id)
     # removed lang_query
