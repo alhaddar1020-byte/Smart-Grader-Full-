@@ -1248,7 +1248,7 @@ class _StudentExamScreenState extends State<StudentExamScreen> {
     ExamDetailsController controller,
   ) {
     if (controller.questions.isEmpty) {
-      return const Center(child: Text("لا توجد أسئلة مسجلة حتى الآن."));
+      return Center(child: Text(S.of(context).no_questions_yet));
     }
     return Column(
       children: controller.questions
@@ -1540,9 +1540,9 @@ class _FinalScoreCard extends StatelessWidget {
 
                 if (eId == 0) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
+                    SnackBar(
                       content: Text(
-                        'بيانات الاختبار غير مكتملة، يرجى الانتظار أو تحديث الصفحة',
+                        S.of(context).err_incomplete_exam_data,
                       ),
                     ),
                   );
@@ -1609,19 +1609,19 @@ class _ExamReportActionsState extends State<ExamReportActions> {
           await launchUrl(url);
         } else {
           if (!mounted) return; // 🌟 حماية
-          _showError('لا يمكن فتح ملف الطباعة');
+          _showError(S.of(context).err_cannot_open_print_file);
         }
       } else {
         if (await canLaunchUrl(url)) {
           await launchUrl(url, mode: LaunchMode.externalApplication);
         } else {
           if (!mounted) return; // 🌟 حماية
-          _showError('لا يمكن تحميل الملف');
+          _showError(S.of(context).err_cannot_download_file);
         }
       }
     } catch (e) {
       if (!mounted) return; // 🌟 حماية
-      _showError('تأكد من اتصالك بالإنترنت');
+      _showError(S.of(context).err_check_internet);
     } finally {
       // 🌟 أهم حماية: ممنوع عمل setState إذا الشاشة مقفلة!
       if (mounted) {
@@ -1649,7 +1649,7 @@ class _ExamReportActionsState extends State<ExamReportActions> {
         ElevatedButton.icon(
           onPressed: () => _downloadOrPrintPdf(isPrint: true),
           icon: const Icon(Icons.print, size: 16),
-          label: const Text('طباعة'),
+          label: Text(S.of(context).print),
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF4FB7B5),
             foregroundColor: Colors.white,
@@ -1664,7 +1664,7 @@ class _ExamReportActionsState extends State<ExamReportActions> {
         OutlinedButton.icon(
           onPressed: () => _downloadOrPrintPdf(isPrint: false),
           icon: const Icon(Icons.download, size: 16),
-          label: const Text('تحميل'),
+          label: Text(S.of(context).download),
           style: OutlinedButton.styleFrom(
             foregroundColor: const Color(0xFF4FB7B5),
             side: const BorderSide(color: Color(0xFF4FB7B5)),
@@ -1703,7 +1703,7 @@ class ExamReportPreviewScreen extends StatelessWidget {
     if (response.statusCode == 200) {
       return response.bodyBytes;
     } else {
-      throw Exception('فشل جلب الملف من الخادم');
+      throw Exception(S.current.err_fetch_file_failed);
     }
   }
 
@@ -1718,7 +1718,7 @@ class ExamReportPreviewScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          S.of(context).previewReportTitle ?? 'معاينة تقرير النتيجة',
+          S.of(context).previewReportTitle,
           style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,

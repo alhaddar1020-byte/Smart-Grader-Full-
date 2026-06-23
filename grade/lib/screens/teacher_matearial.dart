@@ -945,6 +945,7 @@ import 'teacer_setting.dart';
 import 'ExamManagementPage.dart';
 import 'teacher_profile_settings_page.dart';
 import 'package:grade/models/teacher_matearial.dart';
+import 'package:grade/core/app_config.dart';
 
 class Material1 extends StatefulWidget {
   const Material1({super.key});
@@ -1378,8 +1379,9 @@ class _SubjectsGridState extends State<SubjectsGrid> {
   Future<void> fetchMaterials() async {
     try {
       final response = await http.get(
-        Uri.parse('http://localhost:8000/teacher-materials/1'),
+        Uri.parse('${AppConfig.baseUrl}/teacher-materials/1'),
       );
+
       if (response.statusCode == 200) {
         var decodedData = json.decode(utf8.decode(response.bodyBytes));
         var wrapper = TeacherMaterialsWrapper.fromJson(decodedData);

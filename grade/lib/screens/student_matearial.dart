@@ -1301,11 +1301,11 @@ class _SubjectsScreenState extends State<SubjectsScreen> {
     final List subjects = provider.activeTermSubjects;
 
     if (subjects.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
           padding: EdgeInsets.all(20.0),
           child: Text(
-            "لا توجد مواد مسجلة في هذا الفصل الدراسي",
+            S.of(context).no_materials_in_term,
             style: TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.bold,

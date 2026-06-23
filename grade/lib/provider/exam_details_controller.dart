@@ -238,6 +238,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:grade/core/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:grade/generated/l10n.dart';
 
 class ExamDetailsController extends ChangeNotifier {
   bool isLoading = true;
@@ -293,7 +294,7 @@ class ExamDetailsController extends ChangeNotifier {
       } else {
         if (context != null && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('فشل في جلب تفاصيل الاختبار')),
+            SnackBar(content: Text(S.of(context).err_fetch_exam_details)),
           );
         }
       }
@@ -329,7 +330,7 @@ class ExamDetailsController extends ChangeNotifier {
       } else {
         if (context != null && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('لا يمكن فتح رابط التقرير')),
+            SnackBar(content: Text(S.of(context).err_open_report_link)),
           );
         }
       }
@@ -337,9 +338,7 @@ class ExamDetailsController extends ChangeNotifier {
       debugPrint("خطأ في فتح الـ PDF: $e");
       if (context != null && context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('حدثت مشكلة أثناء محاولة تحميل التقرير'),
-          ),
+          SnackBar(content: Text(S.of(context).err_download_report)),
         );
       }
     }

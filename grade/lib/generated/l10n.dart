@@ -1729,10 +1729,10 @@ class S {
     return Intl.message('Average', name: 'statAverage', desc: '', args: []);
   }
 
-  /// `Highest Score`
+  /// `Highest Result`
   String get statHighScore {
     return Intl.message(
-      'Highest Score',
+      'Highest Result',
       name: 'statHighScore',
       desc: '',
       args: [],
@@ -1824,10 +1824,10 @@ class S {
     );
   }
 
-  /// `Highest Score`
+  /// `Highest Result`
   String get statsHighestScore {
     return Intl.message(
-      'Highest Score',
+      'Highest Result',
       name: 'statsHighestScore',
       desc: '',
       args: [],
@@ -7739,6 +7739,196 @@ class S {
     return Intl.message(
       'Leave empty if no specialization exists',
       name: 'dept_hint_optional',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to load exam details`
+  String get err_fetch_exam_details {
+    return Intl.message(
+      'Failed to load exam details',
+      name: 'err_fetch_exam_details',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot open report link`
+  String get err_open_report_link {
+    return Intl.message(
+      'Cannot open report link',
+      name: 'err_open_report_link',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `A problem occurred while trying to download the report`
+  String get err_download_report {
+    return Intl.message(
+      'A problem occurred while trying to download the report',
+      name: 'err_download_report',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unexpected data structure from server`
+  String get err_unexpected_data_structure {
+    return Intl.message(
+      'Unexpected data structure from server',
+      name: 'err_unexpected_data_structure',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unexpected data from server`
+  String get err_unexpected_data {
+    return Intl.message(
+      'Unexpected data from server',
+      name: 'err_unexpected_data',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Server error: {code}`
+  String err_server_with_code(Object code) {
+    return Intl.message(
+      'Server error: $code',
+      name: 'err_server_with_code',
+      desc: '',
+      args: [code],
+    );
+  }
+
+  /// `No data to display`
+  String get no_data_to_display {
+    return Intl.message(
+      'No data to display',
+      name: 'no_data_to_display',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error: No exam selected`
+  String get err_no_exam_selected {
+    return Intl.message(
+      'Error: No exam selected',
+      name: 'err_no_exam_selected',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error: Exam ID missing from server!`
+  String get err_missing_exam_id {
+    return Intl.message(
+      'Error: Exam ID missing from server!',
+      name: 'err_missing_exam_id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No details or exams recorded for this subject yet.`
+  String get no_subject_details {
+    return Intl.message(
+      'No details or exams recorded for this subject yet.',
+      name: 'no_subject_details',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Error: Exam ID is unavailable!`
+  String get err_exam_id_unavailable {
+    return Intl.message(
+      'Error: Exam ID is unavailable!',
+      name: 'err_exam_id_unavailable',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No questions recorded yet.`
+  String get no_questions_yet {
+    return Intl.message(
+      'No questions recorded yet.',
+      name: 'no_questions_yet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exam data is incomplete, please wait or refresh the page`
+  String get err_incomplete_exam_data {
+    return Intl.message(
+      'Exam data is incomplete, please wait or refresh the page',
+      name: 'err_incomplete_exam_data',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot open print file`
+  String get err_cannot_open_print_file {
+    return Intl.message(
+      'Cannot open print file',
+      name: 'err_cannot_open_print_file',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cannot download file`
+  String get err_cannot_download_file {
+    return Intl.message(
+      'Cannot download file',
+      name: 'err_cannot_download_file',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Please check your internet connection`
+  String get err_check_internet {
+    return Intl.message(
+      'Please check your internet connection',
+      name: 'err_check_internet',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Print`
+  String get print {
+    return Intl.message('Print', name: 'print', desc: '', args: []);
+  }
+
+  /// `Download`
+  String get download {
+    return Intl.message('Download', name: 'download', desc: '', args: []);
+  }
+
+  /// `No subjects registered in this semester`
+  String get no_materials_in_term {
+    return Intl.message(
+      'No subjects registered in this semester',
+      name: 'no_materials_in_term',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed to fetch file from server`
+  String get err_fetch_file_failed {
+    return Intl.message(
+      'Failed to fetch file from server',
+      name: 'err_fetch_file_failed',
       desc: '',
       args: [],
     );

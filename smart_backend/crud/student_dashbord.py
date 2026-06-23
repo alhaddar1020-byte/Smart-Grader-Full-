@@ -108,7 +108,8 @@
 # # #     return en if lang == 'en' else ar
 
 # # # @router.get("/student-dashboard/{student_id}")
-# # # def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+# # # def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # # #     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
 # # #     current_year = db.execute(current_year_query).scalar()
     
@@ -254,7 +255,8 @@
 # # # # ══════════════════════════════════════════════════════════════════════════════
 
 # # # @router.get("/student-subjects/{student_id}")
-# # # def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
+# # # def get_student_subjects_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -334,7 +336,8 @@
 # # # # ══════════════════════════════════════════════════════════════════════════════
 
 # # # @router.get("/subject-details/{student_id}/{course_name}")
-# # # def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
+# # # def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -450,7 +453,8 @@
 # # # # ══════════════════════════════════════════════════════════════════════════════
 
 # # # @router.get("/exam-details/{student_id}/{exam_title}")
-# # # def get_exam_details_data(student_id: int, exam_title: str, db: Session = Depends(get_db)):
+# # # def get_exam_details_data(student_id: int, exam_title: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -568,7 +572,8 @@
 # # # 1. دالة الداشبورد الرئيسية
 # # # ══════════════════════════════════════════════════════════════════════════════
 # # @router.get("/student-dashboard/{student_id}")
-# # def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+# # def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # #     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
 # #     current_year = db.execute(current_year_query).scalar()
     
@@ -725,7 +730,8 @@
 # # # 2. دالة صفحة المواد الدراسية
 # # # ══════════════════════════════════════════════════════════════════════════════
 # # @router.get("/student-subjects/{student_id}")
-# # def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
+# # def get_student_subjects_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -804,7 +810,8 @@
 # # # 3. دالة تفاصيل مادة معينة
 # # # ══════════════════════════════════════════════════════════════════════════════
 # # @router.get("/subject-details/{student_id}/{course_name}")
-# # def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
+# # def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -904,7 +911,8 @@
 # # # 4. دالة تفاصيل ورقة اختبار معين
 # # # ══════════════════════════════════════════════════════════════════════════════
 # # @router.get("/exam-details/{student_id}/{exam_title}")
-# # def get_exam_details_data(student_id: int, exam_title: str, db: Session = Depends(get_db)):
+# # def get_exam_details_data(student_id: int, exam_title: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -1503,7 +1511,8 @@
 # 1. دالة الداشبورد الرئيسية (مع حل الانفجار الديكارتي للحسابات)
 # ══════════════════════════════════════════════════════════════════════════════
 # @router.get("/student-dashboard/{student_id}")
-# def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+# def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id) # 👈 الحماية هنا
     
 #     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
@@ -1663,7 +1672,8 @@
 #     }
 
 # @router.get("/student-dashboard/{student_id}")
-# def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+# def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
     
 #     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
@@ -1835,7 +1845,8 @@
 # 2. دالة صفحة المواد الدراسية
 # ══════════════════════════════════════════════════════════════════════════════
 # @router.get("/student-subjects/{student_id}")
-# def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
+# def get_student_subjects_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
 #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
@@ -1928,7 +1939,8 @@
 
 
 # @router.get("/student-subjects/{student_id}")
-# def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
+# def get_student_subjects_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
 #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
@@ -2045,7 +2057,8 @@
 # 3. دالة تفاصيل مادة معينة
 # ══════════════════════════════════════════════════════════════════════════════
 # @router.get("/subject-details/{student_id}/{course_name}")
-# def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
+# def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
 #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
@@ -2157,7 +2170,8 @@
 
 
 # @router.get("/subject-details/{student_id}/{course_name}")
-# def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
+# def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
 #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
@@ -2291,7 +2305,8 @@
 # 4. دالة تفاصيل ورقة اختبار معين
 # ══════════════════════════════════════════════════════════════════════════════
 # @router.get("/exam-details/{student_id}/{exam_title}")
-# def get_exam_details_data(student_id: int, exam_title: str, db: Session = Depends(get_db)):
+# def get_exam_details_data(student_id: int, exam_title: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
 #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
@@ -2505,7 +2520,8 @@
 
 
 # @router.get("/student-dashboard/{student_id}")
-# def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+# def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
 #     student_id = resolve_student_id(db, student_id)
     
 #     # 1. تحديد السنة الأكاديمية النشطة بدقة (نفس منطق صفحة المواد)
@@ -2714,7 +2730,8 @@ def resolve_student_id(db: Session, student_id: int) -> int:
 
 
 @router.get("/student-dashboard/{student_id}")
-def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
+def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
     student_id = resolve_student_id(db, student_id)
     
     # 1. تحديد السنة الأكاديمية النشطة بدقة
@@ -2733,7 +2750,7 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
         WHERE s.student_id = :sid
     """)
     profile = db.execute(profile_query, {"sid": student_id}).mappings().first()
-    user_lang = profile["language_code"] if profile and profile["language_code"] else "ar"
+    # removed user_lang DB override
 
     # 3. الإحصائيات (المعدل التراكمي الصحيح + سحب درجات أعلى نتيجة)
     stats_query = text("""
@@ -2900,10 +2917,11 @@ def get_student_dashboard_data(student_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/student-subjects/{student_id}")
-def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
+def get_student_subjects_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
     student_id = resolve_student_id(db, student_id)
-    lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
-    user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
+    # removed lang_query
+    # removed user_lang DB override
 
     # 1. تحديد السنة الأكاديمية النشطة حالياً (حجر الأساس)
     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
@@ -3047,10 +3065,11 @@ def get_student_subjects_data(student_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/subject-details/{student_id}/{course_name}")
-def get_subject_details_data(student_id: int, course_name: str, db: Session = Depends(get_db)):
+def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
+    user_lang = lang
     student_id = resolve_student_id(db, student_id)
-    lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
-    user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
+    # removed lang_query
+    # removed user_lang DB override
 
     # 1. سحب السنة النشطة لضمان تطابق البيانات مع الداشبورد
     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
@@ -3199,8 +3218,8 @@ def get_subject_details_data(student_id: int, course_name: str, db: Session = De
 @router.get("/exam-details/{student_id}/{exam_id}")
 def get_exam_details_data(student_id: int, exam_id: int, db: Session = Depends(get_db)):
     student_id = resolve_student_id(db, student_id)
-    lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
-    user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
+    # removed lang_query
+    # removed user_lang DB override
 
     # 1. سحب بيانات الاختبار المحمية والمؤكدة
     stats_query = text("""

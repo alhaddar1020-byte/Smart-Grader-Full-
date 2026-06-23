@@ -785,7 +785,7 @@ class SettingsController extends ChangeNotifier {
         phoneNumber = data['phone_number'] ?? '';
         lastPasswordChange = data['last_password_change'] != null
             ? data['last_password_change'].toString().split(' ')[0]
-            : (context != null ? S.of(context).not_specified : 'غير محدد');
+            : (context != null ? S.of(context).not_specified : S.current.not_specified);
 
         await prefs.setString('language_code', data['language_code'] ?? 'ar');
         await prefs.setBool('theme_mode', data['is_dark_mode'] ?? false);

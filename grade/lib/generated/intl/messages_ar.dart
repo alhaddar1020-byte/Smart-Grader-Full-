@@ -28,44 +28,46 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m3(count) => "${count} إجابة صحيحة وكاملة";
 
-  static String m4(error) => "خطأ في الاتصال بالباك إند: ${error}";
+  static String m4(code) => "خطأ بالخادم: ${code}";
 
-  static String m5(statusCode) => "فشل التصدير: ${statusCode}";
+  static String m5(error) => "خطأ في الاتصال بالباك إند: ${error}";
 
-  static String m6(statusCode) => "فشل جلب البيانات: ${statusCode}";
+  static String m6(statusCode) => "فشل التصدير: ${statusCode}";
 
-  static String m7(e) => "خطأ في جلب الإحصائيات: ${e}";
+  static String m7(statusCode) => "فشل جلب البيانات: ${statusCode}";
 
-  static String m8(error) => "خطأ في تحميل البيانات الإحصائية: ${error}";
+  static String m8(e) => "خطأ في جلب الإحصائيات: ${e}";
 
-  static String m9(e) => "خطأ في التحميل: ${e}";
+  static String m9(error) => "خطأ في تحميل البيانات الإحصائية: ${error}";
 
-  static String m10(e) => "حدث خطأ: ${e}";
+  static String m10(e) => "خطأ في التحميل: ${e}";
 
-  static String m11(e) => "خطأ: ${e}";
+  static String m11(e) => "حدث خطأ: ${e}";
 
-  static String m12(total) => "من ${total}";
+  static String m12(e) => "خطأ: ${e}";
 
-  static String m13(id) => "السؤال ${id}";
+  static String m13(total) => "من ${total}";
 
-  static String m14(backupDate) => "جاري تحميل النسخة: ${backupDate}";
+  static String m14(id) => "السؤال ${id}";
 
-  static String m15(date) => "آخر تغيير: ${date}";
+  static String m15(backupDate) => "جاري تحميل النسخة: ${backupDate}";
 
-  static String m16(strength) => "قوة كلمة المرور: ${strength}";
+  static String m16(date) => "آخر تغيير: ${date}";
 
   static String m17(strength) => "قوة كلمة المرور: ${strength}";
 
-  static String m18(count) => "تمت إضافة ${count} مستخدم بنجاح";
+  static String m18(strength) => "قوة كلمة المرور: ${strength}";
 
-  static String m19(count) =>
+  static String m19(count) => "تمت إضافة ${count} مستخدم بنجاح";
+
+  static String m20(count) =>
       "اسحب لليمين واليسار لرؤية باقي الصفحات (${count} صفحات)";
-
-  static String m20(name) => "مرحباً ${name}!";
 
   static String m21(name) => "مرحباً ${name}!";
 
-  static String m22(adminName) => "مرحباً بك، ${adminName}";
+  static String m22(name) => "مرحباً ${name}!";
+
+  static String m23(adminName) => "مرحباً بك، ${adminName}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -392,6 +394,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "يرجى عدم إغلاق هذه الصفحة أثناء عملية التصحيح الآلي.",
     ),
     "doctor_name": MessageLookupByLibrary.simpleMessage("د. محمد"),
+    "download": MessageLookupByLibrary.simpleMessage("تحميل"),
     "download_button": MessageLookupByLibrary.simpleMessage("تحميل"),
     "download_pdf": MessageLookupByLibrary.simpleMessage("تحميل PDF"),
     "downloading_backup_snackbar": MessageLookupByLibrary.simpleMessage(
@@ -442,6 +445,18 @@ class MessageLookup extends MessageLookupByLibrary {
       "الرجاء إدخال بريد إلكتروني صحيح",
     ),
     "end_date": MessageLookupByLibrary.simpleMessage("تاريخ النهاية"),
+    "err_cannot_download_file": MessageLookupByLibrary.simpleMessage(
+      "لا يمكن تحميل الملف",
+    ),
+    "err_cannot_open_print_file": MessageLookupByLibrary.simpleMessage(
+      "لا يمكن فتح ملف الطباعة",
+    ),
+    "err_check_internet": MessageLookupByLibrary.simpleMessage(
+      "تأكد من اتصالك بالإنترنت",
+    ),
+    "err_download_report": MessageLookupByLibrary.simpleMessage(
+      "حدثت مشكلة أثناء محاولة تحميل التقرير",
+    ),
     "err_empty_essay": MessageLookupByLibrary.simpleMessage(
       "يجب كتابة الإجابة النموذجية للسؤال المقالي",
     ),
@@ -467,11 +482,23 @@ class MessageLookup extends MessageLookupByLibrary {
       "يجب تحديد تاريخ الاختبار",
     ),
     "err_exam_folder": MessageLookupByLibrary.simpleMessage("يرجى اختيار مجلد"),
+    "err_exam_id_unavailable": MessageLookupByLibrary.simpleMessage(
+      "خطأ: رقم الاختبار غير متوفر!",
+    ),
     "err_exam_title": MessageLookupByLibrary.simpleMessage(
       "يجب كتابة عنوان الاختبار",
     ),
+    "err_fetch_exam_details": MessageLookupByLibrary.simpleMessage(
+      "فشل في جلب تفاصيل الاختبار",
+    ),
+    "err_fetch_file_failed": MessageLookupByLibrary.simpleMessage(
+      "فشل جلب الملف من الخادم",
+    ),
     "err_general": MessageLookupByLibrary.simpleMessage(
       "حدث خطأ ما، يرجى المحاولة لاحقاً",
+    ),
+    "err_incomplete_exam_data": MessageLookupByLibrary.simpleMessage(
+      "بيانات الاختبار غير مكتملة، يرجى الانتظار أو تحديث الصفحة",
     ),
     "err_invalid_email_format": MessageLookupByLibrary.simpleMessage(
       "صيغة البريد الإلكتروني غير صحيحة",
@@ -479,11 +506,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "err_missing_data": MessageLookupByLibrary.simpleMessage(
       "يرجى تعبئة جميع الحقول المطلوبة",
     ),
+    "err_missing_exam_id": MessageLookupByLibrary.simpleMessage(
+      "خطأ: رقم الاختبار مفقود من السيرفر!",
+    ),
     "err_no_correct_answer": MessageLookupByLibrary.simpleMessage(
       "يوجد أسئلة بدون إجابة صحيحة، يرجى تحديدها",
     ),
     "err_no_correct_mcq": MessageLookupByLibrary.simpleMessage(
       "يوجد سؤال اختياري بدون إجابة صحيحة",
+    ),
+    "err_no_exam_selected": MessageLookupByLibrary.simpleMessage(
+      "خطأ: لم يتم اختيار اختبار",
     ),
     "err_no_questions": MessageLookupByLibrary.simpleMessage(
       "لا يمكن اعتماد اختبار فارغ، يرجى إضافة أسئلة",
@@ -491,8 +524,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "err_no_tf_answer": MessageLookupByLibrary.simpleMessage(
       "يوجد سؤال (صح/خطأ) لم تحدد إجابته",
     ),
+    "err_open_report_link": MessageLookupByLibrary.simpleMessage(
+      "لا يمكن فتح رابط التقرير",
+    ),
+    "err_server_with_code": m4,
     "err_title_required": MessageLookupByLibrary.simpleMessage(
       "يجب كتابة عنوان للاختبار",
+    ),
+    "err_unexpected_data": MessageLookupByLibrary.simpleMessage(
+      "بيانات غير متوقعة من السيرفر",
+    ),
+    "err_unexpected_data_structure": MessageLookupByLibrary.simpleMessage(
+      "هيكل بيانات غير متوقع من السيرفر",
     ),
     "err_zero_grade": MessageLookupByLibrary.simpleMessage(
       "يجب أن تكون درجة كل سؤال أكبر من صفر",
@@ -501,7 +544,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_account_not_activated": MessageLookupByLibrary.simpleMessage(
       "هذا الحساب غير مفعل بعد. يرجى إعداد كلمة المرور",
     ),
-    "error_backend_connection": m4,
+    "error_backend_connection": m5,
     "error_backup_creation_failed": MessageLookupByLibrary.simpleMessage(
       "فشل إنشاء النسخة",
     ),
@@ -525,21 +568,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_expired_otp": MessageLookupByLibrary.simpleMessage(
       "انتهت صلاحية رمز التحقق",
     ),
-    "error_export_failed_with_code": m5,
+    "error_export_failed_with_code": m6,
     "error_fetch_data": MessageLookupByLibrary.simpleMessage(
       "فشل في جلب البيانات: ",
     ),
     "error_fetch_data_simple": MessageLookupByLibrary.simpleMessage(
       "فشل جلب البيانات",
     ),
-    "error_fetch_data_with_code": m6,
+    "error_fetch_data_with_code": m7,
     "error_fetch_filters": MessageLookupByLibrary.simpleMessage(
       "فشل جلب فلاتر النظام من السيرفر",
     ),
     "error_fetch_real_stats": MessageLookupByLibrary.simpleMessage(
       "فشل جلب الإحصائيات الحقيقية من السيرفر",
     ),
-    "error_fetch_stats_with_msg": m7,
+    "error_fetch_stats_with_msg": m8,
     "error_filters": MessageLookupByLibrary.simpleMessage("فشل جلب الفصول"),
     "error_invalid_credentials": MessageLookupByLibrary.simpleMessage(
       "بيانات الدخول غير صحيحة",
@@ -547,8 +590,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_invalid_otp": MessageLookupByLibrary.simpleMessage(
       "رمز التحقق غير صحيح أو تم استخدامه",
     ),
-    "error_loading_stats": m8,
-    "error_loading_with_msg": m9,
+    "error_loading_stats": m9,
+    "error_loading_with_msg": m10,
     "error_network_connection": MessageLookupByLibrary.simpleMessage(
       "خطأ في الاتصال بالشبكة",
     ),
@@ -567,7 +610,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "لا توجد صلاحيات كافية لهذا الحساب",
     ),
     "error_occurred": MessageLookupByLibrary.simpleMessage("حدث خطأ: "),
-    "error_occurred_with_msg": m10,
+    "error_occurred_with_msg": m11,
     "error_opening_file": MessageLookupByLibrary.simpleMessage(
       "حدث خطأ أثناء فتح الملفات",
     ),
@@ -590,7 +633,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_updating_password": MessageLookupByLibrary.simpleMessage(
       "حدث خطأ أثناء التحديث",
     ),
-    "error_with_msg": m11,
+    "error_with_msg": m12,
     "essay_answer_area": MessageLookupByLibrary.simpleMessage(
       "منطقة إجابة السؤال المقالي",
     ),
@@ -623,9 +666,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "examOriginalPaperView": MessageLookupByLibrary.simpleMessage(
       "ورقة الإجابة الأصلية (معاينة الصور)",
     ),
-    "examOutOf": m12,
+    "examOutOf": m13,
     "examPartialAnswers": MessageLookupByLibrary.simpleMessage("جزئي"),
-    "examQuestionNumber": m13,
+    "examQuestionNumber": m14,
     "examQuestions": MessageLookupByLibrary.simpleMessage("الأسئلة"),
     "examRating": MessageLookupByLibrary.simpleMessage("التقدير"),
     "examResultTitle": MessageLookupByLibrary.simpleMessage("النتيجة"),
@@ -898,7 +941,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "link_sent_success": MessageLookupByLibrary.simpleMessage(
       "تم إرسال رابط الاستعادة إلى بريدك",
     ),
-    "loading_backup_version": m14,
+    "loading_backup_version": m15,
     "loading_copying": MessageLookupByLibrary.simpleMessage("جاري النسخ..."),
     "loading_exporting": MessageLookupByLibrary.simpleMessage(
       "جاري التصدير...",
@@ -995,21 +1038,33 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "no_course_dialog_title": MessageLookupByLibrary.simpleMessage("تنبيه"),
     "no_data_found": MessageLookupByLibrary.simpleMessage("لا توجد اختبارات"),
+    "no_data_to_display": MessageLookupByLibrary.simpleMessage(
+      "لا توجد بيانات لعرضها",
+    ),
     "no_live_alerts": MessageLookupByLibrary.simpleMessage(
       "لا توجد تنبيهات حية حالياً",
     ),
     "no_matching_logs": MessageLookupByLibrary.simpleMessage(
       "لا توجد سجلات مطابقة.",
     ),
+    "no_materials_in_term": MessageLookupByLibrary.simpleMessage(
+      "لا توجد مواد مسجلة في هذا الفصل الدراسي",
+    ),
     "no_name": MessageLookupByLibrary.simpleMessage("بدون اسم"),
     "no_papers_attached": MessageLookupByLibrary.simpleMessage(
       "لم يتم إرفاق أوراق",
+    ),
+    "no_questions_yet": MessageLookupByLibrary.simpleMessage(
+      "لا توجد أسئلة مسجلة حتى الآن.",
     ),
     "no_semesters_added": MessageLookupByLibrary.simpleMessage(
       "لا توجد فصول دراسية مضافة حتى الآن.",
     ),
     "no_server_connection": MessageLookupByLibrary.simpleMessage(
       "لا يوجد اتصال بالسيرفر",
+    ),
+    "no_subject_details": MessageLookupByLibrary.simpleMessage(
+      "لا توجد تفاصيل أو اختبارات مسجلة لهذه المادة بعد.",
     ),
     "no_users_found": MessageLookupByLibrary.simpleMessage(
       "لا يوجد مستخدمين يطابقون بحثك",
@@ -1126,6 +1181,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "معاينة تقرير النتيجة",
     ),
     "previous_page": MessageLookupByLibrary.simpleMessage("الصفحة السابقة"),
+    "print": MessageLookupByLibrary.simpleMessage("طباعة"),
     "processing_data": MessageLookupByLibrary.simpleMessage(
       "جاري معالجة البيانات...",
     ),
@@ -1333,7 +1389,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "كلمة المرور الحالية غير صحيحة",
     ),
     "settingsLanguage": MessageLookupByLibrary.simpleMessage("اللغة"),
-    "settingsLastChange": m15,
+    "settingsLastChange": m16,
     "settingsLevel": MessageLookupByLibrary.simpleMessage("المستوى "),
     "settingsManagePassword": MessageLookupByLibrary.simpleMessage(
       "إدارة كلمة المرور",
@@ -1373,8 +1429,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "الأمان والمصادقة",
     ),
     "settingsSendCode": MessageLookupByLibrary.simpleMessage("إرسال الكود"),
-    "settingsStrength": m16,
-    "settingsStrengthLabel": m17,
+    "settingsStrength": m17,
+    "settingsStrengthLabel": m18,
     "settingsStrengthMedium": MessageLookupByLibrary.simpleMessage("متوسطة"),
     "settingsStrengthStrong": MessageLookupByLibrary.simpleMessage("قوية"),
     "settingsStrengthWeak": MessageLookupByLibrary.simpleMessage("ضعيفة"),
@@ -1524,13 +1580,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "success_user_added": MessageLookupByLibrary.simpleMessage(
       "تمت إضافة المستخدم بنجاح",
     ),
-    "success_users_added": m18,
+    "success_users_added": m19,
     "sum_label": MessageLookupByLibrary.simpleMessage("المجموع: "),
     "sunday": MessageLookupByLibrary.simpleMessage("ح"),
     "supported_file_formats": MessageLookupByLibrary.simpleMessage(
       "صيغ الملفات المدعومة: .xlsx, .xls, .csv (الحد الأقصى 5MB)",
     ),
-    "swipeToSeeMorePages": m19,
+    "swipeToSeeMorePages": m20,
     "systemName": MessageLookupByLibrary.simpleMessage("نظام التصحيح الذكي"),
     "systemTitlePrefix": MessageLookupByLibrary.simpleMessage("نظام المصحح "),
     "systemTitleSuffix": MessageLookupByLibrary.simpleMessage("الذكي"),
@@ -1664,9 +1720,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "weekly_usage_percentage": MessageLookupByLibrary.simpleMessage(
       "نسبة الاستخدام الأسبوعية خلال الأشهر الثلاثة الماضية",
     ),
-    "welcome": m20,
-    "welcomeMessage": m21,
-    "welcome_admin": m22,
+    "welcome": m21,
+    "welcomeMessage": m22,
+    "welcome_admin": m23,
     "welcome_engineer": MessageLookupByLibrary.simpleMessage("مرحباً م.خديجة!"),
     "welcome_teacher": MessageLookupByLibrary.simpleMessage("مرحباً أ. منار!"),
     "welcome_user": MessageLookupByLibrary.simpleMessage("مرحباً أ. منار!"),

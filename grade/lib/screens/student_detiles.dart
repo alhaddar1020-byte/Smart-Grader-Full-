@@ -673,10 +673,10 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
 
                       // في حال لم يكن هناك اختبارات
                       if (controller.exams.isEmpty) {
-                        return const Center(
+                        return Center(
                           child: Text(
-                            "لا توجد تفاصيل أو اختبارات مسجلة لهذه المادة بعد.",
-                            style: TextStyle(
+                            S.of(context).no_subject_details,
+                            style: const TextStyle(
                               color: Colors.white70,
                               fontSize: 16,
                             ),
@@ -1081,7 +1081,7 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  exam["title"]?.toString() ?? "بدون عنوان",
+                  exam["title"]?.toString() ?? S.of(context).untitled_exam,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -1132,8 +1132,10 @@ class _SubjectDetailsScreenState extends State<SubjectDetailsScreen> {
 
                       if (safeExamId <= 0) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('خطأ: رقم الاختبار غير متوفر!'),
+                          SnackBar(
+                            content: Text(
+                              S.of(context).err_exam_id_unavailable,
+                            ),
                             backgroundColor: Colors.red,
                           ),
                         );

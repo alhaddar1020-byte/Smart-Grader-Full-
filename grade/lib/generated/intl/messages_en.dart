@@ -28,44 +28,46 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m3(count) => "${count} correct and complete answers";
 
-  static String m4(error) => "Backend connection error: ${error}";
+  static String m4(code) => "Server error: ${code}";
 
-  static String m5(statusCode) => "Export failed: ${statusCode}";
+  static String m5(error) => "Backend connection error: ${error}";
 
-  static String m6(statusCode) => "Failed to fetch data: ${statusCode}";
+  static String m6(statusCode) => "Export failed: ${statusCode}";
 
-  static String m7(e) => "Error fetching stats: ${e}";
+  static String m7(statusCode) => "Failed to fetch data: ${statusCode}";
 
-  static String m8(error) => "Error loading statistical data: ${error}";
+  static String m8(e) => "Error fetching stats: ${e}";
 
-  static String m9(e) => "Loading error: ${e}";
+  static String m9(error) => "Error loading statistical data: ${error}";
 
-  static String m10(e) => "Error occurred: ${e}";
+  static String m10(e) => "Loading error: ${e}";
 
-  static String m11(e) => "Error: ${e}";
+  static String m11(e) => "Error occurred: ${e}";
 
-  static String m12(total) => "Out of ${total}";
+  static String m12(e) => "Error: ${e}";
 
-  static String m13(id) => "Question ${id}";
+  static String m13(total) => "Out of ${total}";
 
-  static String m14(backupDate) => "Loading version: ${backupDate}";
+  static String m14(id) => "Question ${id}";
 
-  static String m15(date) => "Last changed: ${date}";
+  static String m15(backupDate) => "Loading version: ${backupDate}";
 
-  static String m16(strength) => "Password Strength: ${strength}";
+  static String m16(date) => "Last changed: ${date}";
 
   static String m17(strength) => "Password Strength: ${strength}";
 
-  static String m18(count) => "Successfully added ${count} users";
+  static String m18(strength) => "Password Strength: ${strength}";
 
-  static String m19(count) =>
+  static String m19(count) => "Successfully added ${count} users";
+
+  static String m20(count) =>
       "Swipe left and right to see the remaining pages (${count} pages)";
-
-  static String m20(name) => "Welcome ${name}!";
 
   static String m21(name) => "Welcome ${name}!";
 
-  static String m22(adminName) => "Welcome, ${adminName}";
+  static String m22(name) => "Welcome ${name}!";
+
+  static String m23(adminName) => "Welcome, ${adminName}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -392,6 +394,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please do not close this page during the automated grading process.",
     ),
     "doctor_name": MessageLookupByLibrary.simpleMessage("Dr. Mohammed"),
+    "download": MessageLookupByLibrary.simpleMessage("Download"),
     "download_button": MessageLookupByLibrary.simpleMessage("Download"),
     "download_pdf": MessageLookupByLibrary.simpleMessage("Download PDF"),
     "downloading_backup_snackbar": MessageLookupByLibrary.simpleMessage(
@@ -442,6 +445,18 @@ class MessageLookup extends MessageLookupByLibrary {
       "Please enter a valid email address",
     ),
     "end_date": MessageLookupByLibrary.simpleMessage("End Date"),
+    "err_cannot_download_file": MessageLookupByLibrary.simpleMessage(
+      "Cannot download file",
+    ),
+    "err_cannot_open_print_file": MessageLookupByLibrary.simpleMessage(
+      "Cannot open print file",
+    ),
+    "err_check_internet": MessageLookupByLibrary.simpleMessage(
+      "Please check your internet connection",
+    ),
+    "err_download_report": MessageLookupByLibrary.simpleMessage(
+      "A problem occurred while trying to download the report",
+    ),
     "err_empty_essay": MessageLookupByLibrary.simpleMessage(
       "Model answer is required for essay questions",
     ),
@@ -469,11 +484,23 @@ class MessageLookup extends MessageLookupByLibrary {
     "err_exam_folder": MessageLookupByLibrary.simpleMessage(
       "please Choose Folder",
     ),
+    "err_exam_id_unavailable": MessageLookupByLibrary.simpleMessage(
+      "Error: Exam ID is unavailable!",
+    ),
     "err_exam_title": MessageLookupByLibrary.simpleMessage(
       "Exam title is required",
     ),
+    "err_fetch_exam_details": MessageLookupByLibrary.simpleMessage(
+      "Failed to load exam details",
+    ),
+    "err_fetch_file_failed": MessageLookupByLibrary.simpleMessage(
+      "Failed to fetch file from server",
+    ),
     "err_general": MessageLookupByLibrary.simpleMessage(
       "An error occurred. Please try again later",
+    ),
+    "err_incomplete_exam_data": MessageLookupByLibrary.simpleMessage(
+      "Exam data is incomplete, please wait or refresh the page",
     ),
     "err_invalid_email_format": MessageLookupByLibrary.simpleMessage(
       "Invalid email format",
@@ -481,11 +508,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "err_missing_data": MessageLookupByLibrary.simpleMessage(
       "Please fill in all required fields",
     ),
+    "err_missing_exam_id": MessageLookupByLibrary.simpleMessage(
+      "Error: Exam ID missing from server!",
+    ),
     "err_no_correct_answer": MessageLookupByLibrary.simpleMessage(
       "Some questions do not have a correct answer selected. Please specify the correct answers",
     ),
     "err_no_correct_mcq": MessageLookupByLibrary.simpleMessage(
       "There is a multiple-choice question without a correct answer",
+    ),
+    "err_no_exam_selected": MessageLookupByLibrary.simpleMessage(
+      "Error: No exam selected",
     ),
     "err_no_questions": MessageLookupByLibrary.simpleMessage(
       "An empty test cannot be submitted. Please add questions",
@@ -493,8 +526,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "err_no_tf_answer": MessageLookupByLibrary.simpleMessage(
       "There is a True/False question without a selected answer",
     ),
+    "err_open_report_link": MessageLookupByLibrary.simpleMessage(
+      "Cannot open report link",
+    ),
+    "err_server_with_code": m4,
     "err_title_required": MessageLookupByLibrary.simpleMessage(
       "A test title is required",
+    ),
+    "err_unexpected_data": MessageLookupByLibrary.simpleMessage(
+      "Unexpected data from server",
+    ),
+    "err_unexpected_data_structure": MessageLookupByLibrary.simpleMessage(
+      "Unexpected data structure from server",
     ),
     "err_zero_grade": MessageLookupByLibrary.simpleMessage(
       "Each question must have a grade greater than zero",
@@ -503,7 +546,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_account_not_activated": MessageLookupByLibrary.simpleMessage(
       "Account not activated yet. Please set password",
     ),
-    "error_backend_connection": m4,
+    "error_backend_connection": m5,
     "error_backup_creation_failed": MessageLookupByLibrary.simpleMessage(
       "Backup creation failed",
     ),
@@ -531,21 +574,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_expired_otp": MessageLookupByLibrary.simpleMessage(
       "OTP code has expired",
     ),
-    "error_export_failed_with_code": m5,
+    "error_export_failed_with_code": m6,
     "error_fetch_data": MessageLookupByLibrary.simpleMessage(
       "Failed to fetch data: ",
     ),
     "error_fetch_data_simple": MessageLookupByLibrary.simpleMessage(
       "Failed to fetch data",
     ),
-    "error_fetch_data_with_code": m6,
+    "error_fetch_data_with_code": m7,
     "error_fetch_filters": MessageLookupByLibrary.simpleMessage(
       "Failed to fetch system filters from the server",
     ),
     "error_fetch_real_stats": MessageLookupByLibrary.simpleMessage(
       "Failed to fetch real statistics from the server",
     ),
-    "error_fetch_stats_with_msg": m7,
+    "error_fetch_stats_with_msg": m8,
     "error_filters": MessageLookupByLibrary.simpleMessage(
       "Failed to load filters",
     ),
@@ -555,8 +598,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_invalid_otp": MessageLookupByLibrary.simpleMessage(
       "Invalid or already used OTP code",
     ),
-    "error_loading_stats": m8,
-    "error_loading_with_msg": m9,
+    "error_loading_stats": m9,
+    "error_loading_with_msg": m10,
     "error_network_connection": MessageLookupByLibrary.simpleMessage(
       "Network connection error",
     ),
@@ -579,7 +622,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_occurred": MessageLookupByLibrary.simpleMessage(
       "An error occurred: ",
     ),
-    "error_occurred_with_msg": m10,
+    "error_occurred_with_msg": m11,
     "error_opening_file": MessageLookupByLibrary.simpleMessage(
       "An error occurred while opening files",
     ),
@@ -602,7 +645,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_updating_password": MessageLookupByLibrary.simpleMessage(
       "Error updating password",
     ),
-    "error_with_msg": m11,
+    "error_with_msg": m12,
     "essay_answer_area": MessageLookupByLibrary.simpleMessage(
       "Essay answer area",
     ),
@@ -635,9 +678,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "examOriginalPaperView": MessageLookupByLibrary.simpleMessage(
       "Original Answer Paper (Image Preview)",
     ),
-    "examOutOf": m12,
+    "examOutOf": m13,
     "examPartialAnswers": MessageLookupByLibrary.simpleMessage("Partial"),
-    "examQuestionNumber": m13,
+    "examQuestionNumber": m14,
     "examQuestions": MessageLookupByLibrary.simpleMessage("Questions"),
     "examRating": MessageLookupByLibrary.simpleMessage("Rating"),
     "examResultTitle": MessageLookupByLibrary.simpleMessage("Result"),
@@ -914,7 +957,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "link_sent_success": MessageLookupByLibrary.simpleMessage(
       "Reset link has been sent to your email",
     ),
-    "loading_backup_version": m14,
+    "loading_backup_version": m15,
     "loading_copying": MessageLookupByLibrary.simpleMessage("Copying..."),
     "loading_exporting": MessageLookupByLibrary.simpleMessage("Exporting..."),
     "log_download_success": MessageLookupByLibrary.simpleMessage(
@@ -1003,21 +1046,33 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "no_course_dialog_title": MessageLookupByLibrary.simpleMessage("Notice"),
     "no_data_found": MessageLookupByLibrary.simpleMessage("No exams found"),
+    "no_data_to_display": MessageLookupByLibrary.simpleMessage(
+      "No data to display",
+    ),
     "no_live_alerts": MessageLookupByLibrary.simpleMessage(
       "No live alerts currently",
     ),
     "no_matching_logs": MessageLookupByLibrary.simpleMessage(
       "No matching logs found.",
     ),
+    "no_materials_in_term": MessageLookupByLibrary.simpleMessage(
+      "No subjects registered in this semester",
+    ),
     "no_name": MessageLookupByLibrary.simpleMessage("No Name"),
     "no_papers_attached": MessageLookupByLibrary.simpleMessage(
       "No papers attached",
+    ),
+    "no_questions_yet": MessageLookupByLibrary.simpleMessage(
+      "No questions recorded yet.",
     ),
     "no_semesters_added": MessageLookupByLibrary.simpleMessage(
       "No academic semesters added yet.",
     ),
     "no_server_connection": MessageLookupByLibrary.simpleMessage(
       "No server connection",
+    ),
+    "no_subject_details": MessageLookupByLibrary.simpleMessage(
+      "No details or exams recorded for this subject yet.",
     ),
     "no_users_found": MessageLookupByLibrary.simpleMessage(
       "No users match your search",
@@ -1142,6 +1197,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Preview Exam Report",
     ),
     "previous_page": MessageLookupByLibrary.simpleMessage("Previous Page"),
+    "print": MessageLookupByLibrary.simpleMessage("Print"),
     "processing_data": MessageLookupByLibrary.simpleMessage(
       "Processing data...",
     ),
@@ -1347,7 +1403,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Current password is incorrect",
     ),
     "settingsLanguage": MessageLookupByLibrary.simpleMessage("Language"),
-    "settingsLastChange": m15,
+    "settingsLastChange": m16,
     "settingsLevel": MessageLookupByLibrary.simpleMessage("Education Level"),
     "settingsManagePassword": MessageLookupByLibrary.simpleMessage(
       "Password Management",
@@ -1387,8 +1443,8 @@ class MessageLookup extends MessageLookupByLibrary {
       "Security & Authentication",
     ),
     "settingsSendCode": MessageLookupByLibrary.simpleMessage("Send Code"),
-    "settingsStrength": m16,
-    "settingsStrengthLabel": m17,
+    "settingsStrength": m17,
+    "settingsStrengthLabel": m18,
     "settingsStrengthMedium": MessageLookupByLibrary.simpleMessage("Medium"),
     "settingsStrengthStrong": MessageLookupByLibrary.simpleMessage("Strong"),
     "settingsStrengthWeak": MessageLookupByLibrary.simpleMessage("Weak"),
@@ -1426,7 +1482,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "start_date": MessageLookupByLibrary.simpleMessage("Start Date"),
     "statAverage": MessageLookupByLibrary.simpleMessage("Average"),
     "statExams": MessageLookupByLibrary.simpleMessage("Exams"),
-    "statHighScore": MessageLookupByLibrary.simpleMessage("Highest Score"),
+    "statHighScore": MessageLookupByLibrary.simpleMessage("Highest Result"),
     "statMaterials": MessageLookupByLibrary.simpleMessage("Subjects"),
     "statMaxGrade": MessageLookupByLibrary.simpleMessage("Max result"),
     "statMinGrade": MessageLookupByLibrary.simpleMessage("Min result"),
@@ -1450,7 +1506,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "↑ +5% from last month",
     ),
     "statsGPA": MessageLookupByLibrary.simpleMessage("GPA"),
-    "statsHighestScore": MessageLookupByLibrary.simpleMessage("Highest Score"),
+    "statsHighestScore": MessageLookupByLibrary.simpleMessage("Highest Result"),
     "status": MessageLookupByLibrary.simpleMessage("Status"),
     "status_active": MessageLookupByLibrary.simpleMessage("Active"),
     "status_completed": MessageLookupByLibrary.simpleMessage("Completed"),
@@ -1540,13 +1596,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "success_user_added": MessageLookupByLibrary.simpleMessage(
       "User added successfully",
     ),
-    "success_users_added": m18,
+    "success_users_added": m19,
     "sum_label": MessageLookupByLibrary.simpleMessage("Sum: "),
     "sunday": MessageLookupByLibrary.simpleMessage("Sun"),
     "supported_file_formats": MessageLookupByLibrary.simpleMessage(
       "Supported formats: .xlsx, .xls, .csv (Max 5MB)",
     ),
-    "swipeToSeeMorePages": m19,
+    "swipeToSeeMorePages": m20,
     "systemName": MessageLookupByLibrary.simpleMessage(
       "Intelligent Grading System",
     ),
@@ -1686,9 +1742,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "weekly_usage_percentage": MessageLookupByLibrary.simpleMessage(
       "Weekly usage percentage over the last three months",
     ),
-    "welcome": m20,
-    "welcomeMessage": m21,
-    "welcome_admin": m22,
+    "welcome": m21,
+    "welcomeMessage": m22,
+    "welcome_admin": m23,
     "welcome_engineer": MessageLookupByLibrary.simpleMessage(
       "Welcome Eng. Khadija!",
     ),

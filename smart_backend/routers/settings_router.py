@@ -1712,8 +1712,7 @@ class DisplayPreferencesSchema(BaseModel):
 # الوظائف المساعدة الذكية
 # ══════════════════════════════════════════════════════════════════════════════
 
-def get_msg(user: User | None, ar_msg: str, en_msg: str) -> str:
-    lang = user.language_code if user and user.language_code else "ar"
+def get_msg(lang: str, ar_msg: str, en_msg: str) -> str:
     return en_msg if lang == "en" else ar_msg
 
 def auto_translate_profile(profile_dict: dict, target_lang: str) -> dict:
@@ -1785,7 +1784,7 @@ async def send_security_otp(receiver_email: str, otp_code: str, purpose_ar: str,
 # ══════════════════════════════════════════════════════════════════════════════
 
 @router.get("/profile/{student_id}", response_model=ProfileResponse)
-def get_profile(student_id: int, db: Session = Depends(get_db)):
+def get_profile(student_id: int, lang: str = "ar", db: Session = Depends(get_db)):
     query = text("""
         SELECT s.student_id AS user_id, u.full_name, u.email, u.phone_number, 
                l.level_name, d.department_name, u.language_code, u.is_dark_mode,
@@ -1798,23 +1797,22 @@ def get_profile(student_id: int, db: Session = Depends(get_db)):
     """)
     result = db.execute(query, {"sid": student_id}).mappings().first()
     if not result:
-        raise HTTPException(status_code=404, detail="بيانات الطالب غير موجودة / Student data not found")
+        raise HTTPException(status_code=404, detail=get_msg(lang, "بيانات الطالب غير موجودة", "Student data not found"))
         
     profile_data = dict(result)
-    user_lang = profile_data.get("language_code", "ar")
-    final_data = auto_translate_profile(profile_data, user_lang)
+    final_data = auto_translate_profile(profile_data, lang)
     return final_data
 
 # 🌟 تعديل هنا: إضافة async لأننا نستخدم دالة الإرسال الجديدة
 @router.post("/send-email-otp")
-async def send_email_otp(body: SendEmailOtpRequest, db: Session = Depends(get_db)):
+async def send_email_otp(body: SendEmailOtpRequest, lang: str = "ar", db: Session = Depends(get_db)):
     student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
     user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
 
     if not student:
-        raise HTTPException(status_code=404, detail=get_msg(user, "الطالب غير موجود", "Student not found"))
+        raise HTTPException(status_code=404, detail=get_msg(lang, "الطالب غير موجود", "Student not found"))
     if not user:
-        raise HTTPException(status_code=404, detail=get_msg(user, "المستخدم غير موجود", "User not found"))
+        raise HTTPException(status_code=404, detail=get_msg(lang, "المستخدم غير موجود", "User not found"))
 
     otp = str(random.randint(100000, 999999))
     expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
@@ -1829,46 +1827,18 @@ async def send_email_otp(body: SendEmailOtpRequest, db: Session = Depends(get_db
     )
     db.add(new_code)
     
-    lang = user.language_code if user.language_code else "ar"
-    
     # انتظار (await) إرسال الإيميل
     is_sent = await send_security_otp(user.email, otp, "تغيير البريد الإلكتروني", "Change Email", lang)
     
     if is_sent:
         db.commit()
-        return {"message": get_msg(user, "تم إرسال الكود إلى بريدك", "Code sent to your email")}
+        return {"message": get_msg(lang, "تم إرسال الكود إلى بريدك", "Code sent to your email")}
     else:
         db.rollback()
-        raise HTTPException(status_code=500, detail=get_msg(user, "فشل في إرسال البريد", "Failed to send email"))
-
-# @router.post("/verify-email-otp")
-# def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db)):
-#     student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
-#     user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
-
-#     if not student or not user:
-#         raise HTTPException(status_code=404, detail="Student/User not found")
-
-#     record = db.query(VerificationCode).filter(
-#         VerificationCode.user_id == user.user_id,
-#         VerificationCode.otp_code == body.otp_code,
-#         VerificationCode.is_used == False
-#     ).first()
-
-#     if record is None:
-#         raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صحيح", "Invalid OTP"))
-
-#     try:
-#         user.email = body.new_email
-#         record.is_used = True
-#         db.commit()
-#         return {"message": get_msg(user, "تم تحديث البريد بنجاح", "Email updated successfully")}
-#     except Exception as e:
-#         db.rollback()
-#         raise HTTPException(status_code=500, detail=get_msg(user, "فشل تحديث قاعدة البيانات", "Database update failed"))
+        raise HTTPException(status_code=500, detail=get_msg(lang, "فشل في إرسال البريد", "Failed to send email"))
 
 @router.post("/verify-email-otp")
-def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db)):
+def verify_email_otp(body: VerifyEmailOtpRequest, lang: str = "ar", db: Session = Depends(get_db)):
     # 1. جلب بيانات الطالب الحالي
     student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
     user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
@@ -1883,7 +1853,7 @@ def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db))
     if user.email.lower() == clean_new_email:
         raise HTTPException(
             status_code=400, 
-            detail=get_msg(user, "هذا هو بريدك الإلكتروني الحالي بالفعل", "This is already your current email")
+            detail=get_msg(lang, "هذا هو بريدك الإلكتروني الحالي بالفعل", "This is already your current email")
         )
 
     # 🌟 [الإضافة الجديدة 2] التحقق: هل الإيميل مسجل مسبقاً لحساب آخر في قاعدة البيانات؟
@@ -1891,7 +1861,7 @@ def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db))
     if existing_user:
         raise HTTPException(
             status_code=400, 
-            detail=get_msg(user, "هذا البريد الإلكتروني مستخدم لحساب آخر", "This email is already in use by another account")
+            detail=get_msg(lang, "هذا البريد الإلكتروني مستخدم لحساب آخر", "This email is already in use by another account")
         )
 
     # 2. التحقق من صحة الرمز (OTP)
@@ -1902,28 +1872,28 @@ def verify_email_otp(body: VerifyEmailOtpRequest, db: Session = Depends(get_db))
     ).first()
 
     if record is None:
-        raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صحيح أو منتهي الصلاحية", "Invalid or expired OTP"))
+        raise HTTPException(status_code=400, detail=get_msg(lang, "الرمز غير صحيح أو منتهي الصلاحية", "Invalid or expired OTP"))
 
     # 3. تحديث الإيميل بعد اجتياز كل الفحوصات الأمنية
     try:
         user.email = clean_new_email
         record.is_used = True
         db.commit()
-        return {"message": get_msg(user, "تم تحديث البريد بنجاح", "Email updated successfully")}
+        return {"message": get_msg(lang, "تم تحديث البريد بنجاح", "Email updated successfully")}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=get_msg(user, "فشل تحديث قاعدة البيانات", "Database update failed"))
+        raise HTTPException(status_code=500, detail=get_msg(lang, "فشل تحديث قاعدة البيانات", "Database update failed"))
 
 @router.put("/change-password")
-def change_password(body: ChangePasswordRequest, db: Session = Depends(get_db)):
+def change_password(body: ChangePasswordRequest, lang: str = "ar", db: Session = Depends(get_db)):
     try:
         student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
         user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
 
         if not student:
-            raise HTTPException(status_code=404, detail=get_msg(user, "الطالب غير موجود", "Student not found"))
+            raise HTTPException(status_code=404, detail=get_msg(lang, "الطالب غير موجود", "Student not found"))
         if not user:
-            raise HTTPException(status_code=404, detail=get_msg(user, "المستخدم غير موجود", "User not found"))
+            raise HTTPException(status_code=404, detail=get_msg(lang, "المستخدم غير موجود", "User not found"))
 
         try:
             is_valid_password = pwd_ctx.verify(body.old_password, user.password)
@@ -1931,25 +1901,25 @@ def change_password(body: ChangePasswordRequest, db: Session = Depends(get_db)):
             is_valid_password = (user.password == body.old_password)
 
         if not is_valid_password:
-            raise HTTPException(status_code=400, detail=get_msg(user, "كلمة المرور الحالية غير صحيحة", "Current password is incorrect"))
+            raise HTTPException(status_code=400, detail=get_msg(lang, "كلمة المرور الحالية غير صحيحة", "Current password is incorrect"))
 
         if body.old_password == body.new_password:
-            raise HTTPException(status_code=400, detail=get_msg(user, "كلمة المرور الجديدة يجب أن تكون مختلفة", "New password must be different"))
+            raise HTTPException(status_code=400, detail=get_msg(lang, "كلمة المرور الجديدة يجب أن تكون مختلفة", "New password must be different"))
 
         if body.new_password != body.confirm_password:
-            raise HTTPException(status_code=400, detail=get_msg(user, "كلمة المرور الجديدة غير متطابقة", "Passwords do not match"))
+            raise HTTPException(status_code=400, detail=get_msg(lang, "كلمة المرور الجديدة غير متطابقة", "Passwords do not match"))
 
         user.password = pwd_ctx.hash(body.new_password[:72])
         user.last_password_change = datetime.now()
         db.commit()
 
-        return {"message": get_msg(user, "تم تغيير كلمة المرور بنجاح", "Password changed successfully")}
+        return {"message": get_msg(lang, "تم تغيير كلمة المرور بنجاح", "Password changed successfully")}
 
     except HTTPException:
         raise 
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=get_msg(user, "حدث خطأ، حاول لاحقاً", "System error, try again later"))
+        raise HTTPException(status_code=500, detail=get_msg(lang, "حدث خطأ، حاول لاحقاً", "System error, try again later"))
 
 @router.put("/update-display-preferences")
 def update_preferences(body: DisplayPreferencesSchema, db: Session = Depends(get_db)):
@@ -1985,13 +1955,13 @@ def get_display_preferences(student_id: int, db: Session = Depends(get_db)):
 
 # 🌟 تحديث هنا لترسل الإيميل عبر SendGrid API
 @router.post("/forgot-password/send-otp")
-async def settings_forgot_password_send_otp(body: ForgotPasswordSendOtp, db: Session = Depends(get_db)):
+async def settings_forgot_password_send_otp(body: ForgotPasswordSendOtp, lang: str = "ar", db: Session = Depends(get_db)):
     try:
         student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
         user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
 
         if not student or not user:
-            raise HTTPException(status_code=404, detail="Student/User not found")
+            raise HTTPException(status_code=404, detail="Student/User not found" if lang == "en" else "الطالب غير موجود")
         
         otp = str(random.randint(100000, 999999))
         expiry = datetime.now(timezone.utc) + timedelta(minutes=10)
@@ -2006,7 +1976,6 @@ async def settings_forgot_password_send_otp(body: ForgotPasswordSendOtp, db: Ses
         )
         db.add(new_code)
         
-        lang = user.language_code if user and user.language_code else "ar"
         subject = "Password Reset" if lang == "en" else "استعادة كلمة المرور"
         body_text = f"Your password reset OTP is: {otp}\nValid for 10 minutes." if lang == "en" else f"رمز التحقق الخاص باستعادة كلمة المرور هو: {otp}\nالرمز صالح لمدة 10 دقائق."
 
@@ -2031,17 +2000,17 @@ async def settings_forgot_password_send_otp(body: ForgotPasswordSendOtp, db: Ses
                 raise Exception(f"فشل الإرسال من السيرفر: {response.text}")
         
         db.commit()
-        return {"message": get_msg(user, "تم إرسال رمز الاستعادة بنجاح", "Password reset OTP sent successfully")}
+        return {"message": get_msg(lang, "تم إرسال رمز الاستعادة بنجاح", "Password reset OTP sent successfully")}
         
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
         print(f"🔴 SendGrid API Error: {e}")
-        raise HTTPException(status_code=500, detail=get_msg(user, "فشل إرسال البريد الإلكتروني", "Failed to send email"))
+        raise HTTPException(status_code=500, detail=get_msg(lang, "فشل إرسال البريد الإلكتروني", "Failed to send email"))
 
 @router.post("/forgot-password/verify-otp")
-def settings_forgot_password_verify_otp(body: ForgotPasswordVerifyOtp, db: Session = Depends(get_db)):
+def settings_forgot_password_verify_otp(body: ForgotPasswordVerifyOtp, lang: str = "ar", db: Session = Depends(get_db)):
     try:
         student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
         user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
@@ -2056,17 +2025,17 @@ def settings_forgot_password_verify_otp(body: ForgotPasswordVerifyOtp, db: Sessi
         ).first()
 
         if record is None:
-            raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صحيح أو منتهي الصلاحية", "Invalid or expired OTP code"))
+            raise HTTPException(status_code=400, detail=get_msg(lang, "الرمز غير صحيح أو منتهي الصلاحية", "Invalid or expired OTP code"))
             
-        return {"message": get_msg(user, "الرمز صحيح", "OTP is valid")}
+        return {"message": get_msg(lang, "الرمز صحيح", "OTP is valid")}
         
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail="System error, please try again later")
+        raise HTTPException(status_code=500, detail="System error, please try again later" if lang == "en" else "خطأ في النظام، يرجى المحاولة لاحقاً")
 
 @router.post("/forgot-password/reset")
-def settings_forgot_password_reset(body: ForgotPasswordReset, db: Session = Depends(get_db)):
+def settings_forgot_password_reset(body: ForgotPasswordReset, lang: str = "ar", db: Session = Depends(get_db)):
     try:
         student = db.query(Student).filter((Student.student_id == body.user_id) | (Student.user_id == body.user_id)).first()
         user = db.query(User).filter(User.user_id == student.user_id).first() if student else None
@@ -2081,7 +2050,7 @@ def settings_forgot_password_reset(body: ForgotPasswordReset, db: Session = Depe
         ).first()
 
         if record is None:
-            raise HTTPException(status_code=400, detail=get_msg(user, "الرمز غير صالح أو منتهي الصلاحية", "Invalid or expired OTP code"))
+            raise HTTPException(status_code=400, detail=get_msg(lang, "الرمز غير صالح أو منتهي الصلاحية", "Invalid or expired OTP code"))
 
         user.password = pwd_ctx.hash(body.new_password[:72])
         user.last_password_change = datetime.now()
@@ -2089,10 +2058,10 @@ def settings_forgot_password_reset(body: ForgotPasswordReset, db: Session = Depe
         record.is_used = True
         db.commit()
 
-        return {"message": get_msg(user, "تم تحديث كلمة المرور بنجاح", "Password updated successfully")}
+        return {"message": get_msg(lang, "تم تحديث كلمة المرور بنجاح", "Password updated successfully")}
 
     except HTTPException:
         raise
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=get_msg(user, "حدث خطأ أثناء تحديث كلمة المرور", "Error updating password"))
+        raise HTTPException(status_code=500, detail=get_msg(lang, "حدث خطأ أثناء تحديث كلمة المرور", "Error updating password"))

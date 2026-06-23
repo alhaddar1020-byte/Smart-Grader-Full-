@@ -1174,7 +1174,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
     if (controller.studentData.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.secondaryTeal(context),
-        body: const Center(child: Text("لا توجد بيانات لعرضها")),
+        body: Center(child: Text(S.of(context).no_data_to_display)),
       );
     }
 
@@ -1447,7 +1447,7 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
         if (selectedExamTitle == null ||
             selectedExamTitle!.isEmpty ||
             selectedExamId == null) {
-          return const Center(child: Text("خطأ: لم يتم اختيار اختبار"));
+          return Center(child: Text(S.of(context).err_no_exam_selected));
         }
         return StudentExamScreen(
           subjectName: selectedSubjectName ?? "",
@@ -1825,8 +1825,8 @@ class _StudentDashboardScreenState extends State<StudentDashboardScreen> {
       onTap: () {
         if (safeExamId <= 0) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('خطأ: رقم الاختبار مفقود من السيرفر!'),
+            SnackBar(
+              content: Text(S.of(context).err_missing_exam_id),
             ),
           );
           return;
