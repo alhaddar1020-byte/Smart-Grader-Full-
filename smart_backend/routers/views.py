@@ -142,38 +142,39 @@ def get_student_results(student_id: int, db: Session = Depends(get_db)):
 
 # 1. صفحة الداش بورد (الرئيسية)
 @router.get("/student-dashboard/{student_id}")
-def get_student_dashboard(student_id: int, db: Session = Depends(get_db)):
+def get_student_dashboard(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
     """
     هذا الرابط يرسل بيانات لوحة تحكم الطالب جاهزة ومنسقة لتطبيق الفلاتر
     """
-    # التمرير الصريح يحميك من أخطاء الترتيب
-    return get_student_dashboard_data(db=db, student_id=student_id)
+    # 🌟 التعديل: تمرير lang للدالة الأساسية
+    return get_student_dashboard_data(db=db, student_id=student_id, lang=lang)
 
 
 # 2. صفحة المواد الدراسية
 @router.get("/student-subjects/{student_id}")
-def get_student_subjects(student_id: int, db: Session = Depends(get_db)):
+def get_student_subjects(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
     """
     هذا الرابط يرسل بيانات شاشة المواد الدراسية للطالب
     """
-    return get_student_subjects_data(db=db, student_id=student_id)
+    # 🌟 التعديل: تمرير lang للدالة الأساسية
+    return get_student_subjects_data(db=db, student_id=student_id, lang=lang)
 
 
 # 3. صفحة تفاصيل المادة
 @router.get("/subject-details/{student_id}/{course_name}")
-def get_subject_details(student_id: int, course_name: str, db: Session = Depends(get_db)):
+def get_subject_details(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
     """
     هذا الرابط يرسل تفاصيل مادة معينة واختباراتها للطالب
     """
-    return get_subject_details_data(db=db, student_id=student_id, course_name=course_name)
+    # 🌟 التعديل: تمرير lang للدالة الأساسية
+    return get_subject_details_data(db=db, student_id=student_id, course_name=course_name, lang=lang)
 
 
 # 4. صفحة تفاصيل ورقة الاختبار (التصحيح التفصيلي)
-# 🌟 التعديل: تغيير exam_title إلى exam_id
 @router.get("/exam-details/{student_id}/{exam_id}")
-def get_exam_details(student_id: int, exam_id: int, db: Session = Depends(get_db)):
-    # 🌟 التعديل: إرسال exam_id للدالة الأساسية
-    return get_exam_details_data(db=db, student_id=student_id, exam_id=exam_id)
+def get_exam_details(student_id: int, exam_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
+    # 🌟 التعديل: إرسال exam_id و lang للدالة الأساسية
+    return get_exam_details_data(db=db, student_id=student_id, exam_id=exam_id, lang=lang)
 
 
 # 5. تحديث حالة النتيجة إلى مقروءة (لإخفاء النقطة الزرقاء)
