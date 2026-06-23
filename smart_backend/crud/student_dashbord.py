@@ -109,7 +109,7 @@
 
 # # # @router.get("/student-dashboard/{student_id}")
 # # # def get_student_dashboard_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
-    user_lang = lang
+    # user_lang = lang
 # # #     current_year_query = text("SELECT academic_year FROM semesters WHERE is_current = true LIMIT 1")
 # # #     current_year = db.execute(current_year_query).scalar()
     
@@ -256,7 +256,7 @@
 
 # # # @router.get("/student-subjects/{student_id}")
 # # # def get_student_subjects_data(student_id: int, lang: str = 'ar', db: Session = Depends(get_db)):
-    user_lang = lang
+    # user_lang = lang
 # # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -337,7 +337,7 @@
 
 # # # @router.get("/subject-details/{student_id}/{course_name}")
 # # # def get_subject_details_data(student_id: int, course_name: str, lang: str = 'ar', db: Session = Depends(get_db)):
-    user_lang = lang
+    # user_lang = lang
 # # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
@@ -454,7 +454,7 @@
 
 # # # @router.get("/exam-details/{student_id}/{exam_title}")
 # # # def get_exam_details_data(student_id: int, exam_title: str, lang: str = 'ar', db: Session = Depends(get_db)):
-    user_lang = lang
+    # user_lang = lang
 # # #     lang_query = text("SELECT language_code FROM users u JOIN student s ON u.user_id = s.user_id WHERE s.student_id = :sid LIMIT 1")
 # # #     user_lang = db.execute(lang_query, {"sid": student_id}).scalar() or "ar"
 
